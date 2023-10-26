@@ -7,7 +7,8 @@ class UnrealProjectManager:
         PrintLog("Validate Project")
 
     def CleanProject(project_path):
-        UETmpFolderList = ["Binaries", "Build", "Intermediate", "Saved"]
+        project_path = str(project_path).replace("\\","")
+        UETmpFolderList = ["Binaries", "Build", "Intermediate", "Saved","DerivedDataCache"]
         for folder in UETmpFolderList:
             folder_path = os.path.join(project_path, folder)
             print("CleanProject", folder_path)
@@ -22,5 +23,9 @@ class UnrealProjectManager:
                 print("CleanPluginProject", folder_path)
                 FileUtility.DeleteDir(folder_path)
 
-    def GenerateProject(path):
+    def GenerateProject(host_platform,path):
+        host_platform.GenerateProject(path)
         print("Generate Project")
+
+    
+

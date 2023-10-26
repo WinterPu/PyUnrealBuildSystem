@@ -4,9 +4,9 @@ import threading
 from Utility.HeaderBase import *
 
 
-def PrintCMDLog(readline):
+def ExportCMDLog(readline):
     for line in iter(readline, ""):
-        printlog(line)
+        PrintLog(line)
         if len(line) == 0:
             break
 
@@ -21,7 +21,7 @@ def RUNCMD(command):
         bufsize=1,
     )
 
-    printlog(popen)
+    PrintLog("[Command]: "+command)
 
     # stdout, stderr = popen.communicate()
 
@@ -33,8 +33,8 @@ def RUNCMD(command):
     # else:
     #     print("[Error] -Code: %d RunCommand: " % (popen.returncode), popen.args)
 
-    thread1 = threading.Thread(target=PrintCMDLog, args=(popen.stdout.readline,))
-    thread2 = threading.Thread(target=PrintCMDLog, args=(popen.stderr.readline,))
+    thread1 = threading.Thread(target=ExportCMDLog, args=(popen.stdout.readline,))
+    thread2 = threading.Thread(target=ExportCMDLog, args=(popen.stderr.readline,))
     thread1.start()
     thread2.start()
 
