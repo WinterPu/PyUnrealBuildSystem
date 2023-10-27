@@ -11,13 +11,14 @@ def ExportCMDLog(readline):
             break
 
 
-def RUNCMD(command):
+## [val_encoding] On Windows, 'utf-8' UnicodeDecodeError: ‘utf-8’ codec can’t decode byte 0x92 in position in Python. 
+def RUNCMD(command, val_encoding = "ISO-8859-1"):
     popen = subprocess.Popen(
         command,
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        encoding="ISO-8859-1", ## On Windows, 'utf-8' UnicodeDecodeError: ‘utf-8’ codec can’t decode byte 0x92 in position in Python. 
+        encoding=val_encoding,
         bufsize=1,
     )
 

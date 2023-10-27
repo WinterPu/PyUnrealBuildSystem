@@ -15,6 +15,9 @@ class FileUtility:
             command = (
                 r"rmdir /s /q" + '"' + path + '"'
             )
+            
+            RUNCMD(command, "gbk")
+
         else:
             if os.path.exists(path):
                 PrintLog("DeleteDir")
