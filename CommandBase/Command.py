@@ -17,7 +17,7 @@ def RUNCMD(command):
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        encoding="gbk", ## On Windows, 'utf-8' UnicodeDecodeError: ‘utf-8’ codec can’t decode byte 0x92 in position in Python. 
+        encoding="ISO-8859-1", ## On Windows, 'utf-8' UnicodeDecodeError: ‘utf-8’ codec can’t decode byte 0x92 in position in Python. 
         bufsize=1,
     )
 

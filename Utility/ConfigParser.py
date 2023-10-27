@@ -2,7 +2,7 @@ import json
 import os
 from Utility.HeaderBase import *
 
-path_val = r"/Users/admin/Documents/PyUnrealBuildSystem/Config/Config.json"
+path_val = Path("/Users/admin/Documents/PyUnrealBuildSystem/Config/Config.json")
 
 class ConfigParser:
     def ParseConfig(local_path):
@@ -14,7 +14,7 @@ class ConfigParser:
         PrintLog(json_data)
         json_data['UEEnginePath'] = '/Users/admin/Documents/'
         PrintLog(json_data)
-        
+
 
     
 
