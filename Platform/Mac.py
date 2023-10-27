@@ -1,32 +1,34 @@
 
 from Platform.PlatformBase import *
 from CommandBase.GenerateProjectFilesCommand import *
-import os
+from pathlib import Path
 
 class MacPlatformBase(PlatformBase):
     def GetRunUATPath():
-        return "/Engine/Build/BatchFiles/RunUAT.sh"
+        return Path("/Engine/Build/BatchFiles/RunUAT.sh") 
     
     def GetGenerateProjectScriptPath():
-        return "/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh"
+        return Path("/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh") 
 
-    def GenHostPlatformParams(params):
+    def GenHostPlatformParams(args):
         ret = True
         val = {}
 
         key = "engine_path"
-        val[key] = params.enginepath
+        val[key] = args.enginepath
+
 
 
         key = "uat_path"
-        val[key] = "%s"%(val["engine_path"] + MacPlatformBase.GetRunUATPath())
+        ## if a path starts with '/', it would be treated as starting from the root path.
+        val[key] = Path(val["engine_path"]) / str(Path(MacPlatformBase.GetRunUATPath())).lstrip("/")
 
         key = "genprojfiles_path"
-        val[key] = "%s"%(val["engine_path"] + MacPlatformBase.GetGenerateProjectScriptPath())
-        
+        val[key] = Path(val["engine_path"])/ str(Path(MacPlatformBase.GetGenerateProjectScriptPath())).lstrip("/")
+
         return ret,val
     
-    def GenTargetPlatformParams(params):
+    def GenTargetPlatformParams(args):
         ret = True
         val = {}
 
@@ -34,7 +36,7 @@ class MacPlatformBase(PlatformBase):
         val[key] = "Mac"
 
         key = "project_path"
-        val[key] = params[key] if key in params else None
+        val[key] = args.projectpath if 'projectpath' in args else None
         ### [TBD]
         ## validate project
 
@@ -45,7 +47,7 @@ class MacPlatformBase(PlatformBase):
 
 class MacHostPlatform(BaseHostPlatform):
     def GetDefaultEnginePath(self):
-        return "/Users/Shared/Epic Games"
+        return Path("/Users/Shared/Epic Games")
     
     def GenerateProject(self,project_file_path):
         genproj_script = self.GetParamVal("genprojfiles_path")

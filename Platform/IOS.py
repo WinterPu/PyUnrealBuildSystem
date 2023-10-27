@@ -1,7 +1,7 @@
 from Platform.PlatformBase import *
 
 class IOSPlatformBase(PlatformBase):
-    def GenTargetPlatformParams(params):
+    def GenTargetPlatformParams(args):
         ret = True
         val = {}
 
@@ -9,7 +9,7 @@ class IOSPlatformBase(PlatformBase):
         val[key] = "IOS"
 
         key = "project_path"
-        val[key] = params[key] if key in params else None
+        val[key] = args.projectpath if 'projectpath' in args else None
         ### [TBD]
         ## validate project
 

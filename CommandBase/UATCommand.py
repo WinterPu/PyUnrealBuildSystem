@@ -1,7 +1,8 @@
 from CommandBase.Command import *
+from pathlib import Path
 
 class UATCommand:
-    uatpath= "/Users/Shared/Epic\ Games/UE_5.2/Engine/Build/BatchFiles/RunUAT.sh"
+    uatpath= Path("/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUAT.sh")
     def __init__(self, uatpath_val) -> None:
         self.uatpath = uatpath_val
 
@@ -13,14 +14,12 @@ class UATCommand:
         key = "project_path"
         project_path = params[key] if key in params else ""
 
-        key = "extra_command"
+        key = "extra_commands"
         extra_commands = params[key] if key in params else ""
 
-
-        project_path = "/Users/admin/Documents/Unreal Projects/Agora-Unreal-RTC-SDK-dev-4.2.1/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"
         command = (
-            self.uatpath+
-            r" BuildCookRun  -project="+"'" +project_path+ "'"
+            '"' + str(self.uatpath) + '"' +
+            r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
             r" -targetplatform="+platform+
             r" -clientconfig=Development"
             r" -Build"
@@ -49,8 +48,8 @@ class UATCommand:
 
 
         command = (
-            self.uatpath+
-            r" BuildPlugin  -plugin="+plugin_path+
+            "\"" + str(self.uatpath) + "\"" +
+            r" BuildPlugin  -plugin="+ str(plugin_path)+
             r" -targetplatform="+platform+
             r" -package="+ output_path +
             r" -rocket"+ # means precompiled & installed engine version

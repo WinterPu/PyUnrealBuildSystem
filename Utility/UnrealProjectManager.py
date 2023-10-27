@@ -7,7 +7,6 @@ class UnrealProjectManager:
         PrintLog("Validate Project")
 
     def CleanProject(project_path):
-        project_path = str(project_path).replace("\\","")
         UETmpFolderList = ["Binaries", "Build", "Intermediate", "Saved","DerivedDataCache"]
         for folder in UETmpFolderList:
             folder_path = os.path.join(project_path, folder)

@@ -1,23 +1,24 @@
 from Platform.PlatformBase import *
-import os 
+from pathlib import Path
 
 class WinPlatformBase(PlatformBase):
     def GetRunUATPath():
-        return "/Engine/Build/BatchFiles/RunUAT.bat"
+        return Path("/Engine/Build/BatchFiles/RunUAT.bat")
 
-    def GenHostPlatformParams(params):
+    def GenHostPlatformParams(args):
         ret = True
         val = {}
 
         key = "engine_path"
-        val["engine_path"] = params.enginepath
+        val["engine_path"] = args.enginepath
 
         key = "uat_path"
-        val["uat_path"] ="%s"%(val["engine_path"] + WinPlatformBase.GetRunUATPath())
+        val["uat_path"] =val["engine_path"] / WinPlatformBase.GetRunUATPath()
+
 
         return ret,val
     
-    def GenTargetPlatformParams(params):
+    def GenTargetPlatformParams(args):
         ret = True
         val = {}
 
@@ -25,7 +26,7 @@ class WinPlatformBase(PlatformBase):
         val[key] = "Win"
 
         key = "project_path"
-        val[key] = params[key] if key in params else None
+        val[key] = args.projectpath if 'projectpath' in args else None
         ### [TBD]
         ## validate project
 
@@ -34,7 +35,7 @@ class WinPlatformBase(PlatformBase):
 
 class WinHostPlatform(BaseHostPlatform):
     def GetRunUATPath():
-        return "/Engine/Build/BatchFiles/RunUAT.bat"
+        return Path("/Engine/Build/BatchFiles/RunUAT.bat")
     
 
 

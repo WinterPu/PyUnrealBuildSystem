@@ -46,9 +46,9 @@ class PyUnrealBuildSystem:
         if default_targetsystem == "Win":
             default_targetsystem = "Win64"
         
-        ArgParser.add_argument("-enginepath", default="/Users/Shared/Epic\ Games/UE_5.2/")
+        ArgParser.add_argument("-enginepath", default=Path("/Users/Shared/Epic Games/UE_5.2/"))
         ArgParser.add_argument("-enginever", default="5.2")
-        ArgParser.add_argument("-projectpath", default="/Users/admin/Documents/Unreal\ Projects/Agora-Unreal-RTC-SDK-dev-4.2.1/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject")   
+        ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Unreal Projects/Agora-Unreal-RTC-SDK-dev-4.2.1/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
         ArgParser.add_argument("-pluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-agorasdktype", default="RTC")
@@ -85,8 +85,8 @@ class PyUnrealBuildSystem:
         if Args.BuildPlugin == True:
             arg_targetplatform = Args.targetplatform
             arg_project_path = Args.projectpath
-            plugin_path = arg_project_path + "/Plugins/AgoraPlugin/AgoraPlugin.uplugin"
-            output_path = arg_project_path + "Saved/PluginOutput/"
+            plugin_path = arg_project_path  / Path("Plugins/AgoraPlugin/AgoraPlugin.uplugin")
+            output_path = arg_project_path  / Path("Saved/PluginOutput/")
             host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
         
         if Args.BuildCookRun == True:
@@ -100,7 +100,7 @@ class PyUnrealBuildSystem:
                     PrintErr(sys._getframe(),"Invalid TargetPlatform Creation")
 
         if Args.Clean == True:
-            project_folder_path = os.path.dirname(Args.projectpath)
+            project_folder_path = Args.projectpath.parent
             ## Path \ or not
 
             ## [TBD] clean xcproject
@@ -109,7 +109,6 @@ class PyUnrealBuildSystem:
         if Args.GenProject == True:
             project_folder_path = Args.projectpath
             ## [TBD] some needs \ and some doesn't need \
-            project_folder_path = project_folder_path.replace("\\","")
             UnrealProjectManager.GenerateProject(host_platform,project_folder_path)
 
         if Args.GitClone == True:

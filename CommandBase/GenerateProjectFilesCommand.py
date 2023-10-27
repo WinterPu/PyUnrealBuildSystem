@@ -14,8 +14,8 @@ class GenerateProjectFilesCommand:
         extra_commands = params[key] if key in params else ""
 
         command = (
-            self.script_path+
-            r" -project="+"'" +project_path+ "'"
+            '"' + str(self.script_path) + '"' + 
+            r" -project="+ '"'  + str(project_path) + '"'
             r" -game"+
             extra_commands
          )

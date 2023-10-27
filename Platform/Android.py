@@ -1,5 +1,21 @@
 from Platform.PlatformBase import *
 
+class AndroidPlatformBase(PlatformBase):
+    def GenTargetPlatformParams(args):
+        ret = True
+        val = {}
+
+        key = "platform"
+        val[key] = "Android"
+
+        key = "project_path"
+        val[key] = args.projectpath if 'projectpath' in args else None
+        ### [TBD]
+        ## validate project
+
+        return ret,val
+
+
 class IOSTargetPlatform(BaseTargetPlatform):
     def SetupEnvironment(self):
         print("SetupEnvironment - %s Platform" % self.GetTargetPlatform())
