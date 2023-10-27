@@ -21,10 +21,10 @@ class MacPlatformBase(PlatformBase):
 
         key = "uat_path"
         ## if a path starts with '/', it would be treated as starting from the root path.
-        val[key] = Path(val["engine_path"]) / Path(MacPlatformBase.GetRunUATPath())
+        val[key] = Path(val["engine_path"]) / MacPlatformBase.GetRunUATPath()
 
         key = "genprojfiles_path"
-        val[key] = Path(val["engine_path"])/ Path(MacPlatformBase.GetGenerateProjectScriptPath())
+        val[key] = Path(val["engine_path"])/ MacPlatformBase.GetGenerateProjectScriptPath()
 
         return ret,val
     
