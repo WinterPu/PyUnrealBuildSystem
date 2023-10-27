@@ -16,7 +16,7 @@ class AndroidPlatformBase(PlatformBase):
         return ret,val
 
 
-class IOSTargetPlatform(BaseTargetPlatform):
+class AndroidTargetPlatform(BaseTargetPlatform):
     def SetupEnvironment(self):
         print("SetupEnvironment - %s Platform" % self.GetTargetPlatform())
 

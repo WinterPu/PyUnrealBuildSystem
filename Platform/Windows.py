@@ -3,7 +3,8 @@ from pathlib import Path
 
 class WinPlatformBase(PlatformBase):
     def GetRunUATPath():
-        return Path("/Engine/Build/BatchFiles/RunUAT.bat")
+        ## if you start with '/', it would be treated as starting from the root path
+        return Path("Engine/Build/BatchFiles/RunUAT.bat")
 
     def GenHostPlatformParams(args):
         ret = True
@@ -15,7 +16,6 @@ class WinPlatformBase(PlatformBase):
         key = "uat_path"
         val["uat_path"] =val["engine_path"] / WinPlatformBase.GetRunUATPath()
 
-
         return ret,val
     
     def GenTargetPlatformParams(args):
@@ -23,7 +23,7 @@ class WinPlatformBase(PlatformBase):
         val = {}
 
         key = "platform"
-        val[key] = "Win"
+        val[key] = "Win64"
 
         key = "project_path"
         val[key] = args.projectpath if 'projectpath' in args else None
@@ -35,7 +35,7 @@ class WinPlatformBase(PlatformBase):
 
 class WinHostPlatform(BaseHostPlatform):
     def GetRunUATPath():
-        return Path("/Engine/Build/BatchFiles/RunUAT.bat")
+        return Path("Engine/Build/BatchFiles/RunUAT.bat")
     
 
 

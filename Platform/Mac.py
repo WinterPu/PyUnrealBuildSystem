@@ -5,10 +5,10 @@ from pathlib import Path
 
 class MacPlatformBase(PlatformBase):
     def GetRunUATPath():
-        return Path("/Engine/Build/BatchFiles/RunUAT.sh") 
+        return Path("Engine/Build/BatchFiles/RunUAT.sh") 
     
     def GetGenerateProjectScriptPath():
-        return Path("/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh") 
+        return Path("Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh") 
 
     def GenHostPlatformParams(args):
         ret = True
@@ -21,10 +21,10 @@ class MacPlatformBase(PlatformBase):
 
         key = "uat_path"
         ## if a path starts with '/', it would be treated as starting from the root path.
-        val[key] = Path(val["engine_path"]) / str(Path(MacPlatformBase.GetRunUATPath())).lstrip("/")
+        val[key] = Path(val["engine_path"]) / Path(MacPlatformBase.GetRunUATPath())
 
         key = "genprojfiles_path"
-        val[key] = Path(val["engine_path"])/ str(Path(MacPlatformBase.GetGenerateProjectScriptPath())).lstrip("/")
+        val[key] = Path(val["engine_path"])/ Path(MacPlatformBase.GetGenerateProjectScriptPath())
 
         return ret,val
     

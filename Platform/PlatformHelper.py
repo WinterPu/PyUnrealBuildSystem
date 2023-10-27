@@ -36,7 +36,9 @@ def CreateTargetPlatform(host_platform,type,original_args):
         val = MacTargetPlatform(host_platform,params) if ret == True else None
         return ret,val
     elif type == "Android":
-        return False,None
+        ret,params = AndroidPlatformBase.GenTargetPlatformParams(original_args)
+        val = AndroidTargetPlatform(host_platform,params) if ret == True else None
+        return ret,val
     elif type == "IOS":
         ret,params = IOSPlatformBase.GenTargetPlatformParams(original_args)
         val = IOSTargetPlatform(host_platform,params) if ret == True else None
