@@ -46,8 +46,9 @@ class PyUnrealBuildSystem:
         if default_targetsystem == "Win":
             default_targetsystem = "Win64"
         
-        ArgParser.add_argument("-enginepath", default=Path("/Users/Shared/Epic Games/UE_5.2/"))
         ArgParser.add_argument("-enginever", default="5.2")
+        ArgParser.add_argument("-enginepath", default=Path("/Users/Shared/Epic Games/UE_4.27/"))
+        ArgParser.add_argument("-enginever", default="4.27")
         ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Unreal Projects/Agora-Unreal-RTC-SDK-dev-4.2.1/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
         ArgParser.add_argument("-pluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
