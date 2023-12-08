@@ -3,7 +3,7 @@ from Utility.ConfigParser import *
 from Utility.UnrealProjectManager import *
 from Utility.VersionControlTool import *
 
-from CommandBase.GitCommand import *
+from Command.GitCommand import *
 
 import argparse
 
@@ -46,7 +46,6 @@ class PyUnrealBuildSystem:
         if default_targetsystem == "Win":
             default_targetsystem = "Win64"
         
-        ArgParser.add_argument("-enginever", default="5.2")
         ArgParser.add_argument("-enginepath", default=Path("/Users/Shared/Epic Games/UE_4.27/"))
         ArgParser.add_argument("-enginever", default="4.27")
         ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Unreal Projects/Agora-Unreal-RTC-SDK-dev-4.2.1/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
@@ -85,9 +84,13 @@ class PyUnrealBuildSystem:
 
         if Args.BuildPlugin == True:
             arg_targetplatform = Args.targetplatform
-            arg_project_path = Args.projectpath
-            plugin_path = arg_project_path  / Path("Plugins/AgoraPlugin/AgoraPlugin.uplugin")
+            arg_project_file_path = Args.projectpath
+            arg_project_path = arg_project_file_path.parent
+            plugin_path = arg_project_path  / Path("Plugins/AgoraVoicePlugin/AgoraVoicePlugin.uplugin")
             output_path = arg_project_path  / Path("Saved/PluginOutput/")
+            if Args.pluginpath != "":
+                plugin_path = Path(Args.pluginpath)
+                output_path = plugin_path.parent.parent / Path("output/")
             host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
         
         if Args.BuildCookRun == True:
