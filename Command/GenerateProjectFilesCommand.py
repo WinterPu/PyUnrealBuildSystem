@@ -1,4 +1,4 @@
-from CommandBase.Command import *
+from Command.CommandBase import *
 
 class GenerateProjectFilesCommand:
     script_path = ""

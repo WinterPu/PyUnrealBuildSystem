@@ -1,4 +1,4 @@
-from CommandBase.Command import *
+from Command.CommandBase import *
 from pathlib import Path
 
 class UATCommand:
@@ -49,9 +49,9 @@ class UATCommand:
 
         command = (
             "\"" + str(self.uatpath) + "\"" +
-            r" BuildPlugin  -plugin="+ str(plugin_path)+
-            r" -targetplatform="+platform+
-            r" -package="+ output_path +
+            r" BuildPlugin  -plugin="+ '"' + str(plugin_path) + '"'+
+            r" -TargetPlatforms="+platform+
+            r" -package="+ '"' + str(output_path) + '"'+
             r" -rocket"+ # means precompiled & installed engine version
             extra_commands
          )

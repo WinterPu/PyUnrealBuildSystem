@@ -1,5 +1,5 @@
 from Logger.Logger import *
-from CommandBase.UATCommand import *
+from Command.UATCommand import *
 from Platform.PlatformHelper import *
 from pathlib import Path
 import sys

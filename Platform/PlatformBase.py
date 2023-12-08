@@ -1,6 +1,6 @@
 from Logger.Logger import *
-from CommandBase.Command import *
-from CommandBase.UATCommand import *
+from Command.CommandBase import *
+from Command.UATCommand import *
 
 
 class PlatformBase:

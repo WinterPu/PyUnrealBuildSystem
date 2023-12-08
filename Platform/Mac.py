@@ -1,6 +1,6 @@
 
 from Platform.PlatformBase import *
-from CommandBase.GenerateProjectFilesCommand import *
+from Command.GenerateProjectFilesCommand import *
 from pathlib import Path
 
 class MacPlatformBase(PlatformBase):
