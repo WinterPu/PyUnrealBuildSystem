@@ -10,7 +10,7 @@ def PrintLog(content,errorcode = 0):
     errorinfo = ""
     if errorcode != 0:
         errorinfo = "[Error] - ErrorCode: "+ str(errorcode) + " "
-    print(formated_time_stamp + " " + errorinfo + str(content))
+    print(formated_time_stamp + " " + errorinfo + str(str(content).encode(encoding='utf-8',errors = "replace")))
 
 def PrintStageLog(content):
     cur_time = time.time()
