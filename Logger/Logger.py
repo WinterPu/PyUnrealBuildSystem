@@ -12,6 +12,14 @@ def PrintLog(content,errorcode = 0):
         errorinfo = "[Error] - ErrorCode: "+ str(errorcode) + " "
     print(formated_time_stamp + " " + errorinfo + str(content))
 
+def PrintStageLog(content):
+    cur_time = time.time()
+    local_time = time.localtime(cur_time)
+    strftime_date = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
+    strftime_secs = (cur_time - int(cur_time)) * 10000
+    formated_time_stamp = "%s.%04d" % (strftime_date, strftime_secs)
+    print(formated_time_stamp + " ========= [ " + str(content) + " ] ======= ")
+
 
 def PrintErr(frame, error_msg = "NoMsg"):
     filename = frame.f_code.co_filename

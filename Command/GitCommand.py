@@ -14,14 +14,14 @@ class GitCommand:
     def GitClone(self,url,dst_path = "."):
         command = (
              r"git"
-            r" clone " + url + " " + dst_path
+            r" clone  --progress " + url + ' "' + str(dst_path) + '"'
         )
 
         RUNCMD(command)
 
-    def GitResetHard(self,dst_path = ".",command =" --hard"):
+    def GitReset(self,dst_path = ".",command =" --hard"):
         command = (
-            r"git" + " -C " + '"' + dst_path + '"' + 
+            r"git" + " -C " + '"' + str(dst_path) + '"' + 
             r" reset " + command
         )
 
@@ -29,8 +29,8 @@ class GitCommand:
 
     def GitPull(self,dst_path = ".",command = ""):
         command = (
-            r"git" + " -C " + '"' + dst_path + '"' + 
-            r" pull " + command
+            r"git" + " -C " + '"' + str(dst_path) + '"' + 
+            r" pull --progress " + command
         )
 
         RUNCMD(command)
