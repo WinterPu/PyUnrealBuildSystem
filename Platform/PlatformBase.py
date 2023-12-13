@@ -45,8 +45,8 @@ class BaseHostPlatform:
         self.RunUAT().BuildPlugin(params)
 
 
-    def GenerateProject(self):
-        PrintLog("BaseHostPlatform - GenerateProject")
+    def GenerateProject(self,path):
+        PrintLog("BaseHostPlatform - GenerateProject paht %s " % path)
     
 class BaseTargetPlatform:
     HostPlatform = None

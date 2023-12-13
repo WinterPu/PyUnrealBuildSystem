@@ -104,13 +104,15 @@ class PyUnrealBuildSystem:
                     PrintErr(sys._getframe(),"Invalid TargetPlatform Creation")
 
         if Args.Clean == True:
-            project_folder_path = Args.projectpath.parent
+            path_project = Path(Args.projectpath)
+            project_folder_path = path_project.parent
             ## Path \ or not
 
             ## [TBD] clean xcproject
             UnrealProjectManager.CleanProject(project_folder_path)
 
         if Args.GenProject == True:
+            path_project = Path(Args.projectpath)
             project_folder_path = Args.projectpath
             ## [TBD] some needs \ and some doesn't need \
             UnrealProjectManager.GenerateProject(host_platform,project_folder_path)
