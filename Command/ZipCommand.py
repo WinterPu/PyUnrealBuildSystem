@@ -3,12 +3,26 @@ from pathlib import Path
 import os
 
 class ZipCommand:
+    platform = "Win"
+    def __init__(self,param_platform = "Win") -> None:
+        if param_platform == "Win":
+            platform = "Win"
+        else:
+            platform = "Mac"
+        pass
 
     def UnZipFile(self,src_path,dst_path):
-        command = (
-            r"unzip -d " + '"'+str(src_path) + '" "' + str(dst_path) + '"' 
-        )
-        RUNCMD(command)
+
+        if self.platform == "Win":        
+            pass
+        elif self.platform == "Mac":
+            command = (
+                r"unzip -d " + '"'+str(src_path) + '" "' + str(dst_path) + '"' 
+            )
+            RUNCMD(command)
+        
+        else:
+            PrintErr("Command - Invalid Platform " +  self.platform )
 
     def ZipFile(self,src_path,dst_zip_file_path, src_root_path = Path("."), command_param = ""):
         if command_param == "":

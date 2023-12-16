@@ -1,5 +1,6 @@
 import time
 import sys
+import traceback
 
 def PrintLog(content,errorcode = 0):
     cur_time = time.time()
@@ -27,4 +28,9 @@ def PrintErr(frame, error_msg = "NoMsg"):
     lineno = frame.f_lineno
     msg = "Error [%s] FuncName[%s] LineNumber[%s] In File <%s>"%(error_msg,func_name,lineno,filename)
     PrintLog(msg,1)
+    print(traceback.format_stack())
+
+def PrintErr2(error_msg = "NoMsg"):
+    PrintLog(error_msg,1)
+    print(traceback.format_stack())
     

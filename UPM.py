@@ -9,19 +9,48 @@ from Utility.Downloader import *
 
 from Command.GitCommand import *
 from Command.ZipCommand import *
+from Utility.VersionControlTool import *
+
+from SystemBase import *
 
 import argparse
 
 import platform
 
-class AgoraPluginManager:
-    def Start():
+class AgoraPluginManager(BaseSystem):
+
+    _instance = None
+    _initialized = False
+    
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+            cls._instance._initialized = False
+        return cls._instance
+    
+    def __init__(self) -> None:
+        if not self._initialized: 
+            super().__init__()
+            self._initialized = True
+    
+    def Get():
+        return AgoraPluginManager()
+
+    def Init(self):
+        PrintErr(sys._getframe(),"AgoraPluginManager Init")
+        PrintLog(" ====== Init =======")
+        PrintErr2("AgoraPluginManager Init")
+
+
+    def Start(self):
         pass
         
+        AgoraPluginManager.Get().Init()
+
         PLUGIN_NAME = "AgoraPlugin"
 
         git_url = "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git"
-        OneGitCommand = GitCommand()
+    
 
 
         bReDownloadFile = False
@@ -39,19 +68,15 @@ class AgoraPluginManager:
 
         repo_path = cur_path.parent / "PluginTemp"
 
+  
+        
+
+        OneGitCommand = GitCommand()
+        VersionControlTool.Init(OneGitCommand)
+        VersionControlTool.CheckOutOneRepo(git_url,repo_path)
+
         repo_name = git_url.split('/')[-1].split('.')[0]
         repo_path = repo_path / repo_name
-        
-        if repo_path.exists():
-            # revert
-            repo_path = str(repo_path)
-            OneGitCommand.GitResetHard(repo_path)
-            # pull
-            OneGitCommand.GitPull(repo_path)
-        else:
-            repo_path = str(repo_path)
-            OneGitCommand.GitClone(git_url, repo_path)
-
         
         ### [TBD] these are 2 Async Jobs (git & download ), they need to be synced.
         repo_path = Path(repo_path)
@@ -76,7 +101,7 @@ class AgoraPluginManager:
                     plugin_path.unlink()
                 FileDownloader.DownloadWithRequests(plugin_cfg['url'],plugin_path)
 
-            OneZipCommand =ZipCommand()
+            OneZipCommand =ZipCommand(self.GetHostPlatform())
             tmp_copy_dst_path = plugin_tmp_path / plugin_cfg["platform"]
             tmp_copy_dst_path.mkdir(parents=True,exist_ok= True)
             OneZipCommand.UnZipFile(tmp_copy_dst_path ,plugin_path)
@@ -135,7 +160,7 @@ class AgoraPluginManager:
             file.writelines(new_lines)
 
 
-    def UpdateUpluginFile():
+    def UpdateUpluginFile(self):
         file_path = Path("/Users/admin/Documents/PluginTemp/Agora-Unreal-RTC-SDK/PluginTmp/tmp_plugin_files/AgoraPlugin/AgoraPlugin.uplugin")
         UPLUGIN_FILE = "AgoraPlugin.uplugin"
 
@@ -195,5 +220,5 @@ class AgoraPluginManager:
             file.write(uplugin_json_str)
 
 if __name__ == '__main__':
-    #AgoraPluginManager.Start()
-    AgoraPluginManager.UpdateUpluginFile()
+    AgoraPluginManager.Get().Start()
+    AgoraPluginManager.Get().UpdateUpluginFile()
