@@ -30,7 +30,7 @@ class ConfigParser(BaseSystem):
         self.ParseConfig()
 
     def ParseConfig(self):
-        self.ParseSDKConfig()
+        self.ParseUEConfig()
         self.ParseSDKConfig()
 
     def ParseUEConfig(self):
@@ -43,7 +43,7 @@ class ConfigParser(BaseSystem):
         platform_config_json_data = json.load(platform_config_file)
         base_config_json_data.update(platform_config_json_data)
 
-        PrintLog(base_config_json_data)
+        PrintLog("UE Config: " + str(base_config_json_data))
 
         self.UEConfigData = base_config_json_data
 
@@ -66,9 +66,9 @@ class ConfigParser(BaseSystem):
         platform_config_json_data = json.load(platform_config_file)
         base_config_json_data.update(platform_config_json_data)
 
-        PrintLog(base_config_json_data)
+        PrintLog("SDK Config: " + str(base_config_json_data))
 
-        self.UEConfigData = base_config_json_data
+        self.SDKConfigData = base_config_json_data
 
 
     def GetDefaultEnginePath(self,ver):
