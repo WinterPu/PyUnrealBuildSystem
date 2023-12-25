@@ -2,7 +2,7 @@
 
 
 from Utility.HeaderBase import *
-from Utility.ConfigParser import *
+from ConfigParser import *
 from Utility.UnrealProjectManager import *
 from Utility.VersionControlTool import *
 from Utility.Downloader import *

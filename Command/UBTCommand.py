@@ -2,7 +2,7 @@ from Command.CommandBase import *
 from pathlib import Path
 
 class UBTCommand:
-    ubtpath= Path("/Users/Shared/Epic\ Games/UE_5.2/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool")
+    ubtpath= Path("/Users/Shared/Epic Games/UE_5.2/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool")
     def __init__(self, ubtpath_val) -> None:
         self.ubtpath = ubtpath_val
 

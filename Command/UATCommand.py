@@ -26,7 +26,8 @@ class UATCommand:
             r" -Cook"
             r" -Stage"
             r" -Archive"
-            r" -package"+
+            r" -package"
+            r" -verbose"+
             extra_commands
          )
         RUNCMD(command)

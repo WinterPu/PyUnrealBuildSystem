@@ -6,10 +6,10 @@ class ZipCommand:
     platform = "Win"
     def __init__(self,param_platform = "Win") -> None:
         if param_platform == "Win":
-            platform = "Win"
+            self.platform = "Win"
         else:
-            platform = "Mac"
-        pass
+            self.platform = "Mac"
+        
 
     def UnZipFile(self,src_path,dst_path):
 
@@ -17,7 +17,7 @@ class ZipCommand:
             pass
         elif self.platform == "Mac":
             command = (
-                r"unzip -d " + '"'+str(src_path) + '" "' + str(dst_path) + '"' 
+                r"unzip  " + '"'+str(src_path) + '"  -d "' + str(dst_path) + '"' 
             )
             RUNCMD(command)
         

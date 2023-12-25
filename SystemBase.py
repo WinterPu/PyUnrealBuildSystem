@@ -14,7 +14,7 @@ class BaseSystem:
             self.version_info['HostMachineOS'] = "Mac"
         else:
             self.version_info['HostMachineOS'] = ossystem
-        PrintLog(self.version_info)
+        ## PrintLog(self.version_info)
     
     def GetHostPlatform(self):
         return self.version_info['HostMachineOS']

@@ -1,5 +1,5 @@
 from Utility.HeaderBase import *
-from Utility.ConfigParser import *
+from ConfigParser import *
 from Utility.VersionControlTool import *
 
 from Command.GitCommand import *
