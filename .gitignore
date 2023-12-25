@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Local
+.history/
+.lh/
+.DS_Store
+__MACOSX/
+
 # Distribution / packaging
 .Python
 build/
