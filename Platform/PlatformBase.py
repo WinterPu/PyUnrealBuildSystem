@@ -7,13 +7,31 @@ class PlatformBase:
     def GetRunUATPath():
         PrintLog("PlatformBase - GetUATPath")
 
-    def GenHostPlatformParams(params):
+    def GenHostPlatformParams(args):
         PrintLog("PlatformBase - GenParams")
-        return False,None
+        
+        val = {}
+        
+        key = "engine_path"
+        val[key] = args.enginepath
+        
+        return True,val
 
-    def GenTargetPlatformParams(params):
+    def GenTargetPlatformParams(args):
         PrintLog("PlatformBase - GenParams")
-        return False,None
+
+        val = {}
+
+        key = "project_path"
+        val[key] = args.projectpath if 'projectpath' in args else None
+
+        key = "host_platform"
+        val[key] = args.HostMachineOS if 'HostMachineOS' in args else "Win"
+
+        key = "engine_path"
+        val[key] = args.enginepath
+
+        return True,val
 
 
 class BaseHostPlatform:

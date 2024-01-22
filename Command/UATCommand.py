@@ -2,7 +2,7 @@ from Command.CommandBase import *
 from pathlib import Path
 
 class UATCommand:
-    uatpath= Path("/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUAT.sh")
+    uatpath = Path("/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUAT.sh")
     def __init__(self, uatpath_val) -> None:
         self.uatpath = uatpath_val
 
@@ -17,21 +17,132 @@ class UATCommand:
         key = "extra_commands"
         extra_commands = params[key] if key in params else ""
 
-        command = (
-            '"' + str(self.uatpath) + '"' +
-            r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
-            r" -targetplatform="+platform+
-            r" -clientconfig=Development"
-            r" -Build"
-            r" -Cook"
-            r" -Stage"
-            r" -Archive"
-            r" -package"
-            r" -verbose"+
-            extra_commands
-         )
-        RUNCMD(command)
+        key = "engine_path"
+        engine_path = params[key] if key in params else ""
 
+        key = 'host_platform'
+        hostplatfom = params[key] if key in params else ""
+
+        # ## need 
+        # command = (
+        #     '"' + str(self.uatpath) + '"' +
+        #     r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
+        #     r" -targetplatform="+platform+
+        #     r" -SkipBuildEditor"
+        #     r" -clientconfig=Development"
+        #     r" -Build"
+        #     r" -GenerateDSYM"
+        #     r" -Cook"
+        #     r" -Stage"
+        #     r" -Archive"
+        #     r" -package"
+        #     r" -verbose"+
+        #     extra_commands
+        #  )
+        # RUNCMD(command)
+
+        if platform == "IOS":
+            
+            if hostplatfom == "Win":
+                PrintErr("TBD - Not Ready, Packaging IOS on Windows Platform")
+                return
+            
+            from Platform.Mac import MacPlatformPathUtility
+            script_path = Path(engine_path) / MacPlatformPathUtility.GetGenerateProjectScriptPath()
+            
+            command = (
+                '"' + str(script_path) + '"' + 
+                r" -project="+ '"'  + str(project_path) + '"'
+                r" -game"+
+                extra_commands
+            )
+            RUNCMD(command)
+
+            command = (
+                '"' + str(self.uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
+                r" -targetplatform="+platform+
+                r" -clientconfig=Development"
+                r" -Build"
+                r" -GenerateDSYM"
+                r" -Cook"
+                r" -Stage"
+                r" -Archive"
+                r" -package"
+                r" -verbose"+
+                extra_commands
+             )
+            RUNCMD(command)
+
+            command = (
+                '"' + str(self.uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
+                r" -targetplatform="+platform+
+                r" -SkipBuildEditor"
+                r" -clientconfig=Development"
+                r" -Build"
+                r" -GenerateDSYM"
+                r" -Cook"
+                r" -Stage"
+                r" -Archive"
+                r" -package"
+                r" -verbose"+
+                extra_commands
+            )
+            RUNCMD(command)
+
+        elif platform == "Mac" :
+            
+            command = (
+                '"' + str(self.uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
+                r" -targetplatform="+platform+
+                r" -clientconfig=Development"
+                r" -Build"
+                r" -GenerateDSYM"
+                r" -Cook"
+                r" -Stage"
+                r" -Archive"
+                r" -package"
+                r" -verbose"+
+                extra_commands
+             )
+            RUNCMD(command)
+
+            command = (
+                '"' + str(self.uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
+                r" -targetplatform="+platform+
+                r" -SkipBuildEditor"
+                r" -clientconfig=Development"
+                r" -Build"
+                r" -GenerateDSYM"
+                r" -Cook"
+                r" -Stage"
+                r" -Archive"
+                r" -package"
+                r" -verbose"+
+                extra_commands
+            )
+            RUNCMD(command)
+
+        else:
+            command = (
+                '"' + str(self.uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
+                r" -targetplatform="+platform+
+                r" -SkipBuildEditor"
+                r" -clientconfig=Development"
+                r" -Build"
+                r" -GenerateDSYM"
+                r" -Cook"
+                r" -Stage"
+                r" -Archive"
+                r" -package"
+                r" -verbose"+
+                extra_commands
+            )
+            RUNCMD(command)
 
     def BuildPlugin(self,params):
         ## Command

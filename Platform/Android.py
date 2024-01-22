@@ -3,18 +3,20 @@ import os
 
 class AndroidPlatformBase(PlatformBase):
     def GenTargetPlatformParams(args):
-        ret = True
-        val = {}
+        ret,val = PlatformBase.GenTargetPlatformParams(args)
 
         key = "platform"
         val[key] = "Android"
 
-        key = "project_path"
-        val[key] = args.projectpath if 'projectpath' in args else None
-
-
         key = "enginever"
         val[key] = args.enginever if 'enginever' in args else "4.27"
+
+        # key = "project_path"
+        # val[key] = args.projectpath if 'projectpath' in args else None
+
+
+
+
         ### [TBD]
         ## validate project
 
@@ -41,8 +43,4 @@ class AndroidTargetPlatform(BaseTargetPlatform):
     def Package(self):
         self.SetupEnvironment()
         print("Package - %s Platform" % self.GetTargetPlatform())
-
-        params = {}
-        params["platform"] = self.GetParamVal("platform")
-        params["project_path"] = self.GetParamVal("project_path")
-        self.RunUAT().BuildCookRun(params)
+        self.RunUAT().BuildCookRun(self.Params)

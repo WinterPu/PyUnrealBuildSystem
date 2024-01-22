@@ -2,14 +2,13 @@ from Platform.PlatformBase import *
 
 class IOSPlatformBase(PlatformBase):
     def GenTargetPlatformParams(args):
-        ret = True
-        val = {}
-
+        ret,val = PlatformBase.GenTargetPlatformParams(args)
+        
         key = "platform"
         val[key] = "IOS"
 
-        key = "project_path"
-        val[key] = args.projectpath if 'projectpath' in args else None
+        # key = "project_path"
+        # val[key] = args.projectpath if 'projectpath' in args else None
         ### [TBD]
         ## validate project
 
@@ -23,8 +22,4 @@ class IOSTargetPlatform(BaseTargetPlatform):
     def Package(self):
         self.SetupEnvironment()
         print("Package - %s Platform" % self.GetTargetPlatform())
-
-        params = {}
-        params["platform"] = self.GetParamVal("platform")
-        params["project_path"] = self.GetParamVal("project_path")
-        self.RunUAT().BuildCookRun(params)
+        self.RunUAT().BuildCookRun(self.Params)

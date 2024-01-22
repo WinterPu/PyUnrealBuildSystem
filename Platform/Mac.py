@@ -3,40 +3,41 @@ from Platform.PlatformBase import *
 from Command.GenerateProjectFilesCommand import *
 from pathlib import Path
 
-class MacPlatformBase(PlatformBase):
+class MacPlatformPathUtility:
+    @staticmethod
+    def GetDefaultEnginePath():
+        return Path("/Users/Shared/Epic Games")
+    
+    @staticmethod
     def GetRunUATPath():
         return Path("Engine/Build/BatchFiles/RunUAT.sh") 
     
+    @staticmethod
     def GetGenerateProjectScriptPath():
         return Path("Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh") 
 
+
+class MacPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):
-        ret = True
-        val = {}
-
-        key = "engine_path"
-        val[key] = args.enginepath
-
-
+        ret,val = PlatformBase.GenHostPlatformParams(args)
 
         key = "uat_path"
         ## if a path starts with '/', it would be treated as starting from the root path.
-        val[key] = Path(val["engine_path"]) / MacPlatformBase.GetRunUATPath()
+        val[key] = Path(val["engine_path"]) / MacPlatformPathUtility.GetRunUATPath()
 
         key = "genprojfiles_path"
-        val[key] = Path(val["engine_path"])/ MacPlatformBase.GetGenerateProjectScriptPath()
+        val[key] = Path(val["engine_path"])/ MacPlatformPathUtility.GetGenerateProjectScriptPath()
 
         return ret,val
     
     def GenTargetPlatformParams(args):
-        ret = True
-        val = {}
+        ret,val = PlatformBase.GenTargetPlatformParams(args)
 
         key = "platform"
         val[key] = "Mac"
 
-        key = "project_path"
-        val[key] = args.projectpath if 'projectpath' in args else None
+        # key = "project_path"
+        # val[key] = args.projectpath if 'projectpath' in args else None
         ### [TBD]
         ## validate project
 
@@ -46,16 +47,11 @@ class MacPlatformBase(PlatformBase):
 
 
 class MacHostPlatform(BaseHostPlatform):
-    def GetDefaultEnginePath(self):
-        return Path("/Users/Shared/Epic Games")
-    
     def GenerateProject(self,project_file_path):
         genproj_script = self.GetParamVal("genprojfiles_path")
         one_command = GenerateProjectFilesCommand(genproj_script)
         
-        params = {}
-        params["project_file_path"] = project_file_path
-        one_command.GenerateProjectFiles(params)
+        one_command.GenerateProjectFiles(self.Params)
         PrintLog("BaseHostPlatform - GenerateProject")
 
 
@@ -66,8 +62,4 @@ class MacTargetPlatform(BaseTargetPlatform):
     def Package(self):
         self.SetupEnvironment()
         print("Package - Mac Platform")
-
-        params = {}
-        params["platform"] = self.GetParamVal("platform")
-        params["project_path"] = self.GetParamVal("project_path")
-        self.RunUAT().BuildCookRun(params)
+        self.RunUAT().BuildCookRun(self.Params)

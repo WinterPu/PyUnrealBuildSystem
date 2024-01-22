@@ -70,7 +70,7 @@ class PyUnrealBuildSystem(BaseSystem):
         
         ArgParser.add_argument("-enginepath", default="")
         ArgParser.add_argument("-enginever", default="4.27")
-        ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/LLS/AgoraExample/AgoraExample.uproject"))   
+        ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
         ArgParser.add_argument("-pluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-agorasdktype", default="RTC")
@@ -100,6 +100,10 @@ class PyUnrealBuildSystem(BaseSystem):
     def CreateTask(self,Args):
         ## Init Host Platform
         type_hostplatform = version_info['HostMachineOS']
+
+        ## Combine 2 Args
+        Args.HostMachineOS = type_hostplatform
+
 
         PrintLog("Check EnginePath " + str(Args.enginepath) + str(Args.enginepath == ""))
         ## Handle Engine Version
