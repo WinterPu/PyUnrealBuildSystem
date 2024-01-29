@@ -44,6 +44,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-agorasdk", default="4.2.1")
         ArgParser.add_argument("-sdkisaudioonly",action='store_true')
         ArgParser.add_argument("-redownloadnsdk",action='store_true')
+        ArgParser.add_argument("-skipgit",action='store_true')
         ArgParser.add_argument("-rmmacslink",action='store_true') # remove mac symbolic link
         ArgParser.add_argument("-agorasdkbuildconfig", default="Release")
         ArgParser.add_argument("-pluginname", default="AgoraPlugin")
@@ -130,7 +131,9 @@ class AgoraPluginManager(BaseSystem):
 
         OneGitCommand = GitCommand()
         VersionControlTool.Init(OneGitCommand)
-        VersionControlTool.CheckOutOneRepo(git_url,repo_path)
+
+        if Args.skipgit == False:
+            VersionControlTool.CheckOutOneRepo(git_url,repo_path)
 
         repo_name = git_url.split('/')[-1].split('.')[0]
         repo_path = repo_path / repo_name
