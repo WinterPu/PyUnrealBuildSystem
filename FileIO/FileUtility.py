@@ -4,6 +4,13 @@ from Utility.HeaderBase import *
 import platform
 
 class FileUtility:
+    def CopyFilesWithSymbolicLink(src_path,dst_path):
+        command = (
+            r" cp -r -P " + str(src_path) + "/* " + str(dst_path)
+        )
+        #PrintLog(command)
+        RUNCMD(command)
+
     def DeleteFile(path):
         PrintLog("DeleteFile", path)
 

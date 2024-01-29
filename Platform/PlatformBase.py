@@ -29,7 +29,11 @@ class PlatformBase:
         val[key] = args.HostMachineOS if 'HostMachineOS' in args else "Win"
 
         key = "engine_path"
-        val[key] = args.enginepath
+        val[key] = args.enginepath if 'enginepath' in args else None
+
+        key = "engine_ver"
+        val[key] = args.enginever  if 'enginever' in args else None
+
 
         return True,val
 
@@ -87,3 +91,6 @@ class BaseTargetPlatform:
 
     def Package():
         print("Package - Base Platform")
+
+    def PostPackaged():
+        print("PostPackaged - Base Platform")
