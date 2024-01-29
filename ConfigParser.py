@@ -83,5 +83,16 @@ class ConfigParser(BaseSystem):
             key_type = "url_audioonly"
         return self.SDKConfigData[sdkver][key_type]
     
-
+    def GetRTCSDKNativeURL_IOS(self,sdkver):
+        key_type = "url_native_ios"
+        return self.SDKConfigData[sdkver][key_type]
+    def GetRTCSDKNativeURL_Android(self,sdkver):
+        key_type = "url_native_android"
+        return self.SDKConfigData[sdkver][key_type]
+    def GetRTCSDKNativeURL_Win(self,sdkver):
+        key_type = "url_native_win"
+        return self.SDKConfigData[sdkver][key_type]
+    def GetRTCSDKNativeURL_Mac(self,sdkver):
+        key_type = "url_native_mac"
+        return self.SDKConfigData[sdkver][key_type]
     

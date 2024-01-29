@@ -21,7 +21,8 @@ class AgoraPluginManager(BaseSystem):
 
     _instance = None
     _initialized = False
-    
+    git_url_src_files = ""
+
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls, *args, **kwargs)
@@ -37,36 +38,54 @@ class AgoraPluginManager(BaseSystem):
         return AgoraPluginManager()
 
     def Init(self):
-        PrintErr(sys._getframe(),"AgoraPluginManager Init")
+        PrintErr("AgoraPluginManager Init")
         PrintLog(" ====== Init =======")
-        PrintErr2("AgoraPluginManager Init")
-
+        ConfigParser.Get().Init()
+        self.git_url_src_files = "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git"
 
     def Start(self):
         pass
         
         AgoraPluginManager.Get().Init()
 
+        AgoraPluginManager.Get().CleanPlugin()
+
+
         PLUGIN_NAME = "AgoraPlugin"
 
-        git_url = "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git"
+        git_url = self.git_url_src_files
     
+        sdk_ver = "4.2.1"
 
+        sdk_mode_type = "Release"
 
-        bReDownloadFile = False
+      
         # url_windows = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/windows/full/Agora_Native_SDK_for_Windows_rel.v4.2.1_21296_FULL_20230727_1707_272784.zip"
         # url_mac = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/mac/full/Agora_Native_SDK_for_Mac_rel.v4.2.1_46142_FULL_20230727_1549_272786.zip"
         # url_android = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/android/full/Agora_Native_SDK_for_Android_rel.v4.2.1_51720_FULL_20230727_1552_272785.zip"
         # url_ios = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/ios/full/Agora_Native_SDK_for_iOS_rel.v4.2.1_65993_FULL_20230727_1551_272787.zip"
 
-        url_ios="https://download.agora.io/sdk/release/Agora_Native_SDK_for_iOS_rel.v4.0.0.2_56070_FULL_20220803_2250_225057.zip"
-        url_android="https://download.agora.io/sdk/release/Agora_Native_SDK_for_Android_rel.v4.0.0.2_38413_FULL_20220803_2250_225055.zip"
-        url_mac="https://download.agora.io/sdk/release/Agora_Native_SDK_for_Mac_rel.v4.0.0.2_41396_FULL_20220803_2256_225058.zip"
-        url_windows="https://download.agora.io/sdk/release/Agora_Native_SDK_for_Windows_rel.v4.0.0.2_15884_FULL_20220803_2250_225056.zip"
+        # url_ios="https://download.agora.io/sdk/release/Agora_Native_SDK_for_iOS_rel.v4.0.0.2_56070_FULL_20220803_2250_225057.zip"
+        # url_android="https://download.agora.io/sdk/release/Agora_Native_SDK_for_Android_rel.v4.0.0.2_38413_FULL_20220803_2250_225055.zip"
+        # url_mac="https://download.agora.io/sdk/release/Agora_Native_SDK_for_Mac_rel.v4.0.0.2_41396_FULL_20220803_2256_225058.zip"
+        # url_windows="https://download.agora.io/sdk/release/Agora_Native_SDK_for_Windows_rel.v4.0.0.2_15884_FULL_20220803_2250_225056.zip"
+        
+
+        bReDownloadFile = False
+        
+
+        
+        url_ios = ConfigParser.Get().GetRTCSDKNativeURL_IOS(sdk_ver)
+        url_android = ConfigParser.Get().GetRTCSDKNativeURL_Android(sdk_ver)
+        url_windows = ConfigParser.Get().GetRTCSDKNativeURL_Win(sdk_ver)
+        url_mac = ConfigParser.Get().GetRTCSDKNativeURL_Mac(sdk_ver)
+        
+        
         cur_path = Path(__file__).parent.absolute()
         PrintLog(cur_path)
 
-        repo_path = cur_path.parent / "PluginTemp"
+        root_plugin_gen_path = cur_path.parent / "PluginTemp"
+        repo_path = root_plugin_gen_path
 
   
         
@@ -104,7 +123,7 @@ class AgoraPluginManager(BaseSystem):
             OneZipCommand =ZipCommand(self.GetHostPlatform())
             tmp_copy_dst_path = plugin_tmp_path / plugin_cfg["platform"]
             tmp_copy_dst_path.mkdir(parents=True,exist_ok= True)
-            OneZipCommand.UnZipFile(tmp_copy_dst_path ,plugin_path)
+            OneZipCommand.UnZipFile(plugin_path,tmp_copy_dst_path)
             for path in tmp_copy_dst_path.iterdir():
                 os.rename(str(path.absolute()), str(tmp_copy_dst_path / plugin_cfg["platform"]))
 
@@ -119,13 +138,35 @@ class AgoraPluginManager(BaseSystem):
         print(target_plugin_src_code_path)
         print(target_plugin_dst_path)
         shutil.copytree(target_plugin_src_code_path,target_plugin_dst_path,dirs_exist_ok= True)
+
+        original_src = target_plugin_src_lib_path
+        original_dst = target_plugin_dst_lib_path
+
         for plugin_cfg in platform_list:
-            target_plugin_dst_lib_path = target_plugin_dst_lib_path / plugin_cfg["platform"]
+            target_plugin_dst_lib_path = target_plugin_dst_lib_path / plugin_cfg["platform"] / sdk_mode_type
+            Path(target_plugin_dst_lib_path).mkdir(parents= True, exist_ok= True)
             target_plugin_src_lib_path = target_plugin_src_lib_path / plugin_cfg["platform"] / plugin_cfg["platform"] ##
+
+    
+            if plugin_cfg["platform"] == "Mac":
+                architecture = "macos-arm64_x86_64"
+                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("libs") / Path("*.xcframework") / Path(architecture)
+            elif plugin_cfg["platform"] == "Win":
+                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("sdk/x86_64")
+            elif plugin_cfg["platform"] == "Android":
+                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("rtc/sdk/")
+            elif plugin_cfg["platform"] == "IOS":
+                architecture = "ios-arm64_armv7"
+                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("libs/*.xcframework")/ Path(architecture)
+            
             PrintLog(" from %s ---> %s " %(target_plugin_src_lib_path , target_plugin_dst_lib_path))
-            shutil.copytree(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path),dirs_exist_ok= True)
-            target_plugin_dst_lib_path = target_plugin_dst_lib_path.parent
-            target_plugin_src_lib_path = target_plugin_src_lib_path.parent.parent ##
+            
+            FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"PRfa")
+            ## shutil.copytree(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path),dirs_exist_ok= True)
+            target_plugin_src_lib_path = original_src ##
+            target_plugin_dst_lib_path = original_dst
+         
+
         
 
         ## Modify Files Here
@@ -133,7 +174,7 @@ class AgoraPluginManager(BaseSystem):
         ## Modify Files Here
 
         src_zip_files_root_path = target_plugin_dst_path.parent
-        dst_zip_file_path = target_plugin_dst_path.parent / "PluginArchive"
+        dst_zip_file_path = root_plugin_gen_path / "PluginArchive"
         dst_zip_file_path.mkdir(parents= True, exist_ok= True)
         dst_zip_file_path = dst_zip_file_path / (PLUGIN_NAME + ".zip")
         OneZipCommand.ZipFile(PLUGIN_NAME,dst_zip_file_path,src_zip_files_root_path)
@@ -219,6 +260,31 @@ class AgoraPluginManager(BaseSystem):
         with open(str(file_path),'w') as file:
             file.write(uplugin_json_str)
 
+
+    def CleanPlugin(self):
+        cur_path = Path(__file__).parent.absolute()
+        PrintLog(cur_path)
+
+        root_plugin_gen_path = cur_path.parent / "PluginTemp"
+        repo_path = root_plugin_gen_path
+
+        git_url = self.git_url_src_files
+        repo_name = git_url.split('/')[-1].split('.')[0]
+        repo_path = repo_path / repo_name
+        repo_path = Path(repo_path)
+
+        bFullDelete = False
+        FileUtility.DeleteDir(root_plugin_gen_path / Path("PluginArchive"))
+        plugin_tmp_path = repo_path / "PluginTmp"
+
+        if bFullDelete  == True:
+            FileUtility.DeleteDir(plugin_tmp_path)
+        else:
+            delete_dir_list =["Android","IOS","Mac","Win","tmp_plugin_files"]
+            for dir in delete_dir_list:
+                FileUtility.DeleteDir(plugin_tmp_path / Path(dir))
+
 if __name__ == '__main__':
+    ## AgoraPluginManager.Get().Init()
     AgoraPluginManager.Get().Start()
     AgoraPluginManager.Get().UpdateUpluginFile()

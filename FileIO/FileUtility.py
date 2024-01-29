@@ -4,9 +4,9 @@ from Utility.HeaderBase import *
 import platform
 
 class FileUtility:
-    def CopyFilesWithSymbolicLink(src_path,dst_path):
+    def CopyFilesWithSymbolicLink(src_path,dst_path, param = "Pr"):
         command = (
-            r" cp -r -P " + str(src_path) + "/* " + str(dst_path)
+            r" cp -"+param + " " + str(src_path) + "/* " + str(dst_path)
         )
         #PrintLog(command)
         RUNCMD(command)
@@ -26,8 +26,8 @@ class FileUtility:
             RUNCMD(command, "gbk")
 
         else:
-            if os.path.exists(path):
-                PrintLog("DeleteDir")
-                shutil.rmtree(path)
+            if os.path.exists(str(path)):
+                PrintLog("DeleteDir " + str(path))
+                shutil.rmtree(str(path))
             else:
                 PrintLog("%s not exists" % path)

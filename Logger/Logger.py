@@ -22,7 +22,11 @@ def PrintStageLog(content):
     print(formated_time_stamp + " ========= [ " + str(content) + " ] ======= ")
 
 
-def PrintErr(frame, error_msg = "NoMsg"):
+def PrintErr(error_msg = "NoMsg"):
+    PrintLog(error_msg,1)
+    print(traceback.format_stack())
+    
+def PrintErrWithFrame(frame, error_msg = "NoMsg"):
     filename = frame.f_code.co_filename
     func_name = frame.f_code.co_name
     lineno = frame.f_lineno
@@ -30,7 +34,4 @@ def PrintErr(frame, error_msg = "NoMsg"):
     PrintLog(msg,1)
     print(traceback.format_stack())
 
-def PrintErr2(error_msg = "NoMsg"):
-    PrintLog(error_msg,1)
-    print(traceback.format_stack())
     

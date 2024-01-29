@@ -1,4 +1,5 @@
 from Command.CommandBase import *
+from Logger.Logger import *
 from pathlib import Path
 import os
 
