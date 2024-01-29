@@ -12,7 +12,8 @@ class FileUtility:
         RUNCMD(command)
 
     def DeleteFile(path):
-        PrintLog("DeleteFile", path)
+        PrintLog("DeleteFile " + str(path))
+        Path(path).unlink()
 
     def DeleteDir(path):
         osplatform = platform.platform().lower()

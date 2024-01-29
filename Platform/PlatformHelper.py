@@ -23,7 +23,7 @@ def CreateHostPlatform(type,original_args):
         return ret,val
     
     else:
-        PrintErr(sys._getframe(),"Invalid HostPlatform")
+        PrintErr("Invalid HostPlatform")
         return False,None
 
 def CreateTargetPlatform(host_platform,type,original_args):

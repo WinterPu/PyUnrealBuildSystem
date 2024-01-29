@@ -57,6 +57,7 @@ class AgoraPluginManager(BaseSystem):
 
         Args = ArgParser.parse_args()
 
+        ## Set Dir 
         Args.PluginWorkingDir = "PluginTemp"
         Args.PluginWorkingDirInGitRepo = "PluginTemp"
         Args.FinalPluginFileDir = "tmp_plugin_files"
@@ -334,6 +335,55 @@ class AgoraPluginManager(BaseSystem):
             for dir in delete_dir_list:
                 FileUtility.DeleteDir(plugin_tmp_path / Path(dir))
 
+    def DownloadAgoraSDKPlugin(self,dst_path,sdk_ver,is_audio_only,bkeep_symlink = True):
+        plugin_url =ConfigParser.Get().GetRTCSDKURL(sdk_ver,is_audio_only)
+        self.DownloadPlugin(plugin_url,dst_path,bkeep_symlink)
+
+    def DownloadPlugin(self,plugin_url,dst_path,bkeep_symlink = True):
+        plugin_name = plugin_url.split('/')[-1]
+        tmp_download_dir = Path(dst_path) / Path(plugin_name).stem
+        if tmp_download_dir.exists() == True:
+            FileUtility.DeleteDir(tmp_download_dir)
+
+        tmp_download_dir.mkdir(parents= True, exist_ok= True)
+        
+        plugin_zip_path = tmp_download_dir / plugin_name
+        FileDownloader.DownloadWithRequests(plugin_url,plugin_zip_path)
+        OneZipCommand = ZipCommand(self.GetHostPlatform())
+        OneZipCommand.UnZipFile(plugin_zip_path,tmp_download_dir)
+
+        self.MovePluginToDstPath(tmp_download_dir,dst_path,bkeep_symlink)
+        FileUtility.DeleteDir(tmp_download_dir)
+    
+    def MovePluginToDstPath(self,src_working_dir,dst_path,bkeep_symlink = True):
+        uplugin_files = list(Path(src_working_dir).rglob("*.uplugin"))
+        plugin_path = ""
+        plugin_name = ""
+        for uplugin_file in uplugin_files:
+            if "__MACOSX" in str(uplugin_file):
+                    pass
+            else:
+                final_uplugin_path = Path(uplugin_file)
+                plugin_name = Path(final_uplugin_path).stem
+                PrintLog("Find the uplugin name [%s] file path: [%s] " % (plugin_name , str(final_uplugin_path)))
+                plugin_path = Path(final_uplugin_path).parent
+                if plugin_name != plugin_path.name:
+                    PrintErr("The Plugin Folder Name [%s] is not equal to uplugin file name [%s]" %( plugin_path.name,plugin_name))
+
+        plugin_dst_path = Path(dst_path) / plugin_name
+        if plugin_dst_path.exists() == True:
+            FileUtility.DeleteDir(plugin_dst_path)
+
+        plugin_dst_path.mkdir(parents= True, exist_ok= True)
+
+        if bkeep_symlink :
+            FileUtility.CopyFilesWithSymbolicLink(plugin_path,plugin_dst_path,"PRfa")
+        else:
+            FileUtility.CopyFilesWithSymbolicLink(plugin_path,plugin_dst_path,"RLf")
+
+
 if __name__ == '__main__':
     ## AgoraPluginManager.Get().Init()
-    AgoraPluginManager.Get().Start()
+    ## AgoraPluginManager.Get().Start()
+    AgoraPluginManager.Get().Init()
+    AgoraPluginManager.Get().DownloadAgoraSDKPlugin("ddd","4.2.1",False)
