@@ -208,6 +208,23 @@ class AgoraPluginManager(BaseSystem):
                 FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"RLf")
             else:
                 FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"PRfa")
+            
+            if plugin_cfg["platform"] == "IOS":
+                all_framework_path_list = [ dir for dir in target_plugin_dst_lib_path.glob('*') if dir.is_dir()] 
+                for framework_dir in all_framework_path_list:
+                    
+                    ## Example: A.framework -> A.embeddedframework/A.framework
+                    ## A.embeddedframework/A.framework ->  A.embeddedframework.zip
+                    framework_name = framework_dir.stem
+                    embeddedframework_path = framework_dir.parent / Path(str(framework_name) + ".embeddedframework")
+                    embeddedframework_path.mkdir(parents= True, exist_ok= True)
+                    framework_dir.rename( embeddedframework_path / framework_dir.name)
+
+
+                    zip_framework_name = Path(embeddedframework_path).name
+                    dst_framework_path = target_plugin_dst_lib_path / (zip_framework_name + ".zip")
+                    OneZipCommand.ZipFile(zip_framework_name,dst_framework_path,target_plugin_dst_lib_path)
+                    FileUtility.DeleteDir(embeddedframework_path)
             ## shutil.copytree(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path),dirs_exist_ok= True)
             target_plugin_src_lib_path = original_src ##
             target_plugin_dst_lib_path = original_dst
@@ -383,7 +400,7 @@ class AgoraPluginManager(BaseSystem):
 
 
 if __name__ == '__main__':
-    ## AgoraPluginManager.Get().Init()
-    ## AgoraPluginManager.Get().Start()
     AgoraPluginManager.Get().Init()
-    AgoraPluginManager.Get().DownloadAgoraSDKPlugin("ddd","4.2.1",False)
+    AgoraPluginManager.Get().Start()
+    # AgoraPluginManager.Get().Init()
+    # AgoraPluginManager.Get().DownloadAgoraSDKPlugin("ddd","4.2.1",False)

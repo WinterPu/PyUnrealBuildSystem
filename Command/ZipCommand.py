@@ -25,15 +25,14 @@ class ZipCommand:
         else:
             PrintErr("Command - Invalid Platform " +  self.platform )
 
-    def ZipFile(self,src_path,dst_zip_file_path, src_root_path = Path("."), command_param = ""):
-        if command_param == "":
-            command_param = " -ry "
-        
+    def ZipFile(self,src_dir_name,dst_zip_file_path, src_root_path = Path("."), command_param = "ry"):        
         ## [TBD] Check if it is needed 
+        
+        ## if not use [src_root_path], the zip file would start from /user (example: /user/admin/xxxx/the_zip_folder_you_want)
         cur_path = Path.cwd()
         os.chdir(str(src_root_path))
         command = (
-            r"zip " + command_param + '"'+str(dst_zip_file_path) + '" "' + str(src_path) + '"' 
+            r"zip -" + command_param + ' "'+str(dst_zip_file_path) + '" "' + str(src_dir_name) + '"' 
         )
         RUNCMD(command)
 
