@@ -40,9 +40,14 @@ class AgoraPluginManager(BaseSystem):
     def ParseCMDArgs(self):
         ArgParser = argparse.ArgumentParser(description="Parse Plugin Manager Args")
         
+        ArgParser.add_argument("-nurlwin", default="")
+        ArgParser.add_argument("-nurlmac", default="")
+        ArgParser.add_argument("-nurlandroid", default="")
+        ArgParser.add_argument("-nurlios", default="")
+
         ArgParser.add_argument("-agorasdktype", default="RTC")
         ArgParser.add_argument("-agorasdk", default="4.2.1")
-        ArgParser.add_argument("-sdkisaudioonly",action='store_true')
+        ArgParser.add_argument("-sdkisaudioonly",default=False)
         ArgParser.add_argument("-skipnativedownload",action='store_true')
         ArgParser.add_argument("-skipgit",action='store_true')
         ArgParser.add_argument("-rmmacslink",action='store_true') # remove mac symbolic link
@@ -125,10 +130,10 @@ class AgoraPluginManager(BaseSystem):
         
 
         
-        url_ios = ConfigParser.Get().GetRTCSDKNativeURL_IOS(sdk_ver)
-        url_android = ConfigParser.Get().GetRTCSDKNativeURL_Android(sdk_ver)
-        url_windows = ConfigParser.Get().GetRTCSDKNativeURL_Win(sdk_ver)
-        url_mac = ConfigParser.Get().GetRTCSDKNativeURL_Mac(sdk_ver)
+        url_ios = ConfigParser.Get().GetRTCSDKNativeURL_IOS(sdk_ver) if Args.nurlios == "" else Args.nurlios  
+        url_android = ConfigParser.Get().GetRTCSDKNativeURL_Android(sdk_ver) if Args.nurlandroid == "" else Args.nurlandroid
+        url_windows = ConfigParser.Get().GetRTCSDKNativeURL_Win(sdk_ver) if Args.nurlwin == "" else Args.nurlwin
+        url_mac = ConfigParser.Get().GetRTCSDKNativeURL_Mac(sdk_ver) if Args.nurlmac == "" else Args.nurlmac
         
         
         cur_path = Path(__file__).parent.absolute()
@@ -291,7 +296,9 @@ class AgoraPluginManager(BaseSystem):
         dst_zip_file_path.mkdir(parents= True, exist_ok= True)
         dst_zip_file_path = dst_zip_file_path / (PLUGIN_NAME + ".zip")
         OneZipCommand.ZipFile(PLUGIN_NAME,dst_zip_file_path,src_zip_files_root_path)
-    
+        
+
+        PrintLog(">>>> Final Product Path: " + str(dst_zip_file_path))
 
     def ModifyFiles(self,IsAudioOnly,val_file_path):
         is_audioonly_sdk = IsAudioOnly
@@ -447,6 +454,7 @@ class AgoraPluginManager(BaseSystem):
         else:
             FileUtility.CopyFilesWithSymbolicLink(plugin_path,plugin_dst_path,"RLf")
 
+ 
 
 if __name__ == '__main__':
     AgoraPluginManager.Get().Init()
