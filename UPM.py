@@ -49,8 +49,16 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-agorasdkbuildconfig", default="Release")
         ArgParser.add_argument("-pluginname", default="AgoraPlugin")
         ArgParser.add_argument("-giturl", default= "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git")
+
+        ## empty: full copy, copy all the files under the target folder.
+        ArgParser.add_argument("-winarch", default="") 
         ArgParser.add_argument("-macarch", default="macos-arm64_x86_64") 
+        ArgParser.add_argument("-androidarch", default="")
         ArgParser.add_argument("-iosarch", default="ios-arm64_armv7")
+        ## currently, win has arch dir, Mac & IOS have no dir
+        ArgParser.add_argument("-newarchstruct", action="store_true")
+
+        #uplugin modification
         ArgParser.add_argument("-mminenginever", default="5.3.0")  
         ArgParser.add_argument("-mmarketplaceurl", default="com.epicgames.launcher://ue/marketplace/product/4976717f4e9847d8b161f7c5adb4c1a9")  
         ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android")  
@@ -190,41 +198,73 @@ class AgoraPluginManager(BaseSystem):
             target_plugin_src_lib_path = target_plugin_src_lib_path / plugin_cfg["platform"] / plugin_cfg["platform"] ##
 
     
+            architecture_str = ""
             if plugin_cfg["platform"] == "Mac":
-                architecture = Args.macarch
-                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("libs") / Path("*.xcframework") / Path(architecture)
+                architecture_str = Args.macarch
             elif plugin_cfg["platform"] == "Win":
-                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("sdk/x86_64")
+                architecture_str = Args.winarch
             elif plugin_cfg["platform"] == "Android":
-                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("rtc/sdk/")
+                architecture_str = Args.androidarch
             elif plugin_cfg["platform"] == "IOS":
-                architecture = Args.iosarch
-                target_plugin_src_lib_path = target_plugin_src_lib_path / Path("libs/*.xcframework")/ Path(architecture)
+                architecture_str = Args.iosarch
             
-            PrintLog(" from %s ---> %s " %(target_plugin_src_lib_path , target_plugin_dst_lib_path))
-            
-            PrintLog("Check Platform: " + plugin_cfg["platform"]  + str(plugin_cfg["platform"] == "Mac") + "  " + str( bis_mac_remove_symbolic_link == True))
-            if plugin_cfg["platform"] == "Mac" and bis_mac_remove_symbolic_link == True:
-                FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"RLf")
-            else:
-                FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"PRfa")
-            
-            if plugin_cfg["platform"] == "IOS":
-                all_framework_path_list = [ dir for dir in target_plugin_dst_lib_path.glob('*') if dir.is_dir()] 
-                for framework_dir in all_framework_path_list:
-                    
-                    ## Example: A.framework -> A.embeddedframework/A.framework
-                    ## A.embeddedframework/A.framework ->  A.embeddedframework.zip
-                    framework_name = framework_dir.stem
-                    embeddedframework_path = framework_dir.parent / Path(str(framework_name) + ".embeddedframework")
-                    embeddedframework_path.mkdir(parents= True, exist_ok= True)
-                    framework_dir.rename( embeddedframework_path / framework_dir.name)
+
+            architecture_list = architecture_str.split('+')
+
+            count_architecture = len(architecture_list)
+            for architecture in architecture_list:
+                if plugin_cfg["platform"] == "Mac":
+                    target_plugin_src_lib_path = target_plugin_src_lib_path / Path("libs") / Path("*.xcframework")
+                elif plugin_cfg["platform"] == "Win":
+                    target_plugin_src_lib_path = target_plugin_src_lib_path / Path("sdk")
+                elif plugin_cfg["platform"] == "Android":
+                    target_plugin_src_lib_path = target_plugin_src_lib_path / Path("rtc/sdk/")
+                elif plugin_cfg["platform"] == "IOS":
+                    target_plugin_src_lib_path = target_plugin_src_lib_path / Path("libs") / Path("*.xcframework")
+
+                if architecture != "" :
+                    target_plugin_src_lib_path = target_plugin_src_lib_path / Path(architecture)
+
+                    buse_new_arch_file_structure = Args.newarchstruct
+                    bneed_to_create_arch_folder = False
+                    if buse_new_arch_file_structure != True:
+                            
+                        if plugin_cfg["platform"] == "Win":
+                            bneed_to_create_arch_folder = True
+
+                        ## Mac and IOS don't create
+                            
+                    else:
+                      bneed_to_create_arch_folder = True
+
+                    if bneed_to_create_arch_folder:
+                        target_plugin_dst_lib_path = target_plugin_dst_lib_path / Path(architecture)
+                        target_plugin_dst_lib_path.mkdir(parents= True, exist_ok= True)
+
+                PrintLog(" from %s ---> %s " %(target_plugin_src_lib_path , target_plugin_dst_lib_path))
+                
+                PrintLog("Check Platform: " + plugin_cfg["platform"]  + str(plugin_cfg["platform"] == "Mac") + "  " + str( bis_mac_remove_symbolic_link == True))
+                if plugin_cfg["platform"] == "Mac" and bis_mac_remove_symbolic_link == True:
+                    FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"RLf")
+                else:
+                    FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"PRfa")
+                
+                if plugin_cfg["platform"] == "IOS":
+                    all_framework_path_list = [ dir for dir in target_plugin_dst_lib_path.glob('*') if dir.is_dir()] 
+                    for framework_dir in all_framework_path_list:
+                        
+                        ## Example: A.framework -> A.embeddedframework/A.framework
+                        ## A.embeddedframework/A.framework ->  A.embeddedframework.zip
+                        framework_name = framework_dir.stem
+                        embeddedframework_path = framework_dir.parent / Path(str(framework_name) + ".embeddedframework")
+                        embeddedframework_path.mkdir(parents= True, exist_ok= True)
+                        framework_dir.rename( embeddedframework_path / framework_dir.name)
 
 
-                    zip_framework_name = Path(embeddedframework_path).name
-                    dst_framework_path = target_plugin_dst_lib_path / (zip_framework_name + ".zip")
-                    OneZipCommand.ZipFile(zip_framework_name,dst_framework_path,target_plugin_dst_lib_path)
-                    FileUtility.DeleteDir(embeddedframework_path)
+                        zip_framework_name = Path(embeddedframework_path).name
+                        dst_framework_path = target_plugin_dst_lib_path / (zip_framework_name + ".zip")
+                        OneZipCommand.ZipFile(zip_framework_name,dst_framework_path,target_plugin_dst_lib_path)
+                        FileUtility.DeleteDir(embeddedframework_path)
             ## shutil.copytree(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path),dirs_exist_ok= True)
             target_plugin_src_lib_path = original_src ##
             target_plugin_dst_lib_path = original_dst
