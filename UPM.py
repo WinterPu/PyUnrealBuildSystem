@@ -43,7 +43,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-agorasdktype", default="RTC")
         ArgParser.add_argument("-agorasdk", default="4.2.1")
         ArgParser.add_argument("-sdkisaudioonly",action='store_true')
-        ArgParser.add_argument("-redownloadnsdk",action='store_true')
+        ArgParser.add_argument("-skipnativedownload",action='store_true')
         ArgParser.add_argument("-skipgit",action='store_true')
         ArgParser.add_argument("-rmmacslink",action='store_true') # remove mac symbolic link
         ArgParser.add_argument("-agorasdkbuildconfig", default="Release")
@@ -66,8 +66,9 @@ class AgoraPluginManager(BaseSystem):
         Args = ArgParser.parse_args()
 
         ## Set Dir 
-        Args.PluginWorkingDir = "PluginTemp"
-        Args.PluginWorkingDirInGitRepo = "PluginTemp"
+        Args.PluginWorkingDir = "PluginWorkDir"
+        Args.PluginTmpFileDir = "PluginTemp"
+        Args.PluginTmpSortSuffixName = "_To_BE_DELETED"
         Args.FinalPluginFileDir = "tmp_plugin_files"
         Args.PluginArchive = "PluginArchive"
 
@@ -104,7 +105,8 @@ class AgoraPluginManager(BaseSystem):
         bis_mac_remove_symbolic_link =Args.rmmacslink
 
         plugin_working_dir = Args.PluginWorkingDir
-        plugin_working_dir_in_git_repo = Args.PluginWorkingDirInGitRepo
+        plugin_tmp_file_dir = Args.PluginTmpFileDir
+        plugin_tmp_sort_dir_suffix_name = Args.PluginTmpSortSuffixName
         final_plugin_file_dir = Args.FinalPluginFileDir 
         plugin_archive_dir = Args.PluginArchive
 
@@ -119,7 +121,7 @@ class AgoraPluginManager(BaseSystem):
         # url_windows="https://download.agora.io/sdk/release/Agora_Native_SDK_for_Windows_rel.v4.0.0.2_15884_FULL_20220803_2250_225056.zip"
         
 
-        bReDownloadFile = Args.redownloadnsdk
+        bskip_download_native_sdk = Args.skipnativedownload
         
 
         
@@ -146,10 +148,9 @@ class AgoraPluginManager(BaseSystem):
 
         repo_name = git_url.split('/')[-1].split('.')[0]
         repo_path = repo_path / repo_name
-        
+
         ### [TBD] these are 2 Async Jobs (git & download ), they need to be synced.
-        repo_path = Path(repo_path)
-        plugin_tmp_path = repo_path / plugin_working_dir_in_git_repo
+        plugin_tmp_path = root_plugin_gen_path / plugin_tmp_file_dir
         platform_list = [
             {"platform": "Win","url":url_windows}, 
             {"platform": "Mac","url":url_mac},
@@ -165,7 +166,7 @@ class AgoraPluginManager(BaseSystem):
             plugin_name = plugin_cfg['url'].split('/')[-1]
             plugin_path = plugin_tmp_path / plugin_name
             
-            if bReDownloadFile:
+            if bskip_download_native_sdk != True:
                 if plugin_path.exists() == True:
                     plugin_path.unlink()
                 FileDownloader.DownloadWithRequests(plugin_cfg['url'],plugin_path)
@@ -174,10 +175,18 @@ class AgoraPluginManager(BaseSystem):
             tmp_copy_dst_path = plugin_tmp_path / plugin_cfg["platform"]
             tmp_copy_dst_path.mkdir(parents=True,exist_ok= True)
             OneZipCommand.UnZipFile(plugin_path,tmp_copy_dst_path)
-            for path in tmp_copy_dst_path.iterdir():
-                os.rename(str(path.absolute()), str(tmp_copy_dst_path / plugin_cfg["platform"]))
-
-        
+            tmp_copy_file_list = list(tmp_copy_dst_path.glob('*'))
+            if len(tmp_copy_file_list) == 1 :
+                if Path(tmp_copy_file_list[0]).is_dir() == True:
+                    tmp_name = plugin_cfg["platform"] + plugin_tmp_sort_dir_suffix_name
+                    tmp_dir_for_sort = tmp_copy_dst_path.parent / tmp_name
+                    for path in tmp_copy_dst_path.iterdir():
+                        path.rename(str(tmp_dir_for_sort))
+                    for path in tmp_dir_for_sort.iterdir():
+                        path.rename(tmp_copy_dst_path/path.name)
+                    if tmp_dir_for_sort.exists():
+                        FileUtility.DeleteDir(tmp_dir_for_sort)
+                    
         ##
         target_plugin_dst_path = plugin_tmp_path / final_plugin_file_dir / PLUGIN_NAME
         target_plugin_dst_path.mkdir(parents= True, exist_ok= True)
@@ -369,7 +378,7 @@ class AgoraPluginManager(BaseSystem):
         PrintLog(cur_path)
 
         plugin_working_dir = Args.PluginWorkingDir
-        plugin_working_dir_in_git_repo = Args.PluginWorkingDirInGitRepo
+        plugin_tmp_file_dir = Args.PluginTmpFileDir
         final_plugin_file_dir = Args.FinalPluginFileDir 
         plugin_archive_dir = Args.PluginArchive
 
@@ -378,12 +387,10 @@ class AgoraPluginManager(BaseSystem):
 
         git_url = Args.giturl
         repo_name = git_url.split('/')[-1].split('.')[0]
-        repo_path = repo_path / repo_name
-        repo_path = Path(repo_path)
 
         bFullDelete = False
         FileUtility.DeleteDir(root_plugin_gen_path / Path(plugin_archive_dir))
-        plugin_tmp_path = repo_path / plugin_working_dir_in_git_repo
+        plugin_tmp_path = root_plugin_gen_path / plugin_tmp_file_dir
 
         if bFullDelete == True:
             FileUtility.DeleteDir(plugin_tmp_path)
@@ -391,6 +398,8 @@ class AgoraPluginManager(BaseSystem):
             delete_dir_list =["Android","IOS","Mac","Win",final_plugin_file_dir]
             for dir in delete_dir_list:
                 FileUtility.DeleteDir(plugin_tmp_path / Path(dir))
+                if dir != final_plugin_file_dir:
+                    FileUtility.DeleteDir(plugin_tmp_path / Path(dir + Args.PluginTmpSortSuffixName))
 
     def DownloadAgoraSDKPlugin(self,dst_path,sdk_ver,is_audio_only,bkeep_symlink = True):
         plugin_url =ConfigParser.Get().GetRTCSDKURL(sdk_ver,is_audio_only)
