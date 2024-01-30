@@ -70,6 +70,11 @@ class ConfigParser(BaseSystem):
 
         self.SDKConfigData = base_config_json_data
 
+    def GetAllAvailableEngineList(self):
+        available_list = []
+        for engine_ver in self.UEConfigData["EngineList"]:
+            available_list.append(engine_ver)
+        return available_list
 
     def GetDefaultEnginePath(self,ver):
         return self.UEConfigData["EngineList"][ver]["Path"]

@@ -19,7 +19,7 @@ def PrintStageLog(content):
     strftime_date = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
     strftime_secs = (cur_time - int(cur_time)) * 10000
     formated_time_stamp = "%s.%04d" % (strftime_date, strftime_secs)
-    print(formated_time_stamp + " ========= [ " + str(content) + " ] ======= ")
+    print(formated_time_stamp + " ================== [ " + str(content) + " ] ================= ")
 
 
 def PrintErr(error_msg = "NoMsg"):

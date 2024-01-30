@@ -64,6 +64,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-newarchstruct", action="store_true")
 
         #uplugin modification
+        ArgParser.add_argument("-mmodifycompileoptions",action='store_true')
         ArgParser.add_argument("-mminenginever", default="5.3.0")  
         ArgParser.add_argument("-mmarketplaceurl", default="com.epicgames.launcher://ue/marketplace/product/4976717f4e9847d8b161f7c5adb4c1a9")  
         ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android")  
@@ -181,6 +182,7 @@ class AgoraPluginManager(BaseSystem):
             tmp_copy_dst_path.mkdir(parents=True,exist_ok= True)
             OneZipCommand.UnZipFile(plugin_path,tmp_copy_dst_path)
             tmp_copy_file_list = list(tmp_copy_dst_path.glob('*'))
+            ## just make [platform] -> [content]
             if len(tmp_copy_file_list) == 1 :
                 if Path(tmp_copy_file_list[0]).is_dir() == True:
                     tmp_name = plugin_cfg["platform"] + plugin_tmp_sort_dir_suffix_name
@@ -209,7 +211,7 @@ class AgoraPluginManager(BaseSystem):
         for plugin_cfg in platform_list:
             target_plugin_dst_lib_path = target_plugin_dst_lib_path / plugin_cfg["platform"] / sdk_mode_type
             Path(target_plugin_dst_lib_path).mkdir(parents= True, exist_ok= True)
-            target_plugin_src_lib_path = target_plugin_src_lib_path / plugin_cfg["platform"] / plugin_cfg["platform"] ##
+            target_plugin_src_lib_path = target_plugin_src_lib_path / plugin_cfg["platform"] ##
 
     
             architecture_str = ""
@@ -257,7 +259,6 @@ class AgoraPluginManager(BaseSystem):
 
                 PrintLog(" from %s ---> %s " %(target_plugin_src_lib_path , target_plugin_dst_lib_path))
                 
-                PrintLog("Check Platform: " + plugin_cfg["platform"]  + str(plugin_cfg["platform"] == "Mac") + "  " + str( bis_mac_remove_symbolic_link == True))
                 if plugin_cfg["platform"] == "Mac" and bis_mac_remove_symbolic_link == True:
                     FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,"RLf")
                 else:
@@ -287,7 +288,10 @@ class AgoraPluginManager(BaseSystem):
         
 
         ## Modify Files Here
+        bmodify_compile_options = Args.mmodifycompileoptions
         self.UpdateUpluginFile(target_plugin_dst_path / Path( PLUGIN_NAME+ ".uplugin"),Args)
+        if bmodify_compile_options:
+            self.ModifyCompileOptions(target_plugin_dst_path / Path("Source") / Path(PLUGIN_NAME) /Path( PLUGIN_NAME+ ".Build.cs"))
         self.ModifyFiles(bis_audio_only,target_plugin_dst_path / Path("Source") / Path(PLUGIN_NAME) /Path( PLUGIN_NAME+ ".Build.cs"))
         ## Modify Files Here
 
@@ -299,6 +303,24 @@ class AgoraPluginManager(BaseSystem):
         
 
         PrintLog(">>>> Final Product Path: " + str(dst_zip_file_path))
+
+    def ModifyCompileOptions(self,src_file):
+
+        additional_compile_options = " -Wno-unused-but-set-variable -Wno-gcc-compat -Wno-reorder-ctor  -Wno-deprecated-builtins -Wno-single-bit-bitfield-constant-conversion -Wno-nonportable-include-path "
+        file_path = str(src_file)
+
+        with open(file_path,'r') as file:
+            lines = file.readlines()
+        
+        new_lines = []
+        for line in lines:
+            if 'AdditionalCompilerArguments' in line:
+                line = "            Inner.AdditionalCompilerArguments += "+ '"' + additional_compile_options + '";\n'
+            new_lines.append(line)
+        
+        with open(file_path,'w') as file:
+            file.writelines(new_lines)
+
 
     def ModifyFiles(self,IsAudioOnly,val_file_path):
         is_audioonly_sdk = IsAudioOnly
@@ -453,6 +475,21 @@ class AgoraPluginManager(BaseSystem):
             FileUtility.CopyFilesWithSymbolicLink(plugin_path,plugin_dst_path,"PRfa")
         else:
             FileUtility.CopyFilesWithSymbolicLink(plugin_path,plugin_dst_path,"RLf")
+
+    def RemoveSymbolicLink(self,mac_framework_path):
+        framework_list = Path(mac_framework_path).glob('*')
+        for framework_dir in framework_list:
+            framework_path = Path(framework_dir)
+            tmp_name =  framework_path.name + "tmp"
+            tmp_dir_for_sort = framework_path.parent / tmp_name
+            if tmp_dir_for_sort.exists():
+                FileUtility.DeleteDir(tmp_dir_for_sort)
+            tmp_dir_for_sort.mkdir(parents=True,exist_ok=True)
+            FileUtility.CopyFilesWithSymbolicLink(framework_path,tmp_dir_for_sort,"RLf")
+            FileUtility.DeleteDir(framework_path)
+            framework_path.mkdir(parents=True,exist_ok=True)
+            FileUtility.CopyFilesWithSymbolicLink(tmp_dir_for_sort,framework_path,"RLf")
+            FileUtility.DeleteDir(tmp_dir_for_sort)
 
  
 
