@@ -8,7 +8,7 @@ from Command.MacRATrustCommand import *
 from Command.ZipCommand import *
 from Utility.Downloader import *
 
-from UPM import *
+from APM import *
 
 from SystemBase import *
 
@@ -37,7 +37,7 @@ class PyUnrealBuildSystem(BaseSystem):
     
     
     def Start(self):
-        PrintLog("Start Build System")
+        PrintStageLog("Start Build System")
         PyUnrealBuildSystem.Get().Init()
 
 
@@ -47,6 +47,7 @@ class PyUnrealBuildSystem(BaseSystem):
 
     def Init(self):
         ## Init System Info
+        PrintStageLog("PyUnrealBuildSystem Init")
         PyUnrealBuildSystem.Get().InitBuildSystemInfo()
 
         ConfigParser.Get().Init()
@@ -68,24 +69,28 @@ class PyUnrealBuildSystem(BaseSystem):
 
     def ParseCMDArgs(self):
         ArgParser = argparse.ArgumentParser(description="Parse Package Args")
+        self.AddArgsToParser(ArgParser)
+        Args = ArgParser.parse_args()
+        PrintLog(Args)
+        return Args
+
+    def AddArgsToParser(self,ArgParser, bIncludeConflictArgs = True):
+        #bIncludeConflictArgs: Some Args used in this file would have conflicts with args which have the same name in the other files
+        ## because [add_argument] cannot add the same arguments twice
         default_targetsystem = version_info['HostMachineOS']
         if default_targetsystem == "Win":
             default_targetsystem = "Win64"
-        
+
         ArgParser.add_argument("-enginepath", default="")
         ArgParser.add_argument("-enginever", default="4.27")
         ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Agora-Unreal-RTC-SDK-main/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
         ArgParser.add_argument("-pluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
-        ArgParser.add_argument("-agorasdktype", default="RTC")
-        ArgParser.add_argument("-agorasdk", default="4.2.1")
-        ArgParser.add_argument("-CopySDKType",default="None")
-        ArgParser.add_argument("-RedownloadSDK",action='store_true')
         
         ## Build Command
         ArgParser.add_argument("-BuildCookRun", action='store_true')
         ArgParser.add_argument("-BuildPlugin", action='store_true')
-        ArgParser.add_argument("-TestPlugin", action='store_true')
+        
 
 
         ## Utility Command
@@ -93,9 +98,13 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-GitRevert", action='store_true')
         ArgParser.add_argument("-Clean", action='store_true')
         ArgParser.add_argument("-GenProject", action='store_true')
-        Args = ArgParser.parse_args()
-        PrintLog(Args)
-        return Args
+
+        if bIncludeConflictArgs:
+            ArgParser.add_argument("-TestPlugin", action='store_true')
+            ArgParser.add_argument("-agorasdktype", default="RTC")
+            ArgParser.add_argument("-agorasdk", default="4.2.1")
+            ArgParser.add_argument("-CopySDKType",default="None")
+            ArgParser.add_argument("-RedownloadSDK",action='store_true')
 
     def InitConfig(self):
         PrintLog("Init Log")
@@ -133,45 +142,45 @@ class PyUnrealBuildSystem(BaseSystem):
                 output_path = plugin_path.parent.parent / Path("output/")
             host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
 
-        if Args.TestPlugin == True:
-            PrintStageLog("Test Plugin")
+        # if Args.TestPlugin == True:
+        #     PrintStageLog("Test Plugin")
             
-            ## Clean
-            path_plugin_archive_dir = Path("/Users/admin/Documents/PluginWorkDir/PluginArchive/")
-            path_target_plugin = path_plugin_archive_dir/ Path("AgoraPlugin.zip")
-            path_output_dir = path_plugin_archive_dir / Path("Output")
+        #     ## Clean
+        #     path_plugin_archive_dir = Path("/Users/admin/Documents/PluginWorkDir/PluginArchive/")
+        #     path_target_plugin = path_plugin_archive_dir/ Path("AgoraPlugin.zip")
+        #     path_output_dir = path_plugin_archive_dir / Path("Output")
             
-            path_target_plugin_dir = path_plugin_archive_dir/path_target_plugin.stem
-            if path_target_plugin_dir.exists():
-                FileUtility.DeleteDir(path_target_plugin_dir)
+        #     path_target_plugin_dir = path_plugin_archive_dir/path_target_plugin.stem
+        #     if path_target_plugin_dir.exists():
+        #         FileUtility.DeleteDir(path_target_plugin_dir)
             
-            if path_output_dir.exists():
-                FileUtility.DeleteDir(path_output_dir)
+        #     if path_output_dir.exists():
+        #         FileUtility.DeleteDir(path_output_dir)
 
 
-            ## Prepare 
-            OneZipCommand =ZipCommand(self.GetHostPlatform())
-            OneZipCommand.UnZipFile(path_target_plugin,path_plugin_archive_dir)
-            plugin_name = "AgoraPlugin"
-            path_uplugin_file =  path_plugin_archive_dir / plugin_name / Path(plugin_name+".uplugin")
+        #     ## Prepare 
+        #     OneZipCommand =ZipCommand(self.GetHostPlatform())
+        #     OneZipCommand.UnZipFile(path_target_plugin,path_plugin_archive_dir)
+        #     plugin_name = "AgoraPlugin"
+        #     path_uplugin_file =  path_plugin_archive_dir / plugin_name / Path(plugin_name+".uplugin")
             
-            path_output_dir.mkdir(parents=True,exist_ok=True)
+        #     path_output_dir.mkdir(parents=True,exist_ok=True)
 
-            AgoraPluginManager.Get().RemoveSymbolicLink(path_target_plugin_dir/ Path("Source/ThirdParty/AgoraPluginLibrary") / Path("Mac") / Path("Release"))
+        #     AgoraPluginManager.Get().RemoveSymbolicLink(path_target_plugin_dir/ Path("Source/ThirdParty/AgoraPluginLibrary") / Path("Mac") / Path("Release"))
 
-            cur_enginever  = Args.enginever
+        #     cur_enginever  = Args.enginever
 
-            all_engine_list = ConfigParser.Get().GetAllAvailableEngineList()
-            for engine_ver in all_engine_list:
-                PrintStageLog("Build Use Engine Ver [%s]" % engine_ver)
-                Args = self.SetUEEngine(engine_ver,Args)  
+        #     all_engine_list = ConfigParser.Get().GetAllAvailableEngineList()
+        #     for engine_ver in all_engine_list:
+        #         PrintStageLog("Build Use Engine Ver [%s]" % engine_ver)
+        #         Args = self.SetUEEngine(engine_ver,Args)  
              
-                arg_targetplatform = Args.targetplatform
-                ret_host,tmp_host_platform = CreateHostPlatform(type_hostplatform,Args)
-                tmp_host_platform.BuildPlugin(path_uplugin_file,arg_targetplatform,path_output_dir)
+        #         arg_targetplatform = Args.targetplatform
+        #         ret_host,tmp_host_platform = CreateHostPlatform(type_hostplatform,Args)
+        #         tmp_host_platform.BuildPlugin(path_uplugin_file,arg_targetplatform,path_output_dir)
 
-            ## Recover UE Engine
-            Args = self.SetUEEngine(cur_enginever,Args)
+        #     ## Recover UE Engine
+        #     Args = self.SetUEEngine(cur_enginever,Args)
 
         if Args.BuildCookRun == True:
             target_platform_type_list = ParsePlatformArg(Args.targetplatform)
@@ -204,48 +213,6 @@ class PyUnrealBuildSystem(BaseSystem):
             VersionControlTool.CheckOutOneRepo(url)
 
         
-
-
-        if Args.CopySDKType != "None":
-            ## Create Plugin Repo
-            default_plugin_repo_path = Path(ConfigParser.Get().GetDefaultPluginRepo())
-            default_plugin_repo_path.mkdir(parents= True, exist_ok= True)
-
-            bUseAudioOnlySDK = Args.CopySDKType == "AudioOnly"
-            url = ConfigParser.Get().GetRTCSDKURL(Args.agorasdk,bUseAudioOnlySDK)
-            PrintLog(url)
-            plugin_name = url.split('/')[-1]
-            plugin_path = default_plugin_repo_path / plugin_name
-
-            PrintLog(plugin_path)
-
-            ## Download Plugin
-            if Args.RedownloadSDK:
-                if plugin_path.exists() == True:
-                    plugin_path.unlink()
-                FileDownloader.DownloadWithRequests(url,plugin_path)
-
-            ## Copy Plugin
-            dst_project_path = Args.projectpath
-            dst_plugin_path = dst_project_path.parent.joinpath("Plugins")
-            dst_plugin_path.mkdir(parents= True, exist_ok= True)
-            dst_plugin_path = dst_plugin_path / Path("AgoraPlugin")
-            if dst_plugin_path.exists() == True:
-                FileUtility.DeleteDir(str(dst_plugin_path))
-            
-            dst_plugin_path.mkdir(parents= True, exist_ok= True)
-            
-            OneZipCommand =ZipCommand(self.GetHostPlatform())
-            unzip_path = default_plugin_repo_path / Path("UnzipPlugin")
-            OneZipCommand.UnZipFile(plugin_path ,unzip_path)
-            src_plugin_path = unzip_path / Path("AgoraPlugin")
-            shutil.copytree(str(src_plugin_path),str(dst_plugin_path),dirs_exist_ok= True)
-
-            FileUtility.DeleteDir(str(unzip_path))
-
-            ## MacRATrust
-            OneMacRATrustCommand= MacRATrustCommand()
-            OneMacRATrustCommand.DoMacTrust(Args.projectpath.parent);
 
     def SetUEEngine(self,engine_ver,Args):
         Args.enginever = engine_ver

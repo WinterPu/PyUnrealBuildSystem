@@ -9,6 +9,7 @@ from Utility.Downloader import *
 
 from Command.GitCommand import *
 from Command.ZipCommand import *
+from Command.MacRATrustCommand import *
 from Utility.VersionControlTool import *
 
 from SystemBase import *
@@ -40,6 +41,15 @@ class AgoraPluginManager(BaseSystem):
     def ParseCMDArgs(self):
         ArgParser = argparse.ArgumentParser(description="Parse Plugin Manager Args")
         
+        self.AddArgsToParser(ArgParser)
+
+        Args = ArgParser.parse_args()
+
+        PrintLog(Args)
+        return Args
+    
+    def AddArgsToParser(self,ArgParser, bIncludeConflictArgs = True):
+
         ArgParser.add_argument("-nurlwin", default="")
         ArgParser.add_argument("-nurlmac", default="")
         ArgParser.add_argument("-nurlandroid", default="")
@@ -67,9 +77,26 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-mmodifycompileoptions",action='store_true')
         ArgParser.add_argument("-mminenginever", default="5.3.0")  
         ArgParser.add_argument("-mmarketplaceurl", default="com.epicgames.launcher://ue/marketplace/product/4976717f4e9847d8b161f7c5adb4c1a9")  
-        ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android")  
+        ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android") 
 
-        Args = ArgParser.parse_args()
+        if bIncludeConflictArgs:
+            pass
+
+    def Init(self):
+        PrintStageLog("AgoraPluginManager Init")
+        ConfigParser.Get().Init()
+
+    def Start(self):
+        AgoraPluginManager.Get().Init()
+        args = self.ParseCMDArgs()
+        self.CreateTask(args)
+
+
+    def CreateTask(self,Args):
+   
+        self.StartGenPlugin(Args)
+
+    def StartGenPlugin(self,Args):
 
         ## Set Dir 
         Args.PluginWorkingDir = "PluginWorkDir"
@@ -78,24 +105,6 @@ class AgoraPluginManager(BaseSystem):
         Args.FinalPluginFileDir = "tmp_plugin_files"
         Args.PluginArchive = "PluginArchive"
 
-        PrintLog(Args)
-        return Args
-    
-    def Init(self):
-        PrintErr("AgoraPluginManager Init")
-        PrintLog(" ====== Init =======")
-        ConfigParser.Get().Init()
-
-    def Start(self):
-        AgoraPluginManager.Get().Init()
-        args = self.ParseCMDArgs()
-        self.CreateTask(args)
-
-    def CreateTask(self,Args):
-   
-        self.StartGenPlugin(Args)
-
-    def StartGenPlugin(self,Args):
 
         AgoraPluginManager.Get().CleanPlugin(Args)
         PLUGIN_NAME = Args.pluginname
@@ -491,10 +500,65 @@ class AgoraPluginManager(BaseSystem):
             FileUtility.CopyFilesWithSymbolicLink(tmp_dir_for_sort,framework_path,"RLf")
             FileUtility.DeleteDir(tmp_dir_for_sort)
 
- 
+    
+    
+    def GetPluginZipFilePathFromRepo(self,sdk_ver,bis_audio_only,bredownload = False):
+        default_plugin_repo_path = Path(ConfigParser.Get().GetDefaultPluginRepo())
+        default_plugin_repo_path.mkdir(parents= True, exist_ok= True)
+
+        url = ConfigParser.Get().GetRTCSDKURL(sdk_ver,bis_audio_only)
+        PrintLog(url)
+        plugin_name = url.split('/')[-1]
+        plugin_path = default_plugin_repo_path / plugin_name
+
+        ## Download Plugin
+        if bredownload:
+            if plugin_path.exists() == True:
+                plugin_path.unlink()
+            FileDownloader.DownloadWithRequests(url,plugin_path)
+
+        return plugin_path
+    
+    def DoMacRATrustTask(self,project_path,password = ""):
+        if self.GetHostPlatform() == "Mac":
+            OneMacRATrustCommand= MacRATrustCommand()
+            OneMacRATrustCommand.DoMacTrust(project_path,"",password)
+
+    def CopySDKToDstPath(self,val_plugin_name,sdk_type,val_sdk_ver,val_is_audio_only,dst_path):
+        ## Copy SDK Zip File to Dst Path
+        ## UnZip it
+        ## dst: Project / Plugins
+        plugin_name = val_plugin_name
+        plugin_sdk_ver = val_sdk_ver
+        plugin_is_audio_only = val_is_audio_only
+        plugin_path = self.GetPluginZipFilePathFromRepo(plugin_sdk_ver,plugin_is_audio_only)
+
+
+        ## Copy Plugin
+
+        ## Prepare Dst Path
+        dst_plugin_path = dst_path / plugin_name
+
+        if dst_plugin_path.exists() == True:
+            FileUtility.DeleteDir(str(dst_plugin_path))
+        dst_plugin_path.mkdir(parents= True, exist_ok= True)
+
+        
+        OneZipCommand =ZipCommand(self.GetHostPlatform())
+        unzip_path = plugin_path.parent / Path("UnzipPlugin" + plugin_path.stem)
+        OneZipCommand.UnZipFile(plugin_path ,unzip_path)
+        ## Suppose: Folder would be [ZipName]/[PluginName]
+        src_plugin_path = unzip_path / plugin_name
+        if src_plugin_path.exists() != True:
+            src_plugin_path = unzip_path.parent / plugin_name
+        PrintLog("Copy Src Path: " + str(src_plugin_path))
+        shutil.copytree(str(src_plugin_path),str(dst_plugin_path),dirs_exist_ok= True)
+        FileUtility.DeleteDir(str(unzip_path))
+        
+
+
 
 if __name__ == '__main__':
-    AgoraPluginManager.Get().Init()
     AgoraPluginManager.Get().Start()
     # AgoraPluginManager.Get().Init()
     # AgoraPluginManager.Get().DownloadAgoraSDKPlugin("ddd","4.2.1",False)
