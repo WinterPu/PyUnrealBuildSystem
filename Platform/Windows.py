@@ -5,6 +5,8 @@ class WinPlatformPathUtility:
     def GetRunUATPath():
         ## if you start with '/', it would be treated as starting from the root path
         return Path("Engine/Build/BatchFiles/RunUAT.bat")
+    def GetRunIOSPackager():
+        return Path("Engine/Binaries/DotNET/IOS/IPhonePackager.exe")
 
 class WinPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):

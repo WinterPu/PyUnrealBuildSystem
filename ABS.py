@@ -63,7 +63,7 @@ class AgoraBuildSystem(BaseSystem):
         ArgParser.add_argument("-Password",default="")
         # ArgParser.add_argument("-MacTrust",action = "store_true")
         ArgParser.add_argument("-TestPlugin",action = "store_true")
-        ArgParser.add_argument("-TestAgoraPlugin",action = "store_true")
+        ArgParser.add_argument("-NotTestAgoraPlugin",action = "store_true")
         ArgParser.add_argument("-TestPluginPath",default = "/Users/admin/Documents/PluginWorkDir/PluginArchive/AgoraPlugin.zip")
         ArgParser.add_argument("-TestBlackList",default = "")
 
@@ -88,7 +88,7 @@ class AgoraBuildSystem(BaseSystem):
         
         if Args.TestPlugin == True:
 
-            btest_is_agora_plugin = Args.TestAgoraPlugin
+            btest_is_agora_plugin = not Args.NotTestAgoraPlugin
             plugin_name = Args.pluginname
             path_test_plugin_zipfile = Path(Args.TestPluginPath)
             path_working_dir = path_test_plugin_zipfile.parent

@@ -86,6 +86,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Agora-Unreal-RTC-SDK-main/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
         ArgParser.add_argument("-pluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
+        ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
         
         ## Build Command
         ArgParser.add_argument("-BuildCookRun", action='store_true')
@@ -212,6 +213,14 @@ class PyUnrealBuildSystem(BaseSystem):
             VersionControlTool.Init(OneGitCommand)
             VersionControlTool.CheckOutOneRepo(url)
 
+        bTestCommand = True
+        if bTestCommand:
+            if self.GetHostPlatform() == "Mac":
+                project_folder_path = Args.projectpath
+                bundlename = Args.iosbundlename
+                host_platform.IOSSign(project_folder_path,bundlename)           
+
+ 
         
 
     def SetUEEngine(self,engine_ver,Args):

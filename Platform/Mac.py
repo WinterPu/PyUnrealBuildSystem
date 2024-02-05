@@ -1,6 +1,7 @@
 
 from Platform.PlatformBase import *
 from Command.GenerateProjectFilesCommand import *
+from Command.IPhonePackagerCommand import *
 from pathlib import Path
 from FileIO.FileUtility import FileUtility
 
@@ -13,7 +14,13 @@ class MacPlatformPathUtility:
     
     @staticmethod
     def GetRunUATPath():
-        return Path("Engine/Build/BatchFiles/RunUAT.sh") 
+        return Path("Engine/Build/BatchFiles/RunUAT.sh")
+    
+    def GetMonoScriptPath():
+        return Path("Engine/Build/BatchFiles/Mac/RunMono.sh")
+
+    def GetIPhonePackagerPath():
+        return Path("Engine/Binaries/DotNET/IOS/IPhonePackager.exe")
     
     @staticmethod
     def GetGenerateProjectScriptPath():
@@ -35,6 +42,16 @@ class MacPlatformBase(PlatformBase):
 
         key = "genprojfiles_path"
         val[key] = Path(val["engine_path"])/ MacPlatformPathUtility.GetGenerateProjectScriptPath()
+
+
+        key = "bundlename"
+        val[key] = args.bundlename if 'bundlename' in args else ""
+
+        key = "mono_path"
+        val[key] = Path(val["engine_path"]) / MacPlatformPathUtility.GetMonoScriptPath()
+
+        key = "iphonepackager_path"
+        val[key] = Path(val["engine_path"]) / MacPlatformPathUtility.GetIPhonePackagerPath()
 
         return ret,val
     
@@ -63,6 +80,14 @@ class MacHostPlatform(BaseHostPlatform):
 
         one_command.GenerateProjectFiles(self.Params)
         PrintLog("BaseHostPlatform - GenerateProject")
+    
+    def IOSSign(self,project_file_path,bundlename):
+        path_mono =  self.GetParamVal("mono_path")
+        path_iphonerpackager =  self.GetParamVal("iphonepackager_path")
+        self.Params['project_path'] = project_file_path
+        self.Params['bundlename'] = bundlename
+        OneIPhonePackagerCommand = IPhonePackagerCommand(path_mono,path_iphonerpackager)
+        OneIPhonePackagerCommand.Sign(self.Params)
 
 
 class MacTargetPlatform(BaseTargetPlatform):
