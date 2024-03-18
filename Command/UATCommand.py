@@ -1,4 +1,5 @@
 from Command.CommandBase import *
+from Logger.Logger import *
 from pathlib import Path
 
 class UATCommand:
@@ -22,6 +23,12 @@ class UATCommand:
 
         key = 'host_platform'
         hostplatfom = params[key] if key in params else ""
+
+        key = "archive_dir"
+        archive_dir = params[key] if key in params else ""
+        param_command_archive_dir = ""
+        if archive_dir and len(archive_dir) > 0:
+            param_command_archive_dir = ' -archivedirectory="' + archive_dir+'" '
 
         # ## need 
         # command = (
@@ -84,7 +91,7 @@ class UATCommand:
                 r" -GenerateDSYM"
                 r" -Cook"
                 r" -Stage"
-                r" -Archive"
+                r" -Archive"  + param_command_archive_dir +
                 r" -package"
                 r" -verbose"+
                 extra_commands
@@ -101,6 +108,7 @@ class UATCommand:
                 r" -Build"
                 r" -GenerateDSYM"
                 r" -Cook"
+                #r" -allmaps -pak"
                 r" -Stage"
                 r" -Archive"
                 r" -package"
@@ -118,8 +126,9 @@ class UATCommand:
                 r" -Build"
                 r" -GenerateDSYM"
                 r" -Cook"
+                r" -CookAll"
                 r" -Stage"
-                r" -Archive"
+                r" -Archive" + param_command_archive_dir + 
                 r" -package"
                 r" -verbose"+
                 extra_commands
@@ -137,7 +146,7 @@ class UATCommand:
                 r" -GenerateDSYM"
                 r" -Cook"
                 r" -Stage"
-                r" -Archive"
+                r" -Archive"  + param_command_archive_dir +
                 r" -package"
                 r" -verbose"+
                 extra_commands
@@ -166,5 +175,5 @@ class UATCommand:
             r" -package="+ '"' + str(output_path) + '"'+
             r" -rocket"+ # means precompiled & installed engine version
             extra_commands
-         )
+        )
         RUNCMD(command)

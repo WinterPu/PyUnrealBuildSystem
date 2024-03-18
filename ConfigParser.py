@@ -1,6 +1,7 @@
 import json
 import os
 from Utility.HeaderBase import *
+from pathlib import Path
 from SystemBase import *
 
 path_val = Path("/Users/admin/Documents/PyUnrealBuildSystem/Config/Config.json")
@@ -11,6 +12,7 @@ class ConfigParser(BaseSystem):
     SDKTYPE="RTC"
     UEConfigData = None
     SDKConfigData = None
+    IOSCertData = None
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls, *args, **kwargs)
@@ -32,6 +34,7 @@ class ConfigParser(BaseSystem):
     def ParseConfig(self):
         self.ParseUEConfig()
         self.ParseSDKConfig()
+        self.ParseIOSCertConfig()
 
     def ParseUEConfig(self):
         base_config_path=Path("Config/UEConfig/Config.json")
@@ -70,6 +73,14 @@ class ConfigParser(BaseSystem):
 
         self.SDKConfigData = base_config_json_data
 
+
+    def ParseIOSCertConfig(self):
+        ios_cert_config_path = Path("Config/UEConfig/Platforms/IOS/Certificate.json")
+        ios_cert_config_path = open(ios_cert_config_path)
+        config_path_json_data = json.load(ios_cert_config_path)
+        PrintLog("Available IOS Certificate: " + str(config_path_json_data))
+        self.IOSCertData = config_path_json_data
+
     def GetAllAvailableEngineList(self):
         available_list = []
         for engine_ver in self.UEConfigData["EngineList"]:
@@ -100,4 +111,31 @@ class ConfigParser(BaseSystem):
     def GetRTCSDKNativeURL_Mac(self,sdkver):
         key_type = "url_native_mac"
         return self.SDKConfigData[sdkver][key_type]
+    
+
+    ## IOS Certificate
+    def GetAllIOSCertificates(self):
+        return self.IOSCertData.items()
+    
+    def IsIOSCertValid(self,tag_name):
+        bIsValid = False
+        if self.IOSCertData and self.IOSCertData[tag_name]:
+            cert = self.IOSCertData[tag_name]["signing_identity"]
+            mobileprovision = self.IOSCertData[tag_name]["provisioning_profile"]
+            if cert and len(cert) > 0 and mobileprovision and len(mobileprovision) > 0:
+                bIsValid = True
+            else:
+                PrintErr("[Cert %s] is not a valid certificate" % tag_name)
+        return bIsValid
+
+
+    def GetOneIOSCertificate(self,tag_name):
+        base_path = Path("Config/UEConfig/Platforms/IOS/Certs")
+        return {
+            "signing_identity": self.IOSCertData[tag_name]["signing_identity"],
+            "provisioning_profile": self.IOSCertData[tag_name]["provisioning_profile"],
+            "name_mobileprovision": self.IOSCertData[tag_name]["mobileprovision_filename"],
+            "path_mobileprovision" : str(base_path / self.IOSCertData[tag_name]["mobileprovision_filename"])
+        }
+
     

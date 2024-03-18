@@ -11,9 +11,17 @@ class FileUtility:
         #PrintLog(command)
         RUNCMD(command)
 
-    def DeleteFile(path):
+    def DeleteFile(path,bForce = False):
         PrintLog("DeleteFile " + str(path))
-        Path(path).unlink()
+        path = str(path)
+        if bForce:
+            command = (
+                r"rm -f " + '"' + path + '"'
+            )
+            RUNCMD(command, "gbk")
+
+        else:
+            Path(path).unlink()
 
     def DeleteDir(path):
         osplatform = platform.platform().lower()

@@ -22,8 +22,8 @@ def PrintStageLog(content):
     print(formated_time_stamp + " ================== [ " + str(content) + " ] ================= ")
 
 
-def PrintErr(error_msg = "NoMsg"):
-    PrintLog(error_msg,1)
+def PrintErr(error_msg = "NoMsg",errorcode = 1):
+    PrintLog(error_msg,errorcode)
     print(traceback.format_stack())
     
 def PrintErrWithFrame(frame, error_msg = "NoMsg"):

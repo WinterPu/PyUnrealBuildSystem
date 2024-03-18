@@ -34,6 +34,8 @@ class PlatformBase:
         key = "engine_ver"
         val[key] = args.enginever  if 'enginever' in args else None
 
+        key = "archive_dir"
+        val[key] = args.archive_dir if 'archive_dir' in args else None
 
         return True,val
 

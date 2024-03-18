@@ -10,6 +10,10 @@ class IPhonePackagerCommand:
         self.monopath = monopath_val
         self.iphonepackagerpath = iphonepackagerpath_val
 
+    ## List Certificate
+        
+    ## install Certificate
+
     def SignMatch(self,params):
         key = "project_path"
         project_path = params[key] if key in params else ""
@@ -46,9 +50,9 @@ class IPhonePackagerCommand:
         provision =  params[key] if key in params else ""
 
 
-        certificate = "Apple Development: Ling Chen (6Q7XB7L7WQ)"
+        certificate = ""
 
-        provision  = "FCDCFB840FA61C5E3DA44E522B62B261096E806D"
+        provision  = ""
 
         command = (
                 '"' + str(self.monopath) + '"' + ' "' + str(self.iphonepackagerpath) + '" '

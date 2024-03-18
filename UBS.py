@@ -2,10 +2,12 @@ from Utility.HeaderBase import *
 from ConfigParser import *
 from Utility.UnrealProjectManager import *
 from Utility.VersionControlTool import *
+from Utility.UnrealConfigIniManager import *
 
 from Command.GitCommand import *
 from Command.MacRATrustCommand import *
 from Command.ZipCommand import *
+from Command.FastLaneCommand import * 
 from Utility.Downloader import *
 
 from APM import *
@@ -83,17 +85,31 @@ class PyUnrealBuildSystem(BaseSystem):
 
         ArgParser.add_argument("-enginepath", default="")
         ArgParser.add_argument("-enginever", default="4.27")
-        ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Agora-Unreal-RTC-SDK-main/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
+        ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
         ArgParser.add_argument("-pluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
+        ArgParser.add_argument("-ioscert",default = "MediaLab")
+        ## CreateTask handles it to be the base dir under the project dir
+        ## otherwise it would be under the engine dir
+        ArgParser.add_argument("-archive_dir",default = "")
+    
         
+        ## Config Set
+        ArgParser.add_argument("-SetUEConfigIni", action='store_true')
+        ArgParser.add_argument("-IniFile", default="")
+        ArgParser.add_argument("-IniSection", default="")
+        ArgParser.add_argument("-IniKey", default="")
+        ArgParser.add_argument("-IniVal", default="")
+
         ## Build Command
         ArgParser.add_argument("-BuildCookRun", action='store_true')
         ArgParser.add_argument("-BuildPlugin", action='store_true')
         
-
-
+        ## IOS Resign
+        ## Use -ioscert specify the certificate
+        ArgParser.add_argument("-IPAResign", action='store_true')
+        
         ## Utility Command
         ArgParser.add_argument("-GitClone", action='store_true')
         ArgParser.add_argument("-GitRevert", action='store_true')
@@ -127,6 +143,9 @@ class PyUnrealBuildSystem(BaseSystem):
             PrintLog("Check EnginePath " + str(Args.enginepath))
 
         ret_host,host_platform = CreateHostPlatform(type_hostplatform,Args)
+
+        if Args.archive_dir != "":
+            Args.archive_dir = str(Path(Args.projectpath).parent / Args.archive_dir)
 
         if ret_host == False:
             PrintErrWithFrame(sys._getframe())
@@ -188,7 +207,7 @@ class PyUnrealBuildSystem(BaseSystem):
             for target_platform_type in target_platform_type_list:
                 ret_target,target_platform = CreateTargetPlatform(host_platform,target_platform_type,Args)
                 if ret_target == True:
-                    target_platform.SetupEnvironment()
+                    ## target_platform.SetupEnvironment() did it in [Package]
                     target_platform.Package()
                 else: 
                     PrintErr("Invalid TargetPlatform Creation")
@@ -213,14 +232,32 @@ class PyUnrealBuildSystem(BaseSystem):
             VersionControlTool.Init(OneGitCommand)
             VersionControlTool.CheckOutOneRepo(url)
 
-        bTestCommand = True
+        bTestCommand = False
         if bTestCommand:
             if self.GetHostPlatform() == "Mac":
                 project_folder_path = Args.projectpath
                 bundlename = Args.iosbundlename
                 host_platform.IOSSign(project_folder_path,bundlename)           
 
- 
+        if Args.IPAResign == True:
+            OneFastLaneCommand = FastLaneCommand()
+            path_uproject = Path(Args.projectpath)
+            name_app = path_uproject.stem + ".ipa"
+
+            path_ipa = Path(Args.projectpath).parent / "ArchivedBuilds"/ "IOS" / name_app
+            
+            tag_name_ios_cert = Args.ioscert
+            if ConfigParser.Get().IsIOSCertValid(tag_name_ios_cert) :
+                PrintLog("[IPAResign] Use IOS Certificate %s " %tag_name_ios_cert)
+                OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(tag_name_ios_cert)
+                OneFastLaneCommand.IPAResign(path_ipa,OneIOSCert["signing_identity"],OneIOSCert["path_mobileprovision"])
+            
+        
+        if Args.SetUEConfigIni == True:
+            UnrealConfigIniManager.SetConfig(Args.IniFile,Args.IniSection,Args.IniKey,Args.IniVal,True)
+            
+            #OneIOSCert = ConfigParser.Get().GetOneIOSCertificate("D")
+            #UnrealConfigIniManager.SetConfig_IOSCert(Args.projectpath,OneIOSCert["signing_identity"],OneIOSCert["provisioning_profile"])
         
 
     def SetUEEngine(self,engine_ver,Args):
