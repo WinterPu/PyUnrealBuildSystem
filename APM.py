@@ -209,10 +209,21 @@ class AgoraPluginManager(BaseSystem):
         target_plugin_src_code_path = repo_path / "Agora-Unreal-SDK-CPP" / PLUGIN_NAME
         target_plugin_src_lib_path = plugin_tmp_path
         ## change dst here
+
+        ## Copy Repo[Agora-Unreal-SDK-CPP]/PLUGIN to Dst
         target_plugin_dst_lib_path = target_plugin_dst_path / "Source"/ "ThirdParty" / "AgoraPluginLibrary"
         print(target_plugin_src_code_path)
         print(target_plugin_dst_path)
         shutil.copytree(target_plugin_src_code_path,target_plugin_dst_path,dirs_exist_ok= True)
+
+
+        ###### Modify Android Template Here ###### 
+        path_android_tmpl_src = target_plugin_dst_lib_path / "Android" / "Release"
+        filename_full_tmpl = "APL_armv7TemplateFULL.xml"
+        filename_voice_tmpl = "APL_armv7TemplateVoice.xml"
+        filename_src_tmpl = filename_full_tmpl if bis_audio_only == False else filename_voice_tmpl
+        filename_target_tmpl = "APL_armv7Template.xml"
+        shutil.copy(path_android_tmpl_src / filename_src_tmpl,path_android_tmpl_src / filename_target_tmpl)
 
         original_src = target_plugin_src_lib_path
         original_dst = target_plugin_dst_lib_path
@@ -304,8 +315,9 @@ class AgoraPluginManager(BaseSystem):
         self.ModifyFiles(bis_audio_only,target_plugin_dst_path / Path("Source") / Path(PLUGIN_NAME) /Path( PLUGIN_NAME+ ".Build.cs"))
         ## Modify Files Here
 
+        sdk_archieve_folder = sdk_ver
         src_zip_files_root_path = target_plugin_dst_path.parent
-        dst_zip_file_path = root_plugin_gen_path / plugin_archive_dir
+        dst_zip_file_path = root_plugin_gen_path / plugin_archive_dir / sdk_archieve_folder
         dst_zip_file_path.mkdir(parents= True, exist_ok= True)
         dst_zip_file_path = dst_zip_file_path / (PLUGIN_NAME + ".zip")
         OneZipCommand.ZipFile(PLUGIN_NAME,dst_zip_file_path,src_zip_files_root_path)
@@ -419,6 +431,7 @@ class AgoraPluginManager(BaseSystem):
         plugin_tmp_file_dir = Args.PluginTmpFileDir
         final_plugin_file_dir = Args.FinalPluginFileDir 
         plugin_archive_dir = Args.PluginArchive
+        sdk_archieve_folder =  Args.agorasdk
 
         root_plugin_gen_path = cur_path.parent / plugin_working_dir
         repo_path = root_plugin_gen_path
@@ -427,7 +440,7 @@ class AgoraPluginManager(BaseSystem):
         repo_name = git_url.split('/')[-1].split('.')[0]
 
         bFullDelete = False
-        FileUtility.DeleteDir(root_plugin_gen_path / Path(plugin_archive_dir))
+        FileUtility.DeleteDir(root_plugin_gen_path / Path(plugin_archive_dir) /Path(sdk_archieve_folder))
         plugin_tmp_path = root_plugin_gen_path / plugin_tmp_file_dir
 
         if bFullDelete == True:
