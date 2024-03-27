@@ -1,6 +1,9 @@
 from Logger.Logger import *
 from pathlib import Path
 class UnrealConfigIniManager:
+    
+    def GenIniVal_Path(path):
+        return "(Path=\"%s\")" % path
 
     def SetConfig_BundleIdentifier(path_uproject,bundle_identifier):
         path = Path(path_uproject)
@@ -22,6 +25,7 @@ class UnrealConfigIniManager:
         else:
             PrintErr("Config Ini File [%s] Not Found" %path_ini)
 
+    ## section etc = "[/Script/IOSRuntimeSettings.IOSRuntimeSettings]"
     def SetConfig(path_ini,section,key,val,bAppendIfNotFounded = False):
 
         path_ini = Path(path_ini)
