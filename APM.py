@@ -82,6 +82,34 @@ class AgoraPluginManager(BaseSystem):
         if bIncludeConflictArgs:
             pass
 
+    ## PluginWorkingDir
+    ## -- PluginTemp
+    ## ----- tmp_plugin_files
+    ## -- PluginArchive
+    def Get_PluginWorkingDir(self):
+        return "PluginWorkDir"
+    def Get_PluginTmpFileDir(self):
+        return "PluginTemp"
+    def Get_FinalPluginFileDir(self):
+        return "tmp_plugin_files"
+    def Get_PluginArchive(self):
+        return "PluginArchive"
+    def Get_PluginTmpSortSuffixName(self):
+        return "_To_BE_DELETED"
+
+    def Get_FinalPluginPlacedDir(self,root_plugin_archive_path,sdk_ver,is_audio_only):
+        path_category01 = Path(root_plugin_archive_path) / Path(sdk_ver)
+        if not path_category01.exists():
+            path_category01.mkdir(parents=True)
+        
+        category02 = "Full" if not is_audio_only else "AudioOnly"
+        path_category02 = path_category01 / category02
+        if not path_category02.exists():
+            path_category02.mkdir(parents=True)
+        
+        return path_category02
+
+
     def Init(self):
         PrintStageLog("AgoraPluginManager Init")
         ConfigParser.Get().Init()
@@ -98,14 +126,6 @@ class AgoraPluginManager(BaseSystem):
 
     def StartGenPlugin(self,Args):
 
-        ## Set Dir 
-        Args.PluginWorkingDir = "PluginWorkDir"
-        Args.PluginTmpFileDir = "PluginTemp"
-        Args.PluginTmpSortSuffixName = "_To_BE_DELETED"
-        Args.FinalPluginFileDir = "tmp_plugin_files"
-        Args.PluginArchive = "PluginArchive"
-
-
         AgoraPluginManager.Get().CleanPlugin(Args)
         PLUGIN_NAME = Args.pluginname
 
@@ -119,11 +139,11 @@ class AgoraPluginManager(BaseSystem):
 
         bis_mac_remove_symbolic_link =Args.rmmacslink
 
-        plugin_working_dir = Args.PluginWorkingDir
-        plugin_tmp_file_dir = Args.PluginTmpFileDir
-        plugin_tmp_sort_dir_suffix_name = Args.PluginTmpSortSuffixName
-        final_plugin_file_dir = Args.FinalPluginFileDir 
-        plugin_archive_dir = Args.PluginArchive
+        plugin_working_dir = self.Get_PluginWorkingDir()
+        plugin_tmp_file_dir = self.Get_PluginTmpFileDir()
+        plugin_tmp_sort_dir_suffix_name = self.Get_PluginTmpSortSuffixName()
+        final_plugin_file_dir = self.Get_FinalPluginFileDir() 
+        plugin_archive_dir = self.Get_PluginArchive()
 
         # url_windows = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/windows/full/Agora_Native_SDK_for_Windows_rel.v4.2.1_21296_FULL_20230727_1707_272784.zip"
         # url_mac = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/mac/full/Agora_Native_SDK_for_Mac_rel.v4.2.1_46142_FULL_20230727_1549_272786.zip"
@@ -315,10 +335,10 @@ class AgoraPluginManager(BaseSystem):
         self.ModifyFiles(bis_audio_only,target_plugin_dst_path / Path("Source") / Path(PLUGIN_NAME) /Path( PLUGIN_NAME+ ".Build.cs"))
         ## Modify Files Here
 
-        sdk_archieve_folder = sdk_ver
         src_zip_files_root_path = target_plugin_dst_path.parent
-        dst_zip_file_path = root_plugin_gen_path / plugin_archive_dir / sdk_archieve_folder
+        dst_zip_file_path = root_plugin_gen_path / plugin_archive_dir
         dst_zip_file_path.mkdir(parents= True, exist_ok= True)
+        dst_zip_file_path = self.Get_FinalPluginPlacedDir(dst_zip_file_path,sdk_ver,bis_audio_only)
         dst_zip_file_path = dst_zip_file_path / (PLUGIN_NAME + ".zip")
         OneZipCommand.ZipFile(PLUGIN_NAME,dst_zip_file_path,src_zip_files_root_path)
         
@@ -427,11 +447,14 @@ class AgoraPluginManager(BaseSystem):
         cur_path = Path(__file__).parent.absolute()
         PrintLog(cur_path)
 
-        plugin_working_dir = Args.PluginWorkingDir
-        plugin_tmp_file_dir = Args.PluginTmpFileDir
-        final_plugin_file_dir = Args.FinalPluginFileDir 
-        plugin_archive_dir = Args.PluginArchive
-        sdk_archieve_folder =  Args.agorasdk
+        plugin_working_dir = self.Get_PluginWorkingDir()
+        plugin_tmp_file_dir = self.Get_PluginTmpFileDir()
+        final_plugin_file_dir = self.Get_FinalPluginFileDir()
+        plugin_archive_dir =  self.Get_PluginArchive()
+        plugin_tmp_sort_dir_suffix_name = self.Get_PluginTmpSortSuffixName()
+
+        sdk_ver =  Args.agorasdk
+        bis_audio_only = Args.sdkisaudioonly
 
         root_plugin_gen_path = cur_path.parent / plugin_working_dir
         repo_path = root_plugin_gen_path
@@ -440,7 +463,8 @@ class AgoraPluginManager(BaseSystem):
         repo_name = git_url.split('/')[-1].split('.')[0]
 
         bFullDelete = False
-        FileUtility.DeleteDir(root_plugin_gen_path / Path(plugin_archive_dir) /Path(sdk_archieve_folder))
+        path_target_plugin_placed_dir = self.Get_FinalPluginPlacedDir(root_plugin_gen_path / Path(plugin_archive_dir),sdk_ver,bis_audio_only)
+        FileUtility.DeleteDir(path_target_plugin_placed_dir)
         plugin_tmp_path = root_plugin_gen_path / plugin_tmp_file_dir
 
         if bFullDelete == True:
@@ -450,7 +474,7 @@ class AgoraPluginManager(BaseSystem):
             for dir in delete_dir_list:
                 FileUtility.DeleteDir(plugin_tmp_path / Path(dir))
                 if dir != final_plugin_file_dir:
-                    FileUtility.DeleteDir(plugin_tmp_path / Path(dir + Args.PluginTmpSortSuffixName))
+                    FileUtility.DeleteDir(plugin_tmp_path / Path(dir + plugin_tmp_sort_dir_suffix_name))
 
     def DownloadAgoraSDKPlugin(self,dst_path,sdk_ver,is_audio_only,bkeep_symlink = True):
         plugin_url =ConfigParser.Get().GetRTCSDKURL(sdk_ver,is_audio_only)
@@ -515,22 +539,63 @@ class AgoraPluginManager(BaseSystem):
 
     
     
-    def GetPluginZipFilePathFromRepo(self,sdk_ver,bis_audio_only,bredownload = False):
+    def GetPluginZipFilePathFromRepo(self,sdk_ver,bis_audio_only,bforce_redownload = False, bforce_search_in_working_dir = False):
+        result_plugin_path = None
+        bfounded = False
+        ## 1. >>> Check in Plugin Repo <<< 
+        ### Use Archived Plugin in Plugin Repo 
+        ### Ex. /Users/admin/Documents/PluginRepo
         default_plugin_repo_path = Path(ConfigParser.Get().GetDefaultPluginRepo())
         default_plugin_repo_path.mkdir(parents= True, exist_ok= True)
 
         url = ConfigParser.Get().GetRTCSDKURL(sdk_ver,bis_audio_only)
-        PrintLog(url)
-        plugin_name = url.split('/')[-1]
-        plugin_path = default_plugin_repo_path / plugin_name
+        PrintLog("[GetPlugin] Find The Plugin URL [%s]" % url)
 
-        ## Download Plugin
-        if bredownload:
-            if plugin_path.exists() == True:
-                plugin_path.unlink()
-            FileDownloader.DownloadWithRequests(url,plugin_path)
+        ## because the repo only has downloaded plugins with the url provided.
+        if url != "" and bforce_search_in_working_dir == False:
+            ## Ex. "https://download.agora.io/sdk/release/Agora_RTC_Full_SDK_4.2.1_Unreal.zip"
+            plugin_name = url.split('/')[-1]
+            ## Ex. /Users/admin/Documents/PluginRepo/4.2.1/   (Create 4.2.1 First)
+            path_final_plugin_placed_dir = self.Get_FinalPluginPlacedDir(default_plugin_repo_path,sdk_ver,bis_audio_only)
+            plugin_path = path_final_plugin_placed_dir / plugin_name
 
-        return plugin_path
+
+            if plugin_path.exists() == True and bforce_redownload == False:
+                result_plugin_path = plugin_path
+                bfounded = True
+                PrintLog("[GetPlugin] Use Existing Plugin[%s]" % str(result_plugin_path))
+
+            ## 2. >>>> Download with URL
+            else:
+                ## Need to use sync_download
+                if plugin_path.exists() == True:
+                    plugin_path.unlink()
+                FileDownloader.DownloadWithRequests(url,plugin_path)
+                result_plugin_path = plugin_path
+                bfounded = True
+                PrintLog("[GetPlugin] Download The Plugin[%s] With URL[%s]" % (str(result_plugin_path),url))
+
+        else:
+            ## could not be founded in our sdk config
+            ## 3. >>> Check the plugin in our work dir <<<
+            plugin_working_dir = self.Get_PluginWorkingDir()
+            plugin_archive_dir = self.Get_PluginArchive()
+
+            cur_path = Path(__file__).parent.absolute()
+            root_plugin_gen_path = cur_path.parent / plugin_working_dir
+
+            dst_zip_file_path = self.Get_FinalPluginPlacedDir((root_plugin_gen_path / plugin_archive_dir) , sdk_ver, bis_audio_only)
+
+            for item in dst_zip_file_path.glob("*.zip"):
+                result_plugin_path = dst_zip_file_path / item
+                bfounded = True
+                PrintLog("[GetPlugin] Search Plugin in WorkingDir [%s] " % (result_plugin_path))
+                break
+
+        if bfounded == False:
+            PrintErr("[GetPlugin] Plugin Not Founded ")
+
+        return result_plugin_path
     
     def DoMacRATrustTask(self,project_path,password = ""):
         if self.GetHostPlatform() == "Mac":
@@ -538,38 +603,37 @@ class AgoraPluginManager(BaseSystem):
             OneMacRATrustCommand.DoMacTrust(project_path,"",password)
 
     def CopySDKToDstPath(self,val_plugin_name,sdk_type,val_sdk_ver,val_is_audio_only,dst_path):
-        ## Copy SDK Zip File to Dst Path
-        ## UnZip it
-        ## dst: Project / Plugins
+        ## Copy Agora SDK Plugin to Dst Path (UE Project)
+
         plugin_name = val_plugin_name
         plugin_sdk_ver = val_sdk_ver
         plugin_is_audio_only = val_is_audio_only
         plugin_path = self.GetPluginZipFilePathFromRepo(plugin_sdk_ver,plugin_is_audio_only)
 
-
-        ## Copy Plugin
-
-        ## Prepare Dst Path
+        ## Prepare Dst Path:
+        ## Ex. (UEProject)[/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example] / [AgoraPlugin]
         dst_plugin_path = dst_path / plugin_name
 
         if dst_plugin_path.exists() == True:
             FileUtility.DeleteDir(str(dst_plugin_path))
         dst_plugin_path.mkdir(parents= True, exist_ok= True)
 
-        
+        ## Prepare Src Path:
+        ## Ex. [/Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1] / [UnzipPluginAgoraPlugin]
         OneZipCommand =ZipCommand(self.GetHostPlatform())
         unzip_path = plugin_path.parent / Path("UnzipPlugin" + plugin_path.stem)
         OneZipCommand.UnZipFile(plugin_path ,unzip_path)
-        ## Suppose: Folder would be [ZipName]/[PluginName]
+
+        ## Suppose: Unzipped Folder would be [PluginName] (unzipped_folder_name == plugin_name)
+        ## Ex. [/Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1]/[UnzipPluginAgoraPlugin] / (plugin_name)[Agora_RTC_Full_SDK_4.2.1_Unreal] /  AgoraPlugin
         src_plugin_path = unzip_path / plugin_name
+        ## Ex. [/Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1]/[UnzipPluginAgoraPlugin] /  AgoraPlugin
         if src_plugin_path.exists() != True:
             src_plugin_path = unzip_path.parent / plugin_name
-        PrintLog("Copy Src Path: " + str(src_plugin_path))
+        PrintLog("Copy Src Path: [%s] to Dst Path [%s] " % (str(src_plugin_path) , str(dst_plugin_path)))
         shutil.copytree(str(src_plugin_path),str(dst_plugin_path),dirs_exist_ok= True)
         FileUtility.DeleteDir(str(unzip_path))
         
-
-
 
 if __name__ == '__main__':
     AgoraPluginManager.Get().Start()
