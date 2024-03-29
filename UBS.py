@@ -54,8 +54,6 @@ class PyUnrealBuildSystem(BaseSystem):
 
         ConfigParser.Get().Init()
 
-        AgoraPluginManager.Get().Init()
-
     def InitBuildSystemInfo(self):
         version_info['BuildSystemVersion'] = self.version
         version_info['PythonVersion'] = platform.python_version()
@@ -122,6 +120,32 @@ class PyUnrealBuildSystem(BaseSystem):
             ArgParser.add_argument("-agorasdk", default="4.2.1")
             ArgParser.add_argument("-CopySDKType",default="None")
             ArgParser.add_argument("-RedownloadSDK",action='store_true')
+
+    def GetName_TestPluginOutputDir(self):
+        return "TestPluginOutput"
+    
+    def GetName_TestPluginUnzipDir(self):
+        return "TestPluginUnzip"
+    
+    def GetInfo_PluginNameAndUPluginFilePath(self,path_plugin_folder):
+        ## search in path_plugin_folder to find upluign file. 
+        ## get the plugin name the same as the uplugin file
+
+        uplugin_files = list(Path(path_plugin_folder).rglob("*.uplugin"))
+        path_uplugin_file = ""
+        name_plugin = ""
+        for uplugin_file in uplugin_files:
+            if "__MACOSX" in str(uplugin_file):
+                    ## not the target one
+                    pass
+            else:
+                path_uplugin_file = Path(uplugin_file)
+                name_plugin = Path(path_uplugin_file).stem
+                PrintLog("[GetPluginInfo] plugin name [%s] uplugin file path: [%s] " % (name_plugin , str(path_uplugin_file)))
+                if name_plugin != path_uplugin_file.parent.name:
+                    PrintErr("[GetPluginInfo] the plugin folder name [%s] is not equal to uplugin file name [%s]" %( path_uplugin_file.parent.name,name_plugin))
+        
+        return name_plugin, path_uplugin_file
 
     def InitConfig(self):
         PrintLog("Init Log")
@@ -259,6 +283,61 @@ class PyUnrealBuildSystem(BaseSystem):
             #OneIOSCert = ConfigParser.Get().GetOneIOSCertificate("D")
             #UnrealConfigIniManager.SetConfig_IOSCert(Args.projectpath,OneIOSCert["signing_identity"],OneIOSCert["provisioning_profile"])
         
+
+    def BuildPlugin(self,Args,path_plugin_zipfile):
+
+        path_working_dir = Path(path_plugin_zipfile).parent
+        path_unzip = path_working_dir / Path(self.GetName_TestPluginUnzipDir())
+
+        ## Clean First
+        if path_unzip.exists():
+            FileUtility.DeleteDir(path_unzip)
+    
+        ## Prepare :
+        ## Unzip the plugin to get uplugin file path
+        OneZipCommand =ZipCommand(self.GetHostPlatform())
+        OneZipCommand.UnZipFile(path_plugin_zipfile,path_unzip)
+        name_plugin,path_uplugin_file = self.GetInfo_PluginNameAndUPluginFilePath(path_unzip)
+        
+        ## Start Testing
+        self.BuildPluginInner(Args,path_uplugin_file)
+    
+        ### [After Build] Clean Environment
+        if path_unzip.exists():
+            FileUtility.DeleteDir(path_unzip)
+
+
+
+    def BuildPluginInner(self,Args,path_uplugin_file):
+        ## Ex. /Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1/AgoraPlugin/AgoraPlugin.uplugin
+        ## -> /Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1/TestPluginOutput
+        path_output_dir = Path(path_uplugin_file).parent.parent / Path(self.GetName_TestPluginOutputDir())
+        
+        if path_output_dir.exists():
+            FileUtility.DeleteDir(path_output_dir)
+        path_output_dir.mkdir(parents=True,exist_ok=True)
+        
+        cur_enginever  = Args.enginever
+        arg_targetplatform = Args.targetplatform
+
+        all_engine_list = ConfigParser.Get().GetAllAvailableEngineList()
+        test_complete_log_keyword = "Test Plugin Complete"
+        for engine_ver in all_engine_list:
+            PrintStageLog("Test Use Engine Ver [%s]" % engine_ver)
+            Args = PyUnrealBuildSystem.Get().SetUEEngine(engine_ver,Args)  
+            
+            ret_host,tmp_host_platform = CreateHostPlatform(self.GetHostPlatform(),Args)
+            tmp_host_platform.BuildPlugin(path_uplugin_file,arg_targetplatform,path_output_dir)
+            PrintStageLog(test_complete_log_keyword + " Engine Ver[%s]" %engine_ver)
+
+        PrintStageLog("Test Plugin Complete --- Use keyword [%s] to search in your log" %test_complete_log_keyword )
+
+        ## [Ater Test] Recover UE Engine
+        Args = PyUnrealBuildSystem.Get().SetUEEngine(cur_enginever,Args)
+
+        if path_output_dir.exists():
+            FileUtility.DeleteDir(path_output_dir)
+    
 
     def SetUEEngine(self,engine_ver,Args):
         Args.enginever = engine_ver

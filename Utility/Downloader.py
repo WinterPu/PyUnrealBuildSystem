@@ -7,6 +7,7 @@ from Logger.Logger import *
 class FileDownloader:
 
     def DownloadWithRequests(url,dst_file_path):
+        PrintLog("[Download Start] url[%s] to dst path[%s] " %(url,str(dst_file_path)))
         response = requests.get(url)
         PrintLog(str(response) + " url %s" % url)
         open(dst_file_path,"wb").write(response.content)
