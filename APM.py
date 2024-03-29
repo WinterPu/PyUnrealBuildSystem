@@ -61,7 +61,7 @@ class AgoraPluginManager(BaseSystem):
 
         ArgParser.add_argument("-agorasdktype", default="RTC")
         ArgParser.add_argument("-agorasdk", default="4.2.1")
-        ArgParser.add_argument("-sdkisaudioonly",default=False)
+        ArgParser.add_argument("-sdkisaudioonly",action = "store_true")
         ArgParser.add_argument("-skipnativedownload",action='store_true')
         ArgParser.add_argument("-skipgit",action='store_true')
         ArgParser.add_argument("-rmmacslink",action='store_true') # remove mac symbolic link
