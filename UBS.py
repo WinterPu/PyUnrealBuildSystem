@@ -176,6 +176,7 @@ class PyUnrealBuildSystem(BaseSystem):
             return
 
         if Args.BuildPlugin == True:
+            ## [TBD] Modify
             arg_targetplatform = Args.targetplatform
             arg_project_file_path = Args.projectpath
             arg_project_path = arg_project_file_path.parent
@@ -185,46 +186,6 @@ class PyUnrealBuildSystem(BaseSystem):
                 plugin_path = Path(Args.pluginpath)
                 output_path = plugin_path.parent.parent / Path("output/")
             host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
-
-        # if Args.TestPlugin == True:
-        #     PrintStageLog("Test Plugin")
-            
-        #     ## Clean
-        #     path_plugin_archive_dir = Path("/Users/admin/Documents/PluginWorkDir/PluginArchive/")
-        #     path_target_plugin = path_plugin_archive_dir/ Path("AgoraPlugin.zip")
-        #     path_output_dir = path_plugin_archive_dir / Path("Output")
-            
-        #     path_target_plugin_dir = path_plugin_archive_dir/path_target_plugin.stem
-        #     if path_target_plugin_dir.exists():
-        #         FileUtility.DeleteDir(path_target_plugin_dir)
-            
-        #     if path_output_dir.exists():
-        #         FileUtility.DeleteDir(path_output_dir)
-
-
-        #     ## Prepare 
-        #     OneZipCommand =ZipCommand(self.GetHostPlatform())
-        #     OneZipCommand.UnZipFile(path_target_plugin,path_plugin_archive_dir)
-        #     plugin_name = "AgoraPlugin"
-        #     path_uplugin_file =  path_plugin_archive_dir / plugin_name / Path(plugin_name+".uplugin")
-            
-        #     path_output_dir.mkdir(parents=True,exist_ok=True)
-
-        #     AgoraPluginManager.Get().RemoveSymbolicLink(path_target_plugin_dir/ Path("Source/ThirdParty/AgoraPluginLibrary") / Path("Mac") / Path("Release"))
-
-        #     cur_enginever  = Args.enginever
-
-        #     all_engine_list = ConfigParser.Get().GetAllAvailableEngineList()
-        #     for engine_ver in all_engine_list:
-        #         PrintStageLog("Build Use Engine Ver [%s]" % engine_ver)
-        #         Args = self.SetUEEngine(engine_ver,Args)  
-             
-        #         arg_targetplatform = Args.targetplatform
-        #         ret_host,tmp_host_platform = CreateHostPlatform(type_hostplatform,Args)
-        #         tmp_host_platform.BuildPlugin(path_uplugin_file,arg_targetplatform,path_output_dir)
-
-        #     ## Recover UE Engine
-        #     Args = self.SetUEEngine(cur_enginever,Args)
 
         if Args.BuildCookRun == True:
             target_platform_type_list = ParsePlatformArg(Args.targetplatform)
