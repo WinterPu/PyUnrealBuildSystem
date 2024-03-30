@@ -2,6 +2,7 @@
 from Platform.PlatformBase import *
 from Command.GenerateProjectFilesCommand import *
 from Command.IPhonePackagerCommand import *
+from Command.UBTCommand import * 
 from pathlib import Path
 from FileIO.FileUtility import FileUtility
 
@@ -31,6 +32,9 @@ class MacPlatformPathUtility:
     
     def GetFrameworkSrcPathFromSDK():
         return Path("Plugins/AgoraPlugin/Source/ThirdParty/AgoraPluginLibrary/Mac/Release/")
+    
+    def GetUBTPath():
+        return Path("Engine/Binaries/DotNET/UnrealBuildTool.exe")
 
 class MacPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):
@@ -52,6 +56,7 @@ class MacPlatformBase(PlatformBase):
 
         key = "iphonepackager_path"
         val[key] = Path(val["engine_path"]) / MacPlatformPathUtility.GetIPhonePackagerPath()
+
 
         return ret,val
     
@@ -80,6 +85,18 @@ class MacHostPlatform(BaseHostPlatform):
 
         one_command.GenerateProjectFiles(self.Params)
         PrintLog("BaseHostPlatform - GenerateProject")
+    
+    def GenerateIOSProject(self,path_uproject):
+        engine_path = self.GetParamVal("engine_path")
+        ubt_path = Path(engine_path) / Path(MacPlatformPathUtility.GetUBTPath())
+
+        one_command = UBTCommand(ubt_path)
+
+        self.Params["project_file_path"] = path_uproject
+
+        one_command.GenerateIOSProject(self.Params)
+        PrintLog("BaseHostPlatform - GenerateProject")
+
     
     def IOSSign(self,project_file_path,bundlename):
         path_mono =  self.GetParamVal("mono_path")

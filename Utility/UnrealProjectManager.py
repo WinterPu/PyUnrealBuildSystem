@@ -21,7 +21,7 @@ class UnrealProjectManager:
         UETmpFolderList = ["Binaries", "Build", "Intermediate", "Saved","DerivedDataCache"]
         for folder in UETmpFolderList:
             folder_path = os.path.join(project_path, folder)
-            print("CleanProject", folder_path)
+            PrintLog("CleanProject %s" % str(folder_path))
             FileUtility.DeleteDir(folder_path)
         plugin_root_path = os.path.join(project_path, "Plugins")
 
@@ -30,12 +30,19 @@ class UnrealProjectManager:
             plugin_path = os.path.join(plugin_root_path, one_plugin)
             for folder in UETmpFolderList:
                 folder_path = os.path.join(plugin_path, folder)
-                print("CleanPluginProject", folder_path)
+                PrintLog("CleanPluginProject %s " % (folder_path))
                 FileUtility.DeleteDir(folder_path)
 
     def GenerateProject(host_platform,path):
         host_platform.GenerateProject(path)
-        print("Generate Project")
+        PrintLog("Generate Project")
+
+    def GenerateIOSProject(host_platform,path):
+        if host_platform.GetHostPlatform() == "Mac":
+            host_platform.GenerateIOSProject(path)
+            PrintLog("Generate Project")
+        else:
+            PrintErr("Host Platform doesn't support to generate ios project for now.")
 
     
 

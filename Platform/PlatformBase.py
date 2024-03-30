@@ -12,6 +12,9 @@ class PlatformBase:
         
         val = {}
         
+        key = "platform"
+        val[key] = args.HostMachineOS 
+
         key = "engine_path"
         val[key] = args.enginepath
         
@@ -47,6 +50,9 @@ class BaseHostPlatform:
         self.Params = host_params
         self.OneUATCommand = UATCommand(self.Params['uat_path'])
 
+    def GetHostPlatform(self):
+        return self.GetParamVal("platform")
+    
     def SetupEnvironment(self):
        PrintLog("BaseHostPlatform - SetupEnvironment")
 

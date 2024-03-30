@@ -18,6 +18,9 @@ class WinPlatformPathUtility:
 class WinPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):
         ret, val = PlatformBase.GenHostPlatformParams(args)
+        
+        key = "platform"
+        val[key] = "Win64"
 
         key = "uat_path"
         val["uat_path"] = val["engine_path"] / WinPlatformPathUtility.GetRunUATPath()

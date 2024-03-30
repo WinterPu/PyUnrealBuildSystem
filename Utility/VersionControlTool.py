@@ -8,7 +8,7 @@ class VersionControlTool:
     def Get():
         return VersionControlTool.VersionControlCommand
     
-    def CheckOutOneRepo(url,dstpath):
+    def CheckOutOneRepo(url,dstpath,branch_name =""):
         VersionControlTool.Get().GitVersion()
 
         repo_name = url.split('/')[-1].split('.git')[0]
@@ -19,9 +19,10 @@ class VersionControlTool:
         if(dst_repo_path.exists()):
             VersionControlTool.Get().GitReset(dst_repo_path)
             VersionControlTool.Get().GitPull(dst_repo_path)
+            VersionControlTool.Get().GitCheckout(dst_repo_path,branch_name)
         else:
             VersionControlTool.Get().GitClone(url,dst_repo_path)
-
+            VersionControlTool.Get().GitCheckout(dst_repo_path,branch_name)
 
 
 

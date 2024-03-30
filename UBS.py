@@ -113,6 +113,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-GitRevert", action='store_true')
         ArgParser.add_argument("-Clean", action='store_true')
         ArgParser.add_argument("-GenProject", action='store_true')
+        ArgParser.add_argument("-GenIOSProject", action='store_true')
 
         if bIncludeConflictArgs:
             ArgParser.add_argument("-TestPlugin", action='store_true')
@@ -210,6 +211,12 @@ class PyUnrealBuildSystem(BaseSystem):
             project_folder_path = Args.projectpath
             ## [TBD] some needs \ and some doesn't need \
             UnrealProjectManager.GenerateProject(host_platform,project_folder_path)
+
+        if Args.GenIOSProject == True:
+            path_project = Path(Args.projectpath)
+            project_folder_path = Args.projectpath
+            ## [TBD] some needs \ and some doesn't need \
+            UnrealProjectManager.GenerateIOSProject(host_platform,project_folder_path)
 
         if Args.GitClone == True:
             url = ""

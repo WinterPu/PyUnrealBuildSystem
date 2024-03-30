@@ -68,7 +68,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-agorasdkbuildconfig", default="Release")
         ArgParser.add_argument("-pluginname", default="AgoraPlugin")
         ArgParser.add_argument("-giturl", default= "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git")
-
+        ArgParser.add_argument("-gitbranch", default="") 
         ## empty: full copy, copy all the files under the target folder.
         ArgParser.add_argument("-winarch", default="") 
         ArgParser.add_argument("-macarch", default="macos-arm64_x86_64") 
@@ -153,6 +153,7 @@ class AgoraPluginManager(BaseSystem):
         PLUGIN_NAME = Args.pluginname
 
         git_url = Args.giturl
+        git_branch = Args.gitbranch
 
         sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly)
         
@@ -195,7 +196,9 @@ class AgoraPluginManager(BaseSystem):
         VersionControlTool.Init(OneGitCommand)
 
         if Args.skipgit == False:
-            VersionControlTool.CheckOutOneRepo(git_url,repo_path)
+            VersionControlTool.CheckOutOneRepo(git_url,repo_path,git_branch)
+
+        return 
 
         repo_name = git_url.split('/')[-1].split('.')[0]
         repo_path = repo_path / repo_name

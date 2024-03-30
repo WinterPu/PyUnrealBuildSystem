@@ -31,3 +31,31 @@ class UBTCommand:
             r" -progress" + sub_command_log + " " + extra_commands
         )
         RUNCMD(command)
+
+
+    def GenerateIOSProject(self,params):
+        key = "project_file_path"
+        project_path = params[key] if key in params else ""
+
+        key = "mono_path"
+        mono_path = params[key] if key in params else ""
+
+        key = "extra_commands"
+        extra_commands = params[key] if key in params else ""
+        
+        command = (
+                r' bash "' + str(mono_path) + '"' + ' "' + str(self.ubtpath) + '" '
+                r" -XcodeProjectFiles"
+                r" -project=" + '"' + str(project_path) + '"' + 
+                r" -platforms=IOS"
+                r" -game"
+                r" -nointellisense"
+                r" -IOSdeployonly"
+                r" -ignorejunk"
+                r" -projectfileformat=XCode"
+                r" -includetemptargets" 
+                r" -automated" + 
+                # r" -log="/Users/admin/Library/Logs/Unreal Engine/LocalBuildLogs/UBT-.txt""
+                extra_commands
+             )
+        RUNCMD(command)

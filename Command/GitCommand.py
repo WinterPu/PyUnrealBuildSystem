@@ -34,3 +34,14 @@ class GitCommand:
         )
 
         RUNCMD(command)
+    
+
+    def GitCheckout(self,dst_path=".",branch_name = ""):
+        if branch_name == "":
+            return
+        else:
+            command = (
+                r"git"+ " -C " + '"' + str(dst_path) +'"' + " checkout -B  " +  str(branch_name) + ' origin/' +  str(branch_name)
+            )
+
+            RUNCMD(command)
