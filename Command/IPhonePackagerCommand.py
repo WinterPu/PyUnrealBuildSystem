@@ -42,7 +42,6 @@ class IPhonePackagerCommand:
         key = "bundlename"
         bundlename =  params[key] if key in params else ""
 
-
         key = "certficate"
         certificate =  params[key] if key in params else ""
 

@@ -55,6 +55,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ConfigParser.Get().Init()
 
     def InitBuildSystemInfo(self):
+        self.version = "1.""0.""0"
         version_info['BuildSystemVersion'] = self.version
         version_info['PythonVersion'] = platform.python_version()
         ossystem = platform.platform().lower()
