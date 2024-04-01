@@ -2,6 +2,7 @@ from Platform.PlatformBase import *
 from Command.UBTCommand import *
 from pathlib import Path
 
+from UBSHelper import *
 
 class WinPlatformPathUtility:
     def GetRunUATPath():
@@ -18,49 +19,50 @@ class WinPlatformPathUtility:
 class WinPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):
         ret, val = PlatformBase.GenHostPlatformParams(args)
-        
-        key = "platform"
-        val[key] = "Win64"
 
         key = "uat_path"
-        val["uat_path"] = val["engine_path"] / WinPlatformPathUtility.GetRunUATPath()
+        val["uat_path"] = UBSHelper.Get().GetPath_UEEngine() / WinPlatformPathUtility.GetRunUATPath()
 
         return ret, val
 
     def GenTargetPlatformParams(args):
         ret, val = PlatformBase.GenTargetPlatformParams(args)
 
-        key = "platform"
-        val[key] = "Win64"
-
-        # key = "project_path"
-        # val[key] = args.projectpath if 'projectpath' in args else None
-        ### [TBD]
-        ## validate project
-
+        # key = "target_platform"
+        # val[key] = "Win64"
+        
         PrintLog("PlatformBase - GenParams")
         return ret, val
 
 
 class WinHostPlatform(BaseHostPlatform):
-    def GenerateProject(self, project_file_path):
-        engine_path = self.GetParamVal("engine_path")
-        ubt_path = Path(engine_path) / Path(WinPlatformPathUtility.GetUBTPath())
+    def GenerateProject(self, path_uproject_file):
+        ## uproject file could be any uproject file, not only the target project
+        ubt_path = Path(UBSHelper.Get().GetPath_UEEngine()) / Path(WinPlatformPathUtility.GetUBTPath())
 
         one_command = UBTCommand(ubt_path)
 
-        self.Params["project_file_path"] = project_file_path
+        params = ParamsUBT()
+        params.path_uproject_file = path_uproject_file
 
-        one_command.GenerateProjectFiles(self.Params)
+        one_command.GenerateProjectFiles(params)
         PrintLog("BaseHostPlatform - GenerateProject")
 
 
 class WinTargetPlatform(BaseTargetPlatform):
+    def GetTargetPlatform(self):
+        return SystemHelper.Win64_TargetName()
+    
     def SetupEnvironment(self):
         print("SetupEnvironment - Win Platform")
 
     def Package(self):
         self.SetupEnvironment()
-        print("Package - Win Platform")
+        PrintStageLog("Package - %s Platform" % self.GetTargetPlatform())
 
-        self.RunUAT().BuildCookRun(self.Params)
+        params = ParamsUAT()
+        params.target_platform = self.GetTargetPlatform()
+        params.path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
+        params.path_engine = UBSHelper.Get().GetPath_UEEngine()
+        params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
+        self.RunUAT().BuildCookRun(params)

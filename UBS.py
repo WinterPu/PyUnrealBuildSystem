@@ -18,21 +18,24 @@ import argparse
 
 import platform
 
+from UBSHelper import *
+from SystemHelper import *
+
 version_info = {}
 class PyUnrealBuildSystem(BaseSystem):
-    _instance = None
-    _initialized = False
+    __instance = None
+    __initialized = False
     
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-            cls._instance._initialized = False
-        return cls._instance
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls, *args, **kwargs)
+            cls.__instance.__initialized = False
+        return cls.__instance
     
     def __init__(self) -> None:
-        if not self._initialized: 
+        if not self.__initialized: 
             super().__init__()
-            self._initialized = True
+            self.__initialized = True
     
     def Get():
         return PyUnrealBuildSystem()
@@ -41,9 +44,6 @@ class PyUnrealBuildSystem(BaseSystem):
     def Start(self):
         PrintStageLog("Start Build System")
         PyUnrealBuildSystem.Get().Init()
-
-
-        ## 
         args = PyUnrealBuildSystem.Get().ParseCMDArgs()
         PyUnrealBuildSystem.Get().CreateTask(args)
 
@@ -55,17 +55,8 @@ class PyUnrealBuildSystem(BaseSystem):
         ConfigParser.Get().Init()
 
     def InitBuildSystemInfo(self):
-        self.version = "1.""0.""0"
-        version_info['BuildSystemVersion'] = self.version
-        version_info['PythonVersion'] = platform.python_version()
-        ossystem = platform.platform().lower()
-        if 'windows' in ossystem:
-            version_info['HostMachineOS'] = "Win"
-        elif 'macos' in ossystem:
-            version_info['HostMachineOS'] = "Mac"
-        else:
-            version_info['HostMachineOS'] = ossystem
-        
+        val_version = "1.""0.""0"
+        version_info['SystemVersion'] = val_version
         PrintLog(version_info)
 
     def ParseCMDArgs(self):
@@ -78,14 +69,14 @@ class PyUnrealBuildSystem(BaseSystem):
     def AddArgsToParser(self,ArgParser, bIncludeConflictArgs = True):
         #bIncludeConflictArgs: Some Args used in this file would have conflicts with args which have the same name in the other files
         ## because [add_argument] cannot add the same arguments twice
-        default_targetsystem = version_info['HostMachineOS']
-        if default_targetsystem == "Win":
-            default_targetsystem = "Win64"
+        default_targetsystem = self.GetHostPlatform()
+        if default_targetsystem == SystemHelper.Win_HostName():
+            default_targetsystem = SystemHelper.Win64_TargetName()
 
         ArgParser.add_argument("-enginepath", default="")
         ArgParser.add_argument("-enginever", default="4.27")
-        ArgParser.add_argument("-projectpath", default=Path("/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
-        ArgParser.add_argument("-pluginpath", default="") ## if "": use the plugin under the plugins file
+        ArgParser.add_argument("-uprojectpath", default=Path("/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
+        ArgParser.add_argument("-upluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
         ArgParser.add_argument("-ioscert",default = "MediaLab")
@@ -129,25 +120,6 @@ class PyUnrealBuildSystem(BaseSystem):
     def GetName_TestPluginUnzipDir(self):
         return "TestPluginUnzip"
     
-    def GetInfo_PluginNameAndUPluginFilePath(self,path_plugin_folder):
-        ## search in path_plugin_folder to find upluign file. 
-        ## get the plugin name the same as the uplugin file
-
-        uplugin_files = list(Path(path_plugin_folder).rglob("*.uplugin"))
-        path_uplugin_file = ""
-        name_plugin = ""
-        for uplugin_file in uplugin_files:
-            if "__MACOSX" in str(uplugin_file):
-                    ## not the target one
-                    pass
-            else:
-                path_uplugin_file = Path(uplugin_file)
-                name_plugin = Path(path_uplugin_file).stem
-                PrintLog("[GetPluginInfo] plugin name [%s] uplugin file path: [%s] " % (name_plugin , str(path_uplugin_file)))
-                if name_plugin != path_uplugin_file.parent.name:
-                    PrintErr("[GetPluginInfo] the plugin folder name [%s] is not equal to uplugin file name [%s]" %( path_uplugin_file.parent.name,name_plugin))
-        
-        return name_plugin, path_uplugin_file
 
     def InitConfig(self):
         PrintLog("Init Log")
@@ -156,39 +128,29 @@ class PyUnrealBuildSystem(BaseSystem):
 
     def CreateTask(self,Args):
         ## Init Host Platform
-        type_hostplatform = version_info['HostMachineOS']
+        type_hostplatform = SystemHelper.Get().GetHostPlatform()
 
-        ## Combine 2 Args
-        Args.HostMachineOS = type_hostplatform
-
-
-        PrintLog("Check EnginePath " + str(Args.enginepath) + str(Args.enginepath == ""))
-        ## Handle Engine Version
-        if Args.enginepath == "":
-            Args.enginepath = Path(ConfigParser.Get().GetDefaultEnginePath(Args.enginever))
-            PrintLog("Check EnginePath " + str(Args.enginepath))
+        UBSHelper.Get().Init(Args)
 
         ret_host,host_platform = CreateHostPlatform(type_hostplatform,Args)
-
-        if Args.archive_dir != "":
-            Args.archive_dir = str(Path(Args.projectpath).parent / Args.archive_dir)
-
         if ret_host == False:
             PrintErrWithFrame(sys._getframe())
             return
+        
 
         if Args.BuildPlugin == True:
+            pass
             ## [TBD] Modify
-            arg_targetplatform = Args.targetplatform
-            arg_project_file_path = Args.projectpath
-            arg_project_path = arg_project_file_path.parent
-            plugin_path = arg_project_path  / Path("Plugins/AgoraVoicePlugin/AgoraVoicePlugin.uplugin")
-            output_path = arg_project_path  / Path("Saved/PluginOutput/")
-            if Args.pluginpath != "":
-                plugin_path = Path(Args.pluginpath)
-                output_path = plugin_path.parent.parent / Path("output/")
-            host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
-
+            # arg_targetplatform = Args.targetplatform
+            # arg_path_uproject_file = Args.uprojectpath
+            # arg_path_project = arg_path_uproject_file.parent
+            # plugin_path = arg_path_project  / Path("Plugins/AgoraVoicePlugin/AgoraVoicePlugin.uplugin")
+            # output_path = arg_path_project  / Path("Saved/PluginOutput/")
+            # if Args.upluginpath != "":
+            #     plugin_path = Path(Args.upluginpath)
+            #     output_path = plugin_path.parent.parent / Path("output/")
+            # host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
+        
         if Args.BuildCookRun == True:
             target_platform_type_list = ParsePlatformArg(Args.targetplatform)
             for target_platform_type in target_platform_type_list:
@@ -200,24 +162,21 @@ class PyUnrealBuildSystem(BaseSystem):
                     PrintErr("Invalid TargetPlatform Creation")
 
         if Args.Clean == True:
-            path_project = Path(Args.projectpath)
-            project_folder_path = path_project.parent
+            path_project = Path(Args.uprojectpath).parent
             ## Path \ or not
 
             ## [TBD] clean xcproject
-            UnrealProjectManager.CleanProject(project_folder_path)
+            UnrealProjectManager.CleanProject(path_project)
 
         if Args.GenProject == True:
-            path_project = Path(Args.projectpath)
-            project_folder_path = Args.projectpath
+            path_uproject_file = Path(Args.uprojectpath)
             ## [TBD] some needs \ and some doesn't need \
-            UnrealProjectManager.GenerateProject(host_platform,project_folder_path)
+            UnrealProjectManager.GenerateProject(host_platform,path_uproject_file)
 
         if Args.GenIOSProject == True:
-            path_project = Path(Args.projectpath)
-            project_folder_path = Args.projectpath
+            path_uproject_file = Path(Args.uprojectpath)
             ## [TBD] some needs \ and some doesn't need \
-            UnrealProjectManager.GenerateIOSProject(host_platform,project_folder_path)
+            UnrealProjectManager.GenerateIOSProject(host_platform,path_uproject_file)
 
         if Args.GitClone == True:
             url = ""
@@ -227,17 +186,17 @@ class PyUnrealBuildSystem(BaseSystem):
 
         bTestCommand = False
         if bTestCommand:
-            if self.GetHostPlatform() == "Mac":
-                project_folder_path = Args.projectpath
+            if self.GetHostPlatform() == SystemHelper.Mac_HostName():
+                path_uproject_file = Args.uprojectpath
                 bundlename = Args.iosbundlename
-                host_platform.IOSSign(project_folder_path,bundlename)           
+                host_platform.IOSSign(path_uproject_file,bundlename)           
 
         if Args.IPAResign == True:
             OneFastLaneCommand = FastLaneCommand()
-            path_uproject = Path(Args.projectpath)
+            path_uproject = Path(Args.uprojectpath)
             name_app = path_uproject.stem + ".ipa"
 
-            path_ipa = Path(Args.projectpath).parent / "ArchivedBuilds"/ "IOS" / name_app
+            path_ipa = Path(Args.uprojectpath).parent / "ArchivedBuilds"/ "IOS" / name_app
             
             tag_name_ios_cert = Args.ioscert
             if ConfigParser.Get().IsIOSCertValid(tag_name_ios_cert) :
@@ -250,7 +209,7 @@ class PyUnrealBuildSystem(BaseSystem):
             UnrealConfigIniManager.SetConfig(Args.IniFile,Args.IniSection,Args.IniKey,Args.IniVal,True)
             
             #OneIOSCert = ConfigParser.Get().GetOneIOSCertificate("D")
-            #UnrealConfigIniManager.SetConfig_IOSCert(Args.projectpath,OneIOSCert["signing_identity"],OneIOSCert["provisioning_profile"])
+            #UnrealConfigIniManager.SetConfig_IOSCert(Args.uprojectpath,OneIOSCert["signing_identity"],OneIOSCert["provisioning_profile"])
         
 
     def BuildPlugin(self,Args,path_plugin_zipfile):
@@ -266,7 +225,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ## Unzip the plugin to get uplugin file path
         OneZipCommand =ZipCommand(self.GetHostPlatform())
         OneZipCommand.UnZipFile(path_plugin_zipfile,path_unzip)
-        name_plugin,path_uplugin_file = self.GetInfo_PluginNameAndUPluginFilePath(path_unzip)
+        name_plugin,path_uplugin_file = UBSHelper.Get().GetInfo_PluginNameAndUPluginFilePath(path_unzip)
         
         ## Start Testing
         self.BuildPluginInner(Args,path_uplugin_file)
@@ -293,7 +252,7 @@ class PyUnrealBuildSystem(BaseSystem):
         test_complete_log_keyword = "Test Plugin Complete"
         for engine_ver in all_engine_list:
             PrintStageLog("Test Use Engine Ver [%s]" % engine_ver)
-            Args = PyUnrealBuildSystem.Get().SetUEEngine(engine_ver,Args)  
+            UBSHelper.Get().SetUEEngineWithVer(engine_ver) 
             
             ret_host,tmp_host_platform = CreateHostPlatform(self.GetHostPlatform(),Args)
             tmp_host_platform.BuildPlugin(path_uplugin_file,arg_targetplatform,path_output_dir)
@@ -302,16 +261,10 @@ class PyUnrealBuildSystem(BaseSystem):
         PrintStageLog("Test Plugin Complete --- Use keyword [%s] to search in your log" %test_complete_log_keyword )
 
         ## [Ater Test] Recover UE Engine
-        Args = PyUnrealBuildSystem.Get().SetUEEngine(cur_enginever,Args)
+        UBSHelper.Get().SetUEEngineWithVer(cur_enginever)
 
         if path_output_dir.exists():
             FileUtility.DeleteDir(path_output_dir)
-    
-
-    def SetUEEngine(self,engine_ver,Args):
-        Args.enginever = engine_ver
-        Args.enginepath = Path(ConfigParser.Get().GetDefaultEnginePath(Args.enginever))
-        return Args
 
 if __name__ == '__main__':
     PyUnrealBuildSystem.Get().Start()

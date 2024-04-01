@@ -2,41 +2,37 @@ from Platform.PlatformBase import *
 from Utility.UnrealConfigIniManager import *
 import os
 
+from UBSHelper import *
 
 class AnndroidPlatformPathUtility:
-    def GetAndroidSDKConfigIniPathOnWindows():
+    def GetPath_AndroidSDKConfigIniOnWindows():
         ## if you start with '/', it would be treated as starting from the root path
-        return Path("Unreal Engine/Engine/Config/UserEngine.ini")
+        path_local_user_appdata= Path(os.environ["LOCALAPPDATA"])
+        return path_local_user_appdata / Path("Unreal Engine/Engine/Config/UserEngine.ini")
     
 class AndroidPlatformBase(PlatformBase):
     def GenTargetPlatformParams(args):
         ret, val = PlatformBase.GenTargetPlatformParams(args)
 
-        key = "platform"
-        val[key] = "Android"
-
-        key = "enginever"
-        val[key] = args.enginever if "enginever" in args else "4.27"
-
-        # key = "project_path"
-        # val[key] = args.projectpath if 'projectpath' in args else None
-
-        ### [TBD]
-        ## validate project
+        # key = "target_platform"
+        # val[key] = "Android"
 
         return ret, val
 
 
 class AndroidTargetPlatform(BaseTargetPlatform):
+    def GetTargetPlatform(self):
+        return SystemHelper.Android_TargetName()
+    
     def SetupEnvironment(self):
         print("SetupEnvironment - %s Platform" % self.GetTargetPlatform())
         
         ### Modify Android SDK Config
-        host_platform = self.GetParamVal("host_platform")
+        host_platform = self.GetHostPlatform()
 
-        if host_platform == "Win":
+        if host_platform == SystemHelper.Win_HostName():
         
-            engine_ver = self.GetParamVal("enginever")
+            engine_ver = UBSHelper.Get().GetVer_UEEngine()
             PrintLog("Before Modification: NDKROOT:  %s" % os.environ["NDKROOT"])
             PrintLog("Before Modification: NDK_ROOT:  %s" % os.environ["NDK_ROOT"])
             path_ndk = Path(os.environ["NDKROOT"])
@@ -61,15 +57,11 @@ class AndroidTargetPlatform(BaseTargetPlatform):
             PrintLog("Cur NDK_ROOT:  %s" % os.environ["NDK_ROOT"])
 
             ## Modify Android SDK Config
-            path_local_user_appdata= Path(os.environ["LOCALAPPDATA"])
-
-
             val_java = UnrealConfigIniManager.GenIniVal_Path(final_java_val)
             val_ndk = UnrealConfigIniManager.GenIniVal_Path(final_ndk_path)
             val_ndk_apilevel = final_ndk_apilevel
 
-
-            path_android_sdk_config_ini = path_local_user_appdata / AnndroidPlatformPathUtility.GetAndroidSDKConfigIniPathOnWindows()
+            path_android_sdk_config_ini =  AnndroidPlatformPathUtility.GetPath_AndroidSDKConfigIniOnWindows()
             UnrealConfigIniManager.SetConfig(path_android_sdk_config_ini, "[/Script/AndroidPlatformEditor.AndroidSDKSettings]", "NDKPath",val_ndk,True)
             UnrealConfigIniManager.SetConfig(path_android_sdk_config_ini, "[/Script/AndroidPlatformEditor.AndroidSDKSettings]", "JavaPath", val_java,True)
             UnrealConfigIniManager.SetConfig(path_android_sdk_config_ini, "[/Script/AndroidPlatformEditor.AndroidSDKSettings]", "NDKAPILevel",val_ndk_apilevel,True)
@@ -81,4 +73,11 @@ class AndroidTargetPlatform(BaseTargetPlatform):
     def Package(self):
         self.SetupEnvironment()
         print("Package - %s Platform" % self.GetTargetPlatform())
-        self.RunUAT().BuildCookRun(self.Params)
+
+        params = ParamsUAT()
+        params.target_platform = self.GetTargetPlatform()
+        params.path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
+        params.path_engine = UBSHelper.Get().GetPath_UEEngine()
+        params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
+
+        self.RunUAT().BuildCookRun(params)

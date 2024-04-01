@@ -1,10 +1,12 @@
 
 from Platform.PlatformBase import *
-from Command.GenerateProjectFilesCommand import *
+from Command.GenerateProjectFilesWithShellCommand import *
 from Command.IPhonePackagerCommand import *
 from Command.UBTCommand import * 
 from pathlib import Path
 from FileIO.FileUtility import FileUtility
+
+from UBSHelper import *
 
 import shutil
 
@@ -35,27 +37,31 @@ class MacPlatformPathUtility:
     
     def GetUBTPath():
         return Path("Engine/Binaries/DotNET/UnrealBuildTool.exe")
+    
+
 
 class MacPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):
         ret,val = PlatformBase.GenHostPlatformParams(args)
+        
+        path_engine = UBSHelper.Get().GetPath_UEEngine()
 
         key = "uat_path"
         ## if a path starts with '/', it would be treated as starting from the root path.
-        val[key] = Path(val["engine_path"]) / MacPlatformPathUtility.GetRunUATPath()
+        val[key] = Path(path_engine) / MacPlatformPathUtility.GetRunUATPath()
 
         key = "genprojfiles_path"
-        val[key] = Path(val["engine_path"])/ MacPlatformPathUtility.GetGenerateProjectScriptPath()
+        val[key] = Path(path_engine)/ MacPlatformPathUtility.GetGenerateProjectScriptPath()
 
 
         key = "bundlename"
         val[key] = args.bundlename if 'bundlename' in args else ""
 
         key = "mono_path"
-        val[key] = Path(val["engine_path"]) / MacPlatformPathUtility.GetMonoScriptPath()
+        val[key] = Path(path_engine) / MacPlatformPathUtility.GetMonoScriptPath()
 
         key = "iphonepackager_path"
-        val[key] = Path(val["engine_path"]) / MacPlatformPathUtility.GetIPhonePackagerPath()
+        val[key] = Path(path_engine) / MacPlatformPathUtility.GetIPhonePackagerPath()
 
 
         return ret,val
@@ -63,13 +69,8 @@ class MacPlatformBase(PlatformBase):
     def GenTargetPlatformParams(args):
         ret,val = PlatformBase.GenTargetPlatformParams(args)
 
-        key = "platform"
-        val[key] = "Mac"
-
-        # key = "project_path"
-        # val[key] = args.projectpath if 'projectpath' in args else None
-        ### [TBD]
-        ## validate project
+        # key = "target_platform"
+        # val[key] = "Mac"
 
         PrintLog("PlatformBase - GenParams")
         return ret,val
@@ -77,37 +78,51 @@ class MacPlatformBase(PlatformBase):
 
 
 class MacHostPlatform(BaseHostPlatform):
-    def GenerateProject(self,project_file_path):
-        genproj_script = self.GetParamVal("genprojfiles_path")
-        one_command = GenerateProjectFilesCommand(genproj_script)
-        
-        self.Params['project_file_path'] = project_file_path
+    def __init__(self,host_params) -> None:
+        self.Params = host_params
+        path_script_genproj = Path(UBSHelper.Get().GetPath_UEEngine()) / MacPlatformPathUtility.GetGenerateProjectScriptPath()
+        self.OneUATCommand = UATCommand(self.Params['uat_path'],path_script_genproj)
 
-        one_command.GenerateProjectFiles(self.Params)
+    def GenerateProject(self,path_uproject_file):
+        ## uproject file could be any uproject file, not only the target project
+        genproj_script = self.GetParamVal("genprojfiles_path")
+        one_command = GenerateProjectFilesWithShellCommand(genproj_script)
+
+        params = ParamsGenProjectWithShell()
+        params.path_uproject_file = path_uproject_file
+    
+        one_command.GenerateProjectFiles(params)
         PrintLog("BaseHostPlatform - GenerateProject")
     
     def GenerateIOSProject(self,path_uproject):
-        engine_path = self.GetParamVal("engine_path")
-        ubt_path = Path(engine_path) / Path(MacPlatformPathUtility.GetUBTPath())
+        ubt_path = Path(UBSHelper.Get().GetPath_UEEngine()) / Path(MacPlatformPathUtility.GetUBTPath())
 
-        one_command = UBTCommand(ubt_path)
+        one_command = UBTCommand(ubt_path,self.Params["mono_path"])
 
-        self.Params["project_file_path"] = path_uproject
-
-        one_command.GenerateIOSProject(self.Params)
+        params = ParamsUBT()
+        params.path_uproject_file = path_uproject
+        
+        one_command.GenerateIOSProject(params)
         PrintLog("BaseHostPlatform - GenerateProject")
 
     
-    def IOSSign(self,project_file_path,bundlename):
+    def IOSSign(self,path_uproject_file,bundlename):
         path_mono =  self.GetParamVal("mono_path")
         path_iphonerpackager =  self.GetParamVal("iphonepackager_path")
-        self.Params['project_path'] = project_file_path
-        self.Params['bundlename'] = bundlename
+
         OneIPhonePackagerCommand = IPhonePackagerCommand(path_mono,path_iphonerpackager)
-        OneIPhonePackagerCommand.Sign(self.Params)
+
+        params = ParamsIPhonePacakger()
+        params.path_uproject_file = path_uproject_file
+        params.bunndle_name = bundlename
+
+        OneIPhonePackagerCommand.Sign(params)
 
 
 class MacTargetPlatform(BaseTargetPlatform):
+    def GetTargetPlatform(self):
+        return SystemHelper.Mac_TargetName()
+    
     def SetupEnvironment(self):
         print("SetupEnvironment - Mac Platform")
 
@@ -116,11 +131,10 @@ class MacTargetPlatform(BaseTargetPlatform):
         app_name = "AgoraExample.app"
 
         platform_folder = "Mac"
-        if self.GetParamVal('engine_ver') == '4.27':
+        if UBSHelper.Get().GetVer_UEEngine() == '4.27':
             platform_folder = "MacNoEditor"
         
-        project_path = Path(self.GetParamVal('project_path'))
-        project_folder_path = project_path.parent
+        project_folder_path = UBSHelper.Get().GetPath_ProjectRoot()
         app_dst_achieve_folder = project_folder_path / "ArchivedBuilds" / platform_folder / app_name
         src_path = project_folder_path / MacPlatformPathUtility.GetFrameworkSrcPathFromSDK()
         dst_path = app_dst_achieve_folder / MacPlatformPathUtility.GetFrameworkDstPathInApplication()
@@ -131,6 +145,13 @@ class MacTargetPlatform(BaseTargetPlatform):
 
     def Package(self):
         self.SetupEnvironment()
-        PrintStageLog("Package - Mac Platform")
-        self.RunUAT().BuildCookRun(self.Params)
+        PrintStageLog("Package - %s Platform" % self.GetTargetPlatform())
+
+        params = ParamsUAT()
+        params.target_platform = self.GetTargetPlatform()
+        params.path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
+        params.path_engine = UBSHelper.Get().GetPath_UEEngine()
+        params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
+        self.RunUAT().BuildCookRun(params)
+
         self.PostPackaged()

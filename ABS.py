@@ -3,22 +3,24 @@ from SystemBase import *
 
 from APM import *
 from UBS import *
+
+from UBSHelper import *
 ## Combine UBS + APM
 class AgoraBuildSystem(BaseSystem):
 
-    _instance = None
-    _initialized = False
+    __instance = None
+    __initialized = False
 
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-            cls._instance._initialized = False
-        return cls._instance
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls, *args, **kwargs)
+            cls.__instance.__initialized = False
+        return cls.__instance
     
     def __init__(self) -> None:
-        if not self._initialized: 
+        if not self.__initialized: 
             super().__init__()
-            self._initialized = True
+            self.__initialized = True
     
     def Get():
         return AgoraBuildSystem()
@@ -134,7 +136,7 @@ class AgoraBuildSystem(BaseSystem):
         ## Unzip the plugin to get uplugin file path
         OneZipCommand =ZipCommand(self.GetHostPlatform())
         OneZipCommand.UnZipFile(path_plugin_zipfile,path_unzip)
-        name_plugin,path_uplugin_file = PyUnrealBuildSystem.Get().GetInfo_PluginNameAndUPluginFilePath(path_unzip)
+        name_plugin,path_uplugin_file = UBSHelper.Get().GetInfo_PluginNameAndUPluginFilePath(path_unzip)
         path_plugin = Path(path_uplugin_file).parent
     
         ### Agora Modfication

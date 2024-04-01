@@ -1,34 +1,100 @@
 from Command.CommandBase import *
 from Logger.Logger import *
 from pathlib import Path
+from SystemHelper import *
+
+from Command.GenerateProjectFilesWithShellCommand import *
+
+class ParamsUAT:
+    def __init__(self) -> None:
+        self.__path_uproject_file = ""
+        self.__target_platform = ""
+        self.__path_archive = ""
+        self.__path_log = ""
+        self.__subcommand_extras = ""
+
+        ## Plugin 
+        self.__path_uplugin_file = ""
+        self.__path_plugin_output_dir = ""
+
+    @property
+    def get_path_uproject_file(self):
+        return self.__path_uproject_file
+    @property
+    def get_target_platform(self):
+        return self.__target_platform
+    
+    @property
+    def get_subcommand_archive_dir(self):
+        subcommand = ""
+        str_path_archive = str(self.__path_archive)
+        if str_path_archive and len(str_path_archive) > 0:
+            subcommand = ' -archivedirectory="' +str_path_archive+'" '
+        return subcommand
+    
+    @property
+    def get_subcommand_log(self):
+        return (r" -log=" + '"' + str(self.__path_log) + '"') if self.__path_log != "" else ""
+    @property
+    def get_subcommand_extras(self):
+        return " " + self.__subcommand_extras
+    
+    ## BuildPlugin 
+    @property
+    def get_path_plugin_output_dir(self):
+        return self.__path_plugin_output_dir
+    
+    @property
+    def get_path_uplugin_file(self):
+        return self.__path_uplugin_file
+    
+
+    @get_path_uproject_file.setter
+    def path_uproject_file(self,val):
+        self.__path_uproject_file = val
+
+    @get_target_platform.setter
+    def target_platform(self,val):
+        self.__target_platform = val
+    
+    @get_subcommand_archive_dir.setter
+    def path_archive(self,val):
+        self.__path_archive = val
+
+    @get_subcommand_log.setter
+    def path_log(self,val):
+        self.__path_log = val
+    @get_subcommand_extras.setter
+    def extra_commands(self,val):
+        self.__subcommand_extras = val
+
+    ## BuildPlugin
+    @get_path_uplugin_file.setter
+    def path_uplugin_file(self,val):
+        self.__path_uplugin_file = val
+
+    @get_path_plugin_output_dir.setter
+    def path_plugin_output_dir(self,val):
+        self.__path_plugin_output_dir = val
+
 
 class UATCommand:
-    uatpath = Path("/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUAT.sh")
-    def __init__(self, uatpath_val) -> None:
-        self.uatpath = uatpath_val
+    __uatpath = Path("/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUAT.sh")
+    __host_platform = ""
+    __path_genproj_script = ""
+    def __init__(self, uatpath_val,path_script_genproj = "") -> None:
+        self.__uatpath = uatpath_val
+        self.__host_platform = SystemHelper.Get().GetHostPlatform()
+        if self.__host_platform == SystemHelper.Mac_HostName():
+            self.__path_genproj_script = path_script_genproj
 
-    def BuildCookRun(self,params):
+    def BuildCookRun(self,params:ParamsUAT):
         ### Command
-        key = "platform"
-        platform = params[key] if key in params else ""
 
-        key = "project_path"
-        project_path = params[key] if key in params else ""
-
-        key = "extra_commands"
-        extra_commands = params[key] if key in params else ""
-
-        key = "engine_path"
-        engine_path = params[key] if key in params else ""
-
-        key = 'host_platform'
-        hostplatfom = params[key] if key in params else ""
-
-        key = "archive_dir"
-        archive_dir = params[key] if key in params else ""
-        param_command_archive_dir = ""
-        if archive_dir and len(archive_dir) > 0:
-            param_command_archive_dir = ' -archivedirectory="' + archive_dir+'" '
+        target_platform = params.get_target_platform
+        path_uproject_file = params.get_path_uproject_file
+        subcommand_archive_dir = params.get_subcommand_archive_dir
+        subcommand_extras = params.get_subcommand_extras
 
         # ## need 
         # command = (
@@ -48,27 +114,23 @@ class UATCommand:
         #  )
         # RUNCMD(command)
 
-        if platform == "IOS":
+        if target_platform == SystemHelper.IOS_TargetName():
             
-            if hostplatfom == "Win":
+            if self.__host_platform == SystemHelper.Win_HostName():
                 PrintErr("TBD - Not Ready, Packaging IOS on Windows Platform")
                 return
             
-            from Platform.Mac import MacPlatformPathUtility
-            script_path = Path(engine_path) / MacPlatformPathUtility.GetGenerateProjectScriptPath()
-            
-            command = (
-                '"' + str(script_path) + '"' + 
-                r" -project="+ '"'  + str(project_path) + '"'
-                r" -game"+
-                extra_commands
-            )
-            RUNCMD(command)
+
+            ## Gen UE Project On Mac
+            OneGenerateProjectFilesWithShellCommand = GenerateProjectFilesWithShellCommand(self.__path_genproj_script)
+            params_genwithshell = ParamsGenProjectWithShell()
+            params_genwithshell.path_uproject_file = path_uproject_file
+            OneGenerateProjectFilesWithShellCommand.GenerateProjectFiles(params_genwithshell)
 
             command = (
-                '"' + str(self.uatpath) + '"' +
-                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
-                r" -targetplatform="+platform+
+                '"' + str(self.__uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
+                r" -targetplatform="+target_platform+
                 r" -clientconfig=Development"
                 r" -Build"
                 r" -GenerateDSYM"
@@ -77,33 +139,33 @@ class UATCommand:
                 r" -Archive"
                 r" -package"
                 r" -verbose"+
-                extra_commands
+                subcommand_extras
              )
             RUNCMD(command)
 
             command = (
-                '"' + str(self.uatpath) + '"' +
-                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
-                r" -targetplatform="+platform+
+                '"' + str(self.__uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
+                r" -targetplatform="+target_platform+
                 r" -SkipBuildEditor"
                 r" -clientconfig=Development"
                 r" -Build"
                 r" -GenerateDSYM"
                 r" -Cook"
                 r" -Stage"
-                r" -Archive"  + param_command_archive_dir +
+                r" -Archive"  + subcommand_archive_dir +
                 r" -package"
                 r" -verbose"+
-                extra_commands
+                subcommand_extras
             )
             RUNCMD(command)
 
-        elif platform == "Mac" :
+        elif target_platform == SystemHelper.Mac_TargetName() :
             
             command = (
-                '"' + str(self.uatpath) + '"' +
-                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
-                r" -targetplatform="+platform+
+                '"' + str(self.__uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
+                r" -targetplatform="+target_platform+
                 r" -clientconfig=Development"
                 r" -Build"
                 r" -GenerateDSYM"
@@ -113,14 +175,14 @@ class UATCommand:
                 r" -Archive"
                 r" -package"
                 r" -verbose"+
-                extra_commands
+                subcommand_extras
              )
             RUNCMD(command)
 
             command = (
-                '"' + str(self.uatpath) + '"' +
-                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
-                r" -targetplatform="+platform+
+                '"' + str(self.__uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
+                r" -targetplatform="+target_platform+
                 r" -SkipBuildEditor"
                 r" -clientconfig=Development"
                 r" -Build"
@@ -128,52 +190,44 @@ class UATCommand:
                 r" -Cook"
                 r" -CookAll"
                 r" -Stage"
-                r" -Archive" + param_command_archive_dir + 
+                r" -Archive" + subcommand_archive_dir + 
                 r" -package"
                 r" -verbose"+
-                extra_commands
+                subcommand_extras
             )
             RUNCMD(command)
 
         else:
             command = (
-                '"' + str(self.uatpath) + '"' +
-                r" BuildCookRun  -project="+ '"' +str(project_path)+ '"' + 
-                r" -targetplatform="+platform+
+                '"' + str(self.__uatpath) + '"' +
+                r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
+                r" -targetplatform="+target_platform+
                 r" -SkipBuildEditor"
                 r" -clientconfig=Development"
                 r" -Build"
                 r" -GenerateDSYM"
                 r" -Cook"
                 r" -Stage"
-                r" -Archive"  + param_command_archive_dir +
+                r" -Archive"  + subcommand_archive_dir +
                 r" -package"
                 r" -verbose"+
-                extra_commands
+                subcommand_extras
             )
             RUNCMD(command)
 
-    def BuildPlugin(self,params):
+    def BuildPlugin(self,params:ParamsUAT):
         ## Command
-        key = "platform"
-        platform = params[key] if key in params else ""
-
-        key = "plugin_path"
-        plugin_path = params[key] if key in params else ""
-
-        key = "output_path"
-        output_path = params[key] if key in params else ""   
-
-        key = "extra_commands"
-        extra_commands = params[key] if key in params else ""    
-
+        target_platform = params.get_target_platform
+        path_uplugin_file = params.get_path_uplugin_file
+        path_plugin_output = params.get_path_plugin_output_dir
+        subcommand_extras = params.get_subcommand_extras
 
         command = (
-            "\"" + str(self.uatpath) + "\"" +
-            r" BuildPlugin  -plugin="+ '"' + str(plugin_path) + '"'+
-            r" -TargetPlatforms="+platform+
-            r" -package="+ '"' + str(output_path) + '"'+
+            "\"" + str(self.__uatpath) + "\"" +
+            r" BuildPlugin  -plugin="+ '"' + str(path_uplugin_file) + '"'+
+            r" -TargetPlatforms="+target_platform+
+            r" -package="+ '"' + str(path_plugin_output) + '"'+
             r" -rocket"+ # means precompiled & installed engine version
-            extra_commands
+            subcommand_extras
         )
         RUNCMD(command)

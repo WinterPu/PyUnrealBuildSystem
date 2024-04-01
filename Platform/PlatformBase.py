@@ -9,36 +9,16 @@ class PlatformBase:
 
     def GenHostPlatformParams(args):
         PrintLog("PlatformBase - GenParams")
-        
         val = {}
         
-        key = "platform"
-        val[key] = args.HostMachineOS 
-
-        key = "engine_path"
-        val[key] = args.enginepath
+        # key = "platform"
+        # val[key] = args.HostMachineOS 
         
         return True,val
 
     def GenTargetPlatformParams(args):
         PrintLog("PlatformBase - GenParams")
-
         val = {}
-
-        key = "project_path"
-        val[key] = args.projectpath if 'projectpath' in args else None
-
-        key = "host_platform"
-        val[key] = args.HostMachineOS if 'HostMachineOS' in args else "Win"
-
-        key = "engine_path"
-        val[key] = args.enginepath if 'enginepath' in args else None
-
-        key = "engine_ver"
-        val[key] = args.enginever  if 'enginever' in args else None
-
-        key = "archive_dir"
-        val[key] = args.archive_dir if 'archive_dir' in args else None
 
         return True,val
 
@@ -65,13 +45,11 @@ class BaseHostPlatform:
 
     def BuildPlugin(self,uplugin_file,target_platform, output_path = "./output"):
         
-        params = {}
-
-        params["plugin_path"] = uplugin_file
-        params["platform"] = target_platform
-        params["output_path"] = output_path
-        params["extra_commands"] = ""
-
+        params = ParamsUAT()
+        params.path_uplugin_file = uplugin_file
+        params.target_platform = target_platform
+        params.get_path_plugin_output_dir = output_path
+        
         self.RunUAT().BuildPlugin(params)
 
 
@@ -88,8 +66,6 @@ class BaseTargetPlatform:
     def GetParamVal(self,key):
         return self.Params[key]
     
-    def GetTargetPlatform(self):
-        return self.Params['platform']
 
     def RunUAT(self):
         return self.HostPlatform.RunUAT()
@@ -102,3 +78,9 @@ class BaseTargetPlatform:
 
     def PostPackaged():
         print("PostPackaged - Base Platform")
+
+    def GetHostPlatform(self):
+        return SystemHelper.Get().GetHostPlatform()
+    
+    def GetTargetPlatform(self):
+        print("SystemBase - GetTargetPlatform")

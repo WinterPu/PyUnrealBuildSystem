@@ -2,51 +2,69 @@ from Command.CommandBase import *
 from pathlib import Path
 
 
+class ParamsUBT:
+    def __init__(self) -> None:
+        self.__path_uproject_file = ""
+        self.__path_log = ""
+        self.__subcommand_extras = ""
+
+    @property
+    def get_path_uproject_file(self):
+        return self.__path_uproject_file
+    @property
+    def get_subcommand_log(self):
+        return (r" -log=" + '"' + str(self.__path_log) + '"') if self.__path_log != "" else ""
+    @property
+    def get_subcommand_extras(self):
+        return " " + self.__subcommand_extras
+
+    @get_path_uproject_file.setter
+    def path_uproject_file(self,val):
+        self.__path_uproject_file = val
+    @get_subcommand_log.setter
+    def path_log(self,val):
+        self.__path_log = val
+    @get_subcommand_extras.setter
+    def extra_commands(self,val):
+        self.__subcommand_extras = val
+    
+
+
 class UBTCommand:
-    ubtpath = Path(
+    __path_ubt = Path(
         "/Users/Shared/Epic Games/UE_5.2/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool"
     )
+    __path_mono = ""
+    def __init__(self, ubtpath_val,path_mono = "") -> None:
+        self.__path_ubt = ubtpath_val
+        self.__path_mono = path_mono
 
-    def __init__(self, ubtpath_val) -> None:
-        self.ubtpath = ubtpath_val
+    def GenerateProjectFiles(self, params:ParamsUBT):
 
-    def GenerateProjectFiles(self, params):
-        key = "project_file_path"
-        project_path = params[key] if key in params else ""
-
-        bneed_log_path = False
-        path_log = ""
-        sub_command_log = (
-            (r" -log=" + '"' + str(path_log) + '"') if bneed_log_path else ""
-        )
-
-        key = "extra_commands"
-        extra_commands = params[key] if key in params else ""
+        path_uproject_file = params.get_path_uproject_file
+        subcommand_log = params.get_subcommand_log
+        subcommand_extras = params.get_subcommand_extras
 
         command = (
-            '"' + str(self.ubtpath) + '"' +
-            r" -projectfiles  -project=" + '"' + str(project_path) + '"' +
+            '"' + str(self.__path_ubt) + '"' +
+            r" -projectfiles  -project=" + '"' + str(path_uproject_file) + '"' +
             r" -game"
             r" -rocket"
-            r" -progress" + sub_command_log + " " + extra_commands
+            r" -progress" + subcommand_log + " " + 
+            subcommand_extras
         )
         RUNCMD(command)
 
 
-    def GenerateIOSProject(self,params):
-        key = "project_file_path"
-        project_path = params[key] if key in params else ""
+    def GenerateIOSProject(self,params:ParamsUBT):
 
-        key = "mono_path"
-        mono_path = params[key] if key in params else ""
+        path_uproject_file = params.get_path_uproject_file
+        subcommand_extras = params.get_subcommand_extras
 
-        key = "extra_commands"
-        extra_commands = params[key] if key in params else ""
-        
         command = (
-                r' bash "' + str(mono_path) + '"' + ' "' + str(self.ubtpath) + '" '
+                r' bash "' + str(self.__path_mono) + '"' + ' "' + str(self.__path_ubt) + '" '
                 r" -XcodeProjectFiles"
-                r" -project=" + '"' + str(project_path) + '"' + 
+                r" -project=" + '"' + str(path_uproject_file) + '"' + 
                 r" -platforms=IOS"
                 r" -game"
                 r" -nointellisense"
@@ -56,6 +74,7 @@ class UBTCommand:
                 r" -includetemptargets" 
                 r" -automated" + 
                 # r" -log="/Users/admin/Library/Logs/Unreal Engine/LocalBuildLogs/UBT-.txt""
-                extra_commands
+                subcommand_extras
              )
+        
         RUNCMD(command)

@@ -14,6 +14,9 @@ from Utility.VersionControlTool import *
 
 from SystemBase import *
 
+
+from UBSHelper import *
+
 import argparse
 
 import platform
@@ -24,19 +27,19 @@ from UBS import *
 
 class AgoraPluginManager(BaseSystem):
 
-    _instance = None
-    _initialized = False
+    __instance = None
+    __initialized = False
 
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-            cls._instance._initialized = False
-        return cls._instance
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls, *args, **kwargs)
+            cls.__instance.__initialized = False
+        return cls.__instance
     
     def __init__(self) -> None:
-        if not self._initialized: 
+        if not self.__initialized: 
             super().__init__()
-            self._initialized = True
+            self.__initialized = True
     
     def Get():
         return AgoraPluginManager()
@@ -503,10 +506,10 @@ class AgoraPluginManager(BaseSystem):
             file.write(uplugin_json_str)
 
 
-    def DoMacRATrustTask(self,project_path,password = ""):
+    def DoMacRATrustTask(self,path_project,password = ""):
         if self.GetHostPlatform() == "Mac":
             OneMacRATrustCommand= MacRATrustCommand()
-            OneMacRATrustCommand.DoMacTrust(project_path,"",password)
+            OneMacRATrustCommand.DoMacTrust(path_project,"",password)
 
     def RemoveSymbolicLink(self,mac_framework_path):
         framework_list = Path(mac_framework_path).glob('*')
@@ -629,7 +632,7 @@ class AgoraPluginManager(BaseSystem):
 
         ## [path_plugin] / [name_plugin].uplugin
         ## Ex. AgoraPlugin , [/Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1]/[UnzipPluginAgoraPlugin] / Agora_RTC_Full_SDK_4.2.1_Unreal /  AgoraPlugin / AgoraPlugin.uplugin
-        name_plugin,path_plugin = PyUnrealBuildSystem.Get().GetInfo_PluginNameAndUPluginFilePath(unzip_path)
+        name_plugin,path_plugin = UBSHelper.Get().GetInfo_PluginNameAndUPluginFilePath(unzip_path)
 
         ## Ex. [/Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1]/[UnzipPluginAgoraPlugin] / (plugin_name)[Agora_RTC_Full_SDK_4.2.1_Unreal] /  AgoraPlugin
         src_plugin_path = Path(path_plugin.parent)

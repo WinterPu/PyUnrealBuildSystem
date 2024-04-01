@@ -33,8 +33,8 @@ class UnrealProjectManager:
                 PrintLog("CleanPluginProject %s " % (folder_path))
                 FileUtility.DeleteDir(folder_path)
 
-    def GenerateProject(host_platform,path):
-        host_platform.GenerateProject(path)
+    def GenerateProject(host_platform,path_uproject_file):
+        host_platform.GenerateProject(path_uproject_file)
         PrintLog("Generate Project")
 
     def GenerateIOSProject(host_platform,path):

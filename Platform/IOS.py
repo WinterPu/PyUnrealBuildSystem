@@ -1,12 +1,15 @@
 from Platform.PlatformBase import *
 from Utility.UnrealConfigIniManager import *
 from ConfigParser import *
+
+from UBSHelper import *
+
 class IOSPlatformBase(PlatformBase):
     def GenTargetPlatformParams(args):
         ret,val = PlatformBase.GenTargetPlatformParams(args)
         
-        key = "platform"
-        val[key] = "IOS"
+        # key = "target_platform"
+        # val[key] = "IOS"
 
         key = "ioscert"
         val[key] = args.ioscert
@@ -14,15 +17,13 @@ class IOSPlatformBase(PlatformBase):
         key = "iosbundleidentifier"
         val[key] = args.iosbundlename
 
-        # key = "project_path"
-        # val[key] = args.projectpath if 'projectpath' in args else None
-        ### [TBD]
-        ## validate project
-
         return ret,val
     
 
 class IOSTargetPlatform(BaseTargetPlatform):
+    def GetTargetPlatform(self):
+        return SystemHelper.IOS_TargetName()
+    
     def SetupEnvironment(self):
         PrintLog("SetupEnvironment - %s Platform" % self.GetTargetPlatform())
 
@@ -33,9 +34,17 @@ class IOSTargetPlatform(BaseTargetPlatform):
         else:
             PrintErr("IOSTargetPlatform - SetupEnvironment Certificate Set Failed")
 
-        UnrealConfigIniManager.SetConfig_BundleIdentifier(self.Params['project_path'],self.Params['iosbundleidentifier'])
+        path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
+        UnrealConfigIniManager.SetConfig_BundleIdentifier(path_uproject_file,self.Params['iosbundleidentifier'])
 
     def Package(self):
         self.SetupEnvironment()
-        print("Package - %s Platform" % self.GetTargetPlatform())
-        self.RunUAT().BuildCookRun(self.Params)
+        PrintStageLog("Package - %s Platform" % self.GetTargetPlatform())
+
+        params = ParamsUAT()
+        params.target_platform = self.GetTargetPlatform()
+        params.path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
+        params.path_engine = UBSHelper.Get().GetPath_UEEngine()
+        params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
+
+        self.RunUAT().BuildCookRun(params)

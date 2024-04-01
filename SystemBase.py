@@ -1,20 +1,14 @@
 from Utility.HeaderBase import *
 import platform
 import traceback
+from SystemHelper import *
 class BaseSystem:
-    version = "1.""0.""0"
-    version_info = {}
+    __version = "1.""0.""0"
+    __version_info = {}
     def __init__(self) -> None:
-        self.version_info['SystemVersion'] = self.version
-        self.version_info['PythonVersion'] = platform.python_version()
-        ossystem = platform.platform().lower()
-        if 'windows' in ossystem:
-            self.version_info['HostMachineOS'] = "Win"
-        elif 'macos' in ossystem:
-            self.version_info['HostMachineOS'] = "Mac"
-        else:
-            self.version_info['HostMachineOS'] = ossystem
-        ## PrintLog(self.version_info)
+        self.__version_info['SystemVersion'] = self.__version
+        self.__version_info['PythonVersion'] = platform.python_version()
+        self.__version_info['HostMachineOS'] = SystemHelper.Get().GetHostPlatform()
     
     def GetHostPlatform(self):
-        return self.version_info['HostMachineOS']
+        return self.__version_info['HostMachineOS']
