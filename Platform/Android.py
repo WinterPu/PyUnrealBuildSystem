@@ -46,13 +46,13 @@ class AndroidTargetPlatform(BaseTargetPlatform):
                 final_ndk_path = path_ndk.parent.joinpath("21.4.7075529")
                 os.environ["NDKROOT"] = str(final_ndk_path)
                 os.environ["NDK_ROOT"] = str(final_ndk_path)
-                final_java_val = path_java.parent.parent.joinpath("jdk-11")
+                final_java_val = path_java.parent.joinpath("jdk-11")
                 final_ndk_apilevel = "android-21"
             else:
                 final_ndk_path = path_ndk.joinpath("25.1.8937393")
                 os.environ["NDKROOT"] = str(final_ndk_path)
                 os.environ["NDK_ROOT"] = str(final_ndk_path)
-                final_java_val = path_java.parent.parent.joinpath("jdk-11")
+                final_java_val = path_java.parent.joinpath("jdk-11")
                 final_ndk_apilevel = "android-25"
 
             PrintLog("Cur NDKROOT:  %s" % os.environ["NDKROOT"])
