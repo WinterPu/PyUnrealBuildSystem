@@ -73,7 +73,7 @@ class AndroidTargetPlatform(BaseTargetPlatform):
             return
 
         
-        UnrealConfigIniManager.SetConfig_AndroidPackageName(self.Params['project_path'],self.Params['androidpackagename'])
+        UnrealConfigIniManager.SetConfig_AndroidPackageName(UBSHelper.Get().GetPath_UProjectFile(),self.Params['androidpackagename'])
 
     def Package(self):
         self.SetupEnvironment()
