@@ -25,13 +25,14 @@ class UnrealProjectManager:
             FileUtility.DeleteDir(folder_path)
         plugin_root_path = os.path.join(project_path, "Plugins")
 
-        plugin_list = os.listdir(plugin_root_path)
-        for one_plugin in plugin_list:
-            plugin_path = os.path.join(plugin_root_path, one_plugin)
-            for folder in UETmpFolderList:
-                folder_path = os.path.join(plugin_path, folder)
-                PrintLog("CleanPluginProject %s " % (folder_path))
-                FileUtility.DeleteDir(folder_path)
+        if os.path.exists(plugin_root_path):
+            plugin_list = os.listdir(plugin_root_path)
+            for one_plugin in plugin_list:
+                plugin_path = os.path.join(plugin_root_path, one_plugin)
+                for folder in UETmpFolderList:
+                    folder_path = os.path.join(plugin_path, folder)
+                    PrintLog("CleanPluginProject %s " % (folder_path))
+                    FileUtility.DeleteDir(folder_path)
 
     def GenerateProject(host_platform,path_uproject_file):
         host_platform.GenerateProject(path_uproject_file)
