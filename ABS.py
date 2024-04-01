@@ -73,6 +73,7 @@ class AgoraBuildSystem(BaseSystem):
         ArgParser.add_argument("-TestBlackList",default = "")
 
         ArgParser.add_argument("-GenPlugin",action = "store_true")
+        ArgParser.add_argument("-SkipCopySDKToProject",action = "store_true")
 
         if bIncludeConflictArgs:
             pass
@@ -83,7 +84,9 @@ class AgoraBuildSystem(BaseSystem):
 
         if Args.BuildUEProject == True:
             
-            self.CopySDKToUEProject(Args)
+            if Args.SkipCopySDKToProject != True:
+                self.CopySDKToUEProject(Args)
+
             Args.Clean = True
             PyUnrealBuildSystem.Get().CreateTask(Args)
             Args.Clean = False

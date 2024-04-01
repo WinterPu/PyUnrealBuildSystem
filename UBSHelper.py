@@ -81,13 +81,14 @@ class UBSHelper():
     
     def GetPath_ArchiveDir(self,target_platform):
         folder_platform = target_platform
+        ver_engine = self.GetVer_UEEngine()
         if target_platform == SystemHelper.Mac_TargetName():
-            if self.GetVer_UEEngine() == '4.27':
+            if float(ver_engine) < 5:
                 folder_platform = "MacNoEditor"
             else:
                 folder_platform = "Mac"
         elif  target_platform == SystemHelper.Win64_TargetName():
-            if self.GetVer_UEEngine() == '4.27':
+            if float(ver_engine) < 5:
                 folder_platform = "WindowsNoEditor"
             else:
                 folder_platform = "Windows"
