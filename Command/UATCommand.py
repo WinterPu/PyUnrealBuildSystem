@@ -198,6 +198,9 @@ class UATCommand:
             RUNCMD(command)
 
         else:
+
+            ## [TBD] blueprint project also needs 2 times build
+            
             command = (
                 '"' + str(self.__uatpath) + '"' +
                 r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
