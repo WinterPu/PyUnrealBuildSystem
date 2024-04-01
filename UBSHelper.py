@@ -99,6 +99,13 @@ class UBSHelper():
         return Path(path_uproject_file).stem
     
 
+    def GetName_PackagedApp(self,target_platform):
+        if  target_platform == SystemHelper.Mac_TargetName():
+            return self.GetName_ProjectName() + ".app"
+        else:
+            PrintErr("Current Not Supported")
+            return "TBD"
+
     def GetInfo_PluginNameAndUPluginFilePath(self,path_plugin_folder):
         ## search in path_plugin_folder to find upluign file. 
         ## get the plugin name the same as the uplugin file

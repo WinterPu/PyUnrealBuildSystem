@@ -7,6 +7,7 @@ from pathlib import Path
 from FileIO.FileUtility import FileUtility
 
 from UBSHelper import *
+from ABSHelper import *
 
 import shutil
 
@@ -38,7 +39,6 @@ class MacPlatformPathUtility:
     def GetUBTPath():
         return Path("Engine/Binaries/DotNET/UnrealBuildTool.exe")
     
-
 
 class MacPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):
@@ -128,20 +128,24 @@ class MacTargetPlatform(BaseTargetPlatform):
 
     def PostPackaged(self):
         PrintStageLog("PostPackaged")
-        app_name = "AgoraExample.app"
 
-        platform_folder = "Mac"
-        if UBSHelper.Get().GetVer_UEEngine() == '4.27':
-            platform_folder = "MacNoEditor"
-        
-        project_folder_path = UBSHelper.Get().GetPath_ProjectRoot()
-        app_dst_achieve_folder = project_folder_path / "ArchivedBuilds" / platform_folder / app_name
-        src_path = project_folder_path / MacPlatformPathUtility.GetFrameworkSrcPathFromSDK()
-        dst_path = app_dst_achieve_folder / MacPlatformPathUtility.GetFrameworkDstPathInApplication()
-        PrintLog("Copy Framework: src: [ " + str(src_path) + "] dst: [ " + str(dst_path)+"]")
-        #PrintLog(str(dst_path))
-        #shutil.copytree(src_path,dst_path,dirs_exist_ok= True)
-        FileUtility.CopyFilesWithSymbolicLink(src_path,dst_path)
+        bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
+        if bis_agora_ue_project:
+            
+            PrintLog("IsAgoraUEProject [%s] " %(str(bis_agora_ue_project)))
+
+            ## Ex. "AgoraExample.app"
+            app_name = UBSHelper.Get().GetName_PackagedApp(self.GetTargetPlatform())
+            ## Ex."/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/"
+            project_folder_path = UBSHelper.Get().GetPath_ProjectRoot()
+            ## Ex. for 4.27 "/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/ArchiveBuilds/MacNoEditor/AgoraExample.app"
+            app_dst_achieve_folder = Path(UBSHelper.Get().GetPath_ArchiveDir(self.GetTargetPlatform())) / app_name
+            src_path = project_folder_path / MacPlatformPathUtility.GetFrameworkSrcPathFromSDK()
+            dst_path = app_dst_achieve_folder / MacPlatformPathUtility.GetFrameworkDstPathInApplication()
+            PrintLog("Copy Framework: src: [ " + str(src_path) + "] dst: [ " + str(dst_path)+"]")
+            #PrintLog(str(dst_path))
+            #shutil.copytree(src_path,dst_path,dirs_exist_ok= True)
+            FileUtility.CopyFilesWithSymbolicLink(src_path,dst_path)
 
     def Package(self):
         self.SetupEnvironment()

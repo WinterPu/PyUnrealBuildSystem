@@ -27,14 +27,16 @@ class IOSTargetPlatform(BaseTargetPlatform):
     def SetupEnvironment(self):
         PrintLog("SetupEnvironment - %s Platform" % self.GetTargetPlatform())
 
+        path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
+        
         if ConfigParser.Get().IsIOSCertValid(self.Params['ioscert']):
             OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(self.Params['ioscert'])
-            UnrealConfigIniManager.SetConfig_IOSCert(self.Params['project_path'],OneIOSCert["signing_identity"],OneIOSCert["name_mobileprovision"])
+            UnrealConfigIniManager.SetConfig_IOSCert(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["name_mobileprovision"])
             PrintLog("IOSTargetPlatform - SetupEnvironment Certificate %s Set Done!" %self.Params['ioscert'] )
         else:
             PrintErr("IOSTargetPlatform - SetupEnvironment Certificate Set Failed")
 
-        path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
+        
         UnrealConfigIniManager.SetConfig_BundleIdentifier(path_uproject_file,self.Params['iosbundleidentifier'])
 
     def Package(self):
