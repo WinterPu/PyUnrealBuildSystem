@@ -5,6 +5,16 @@ class UnrealConfigIniManager:
     def GenIniVal_Path(path):
         return "(Path=\"%s\")" % path
 
+    def SetConfig_AndroidPackageName(path_uproject,package_name):
+        path = Path(path_uproject)
+        path_ini = path.parent / "Config" / "DefaultEngine.ini"
+        if path_ini.exists():
+           ## MobileProvision needs to be specified with a file name
+           UnrealConfigIniManager.SetConfig(path_ini,"[/Script/AndroidRuntimeSettings.AndroidRuntimeSettings]","PackageName",package_name,True)
+        else:
+            PrintErr("Config Ini File [%s] Not Found" %path_ini)
+
+
     def SetConfig_BundleIdentifier(path_uproject,bundle_identifier):
         path = Path(path_uproject)
         path_ini = path.parent / "Config" / "DefaultEngine.ini"

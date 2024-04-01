@@ -14,6 +14,8 @@ class AndroidPlatformBase(PlatformBase):
     def GenTargetPlatformParams(args):
         ret, val = PlatformBase.GenTargetPlatformParams(args)
 
+        key = "androidpackagename"
+        val[key] = args.androidpackagename
         # key = "target_platform"
         # val[key] = "Android"
 
@@ -69,6 +71,9 @@ class AndroidTargetPlatform(BaseTargetPlatform):
         else:
             PrintErr("TBD - Not Ready, SetupEnvironment Android on Mac Platform")
             return
+
+        
+        UnrealConfigIniManager.SetConfig_AndroidPackageName(self.Params['project_path'],self.Params['androidpackagename'])
 
     def Package(self):
         self.SetupEnvironment()

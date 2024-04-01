@@ -78,6 +78,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-uprojectpath", default=Path("/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
         ArgParser.add_argument("-upluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
+        ArgParser.add_argument("-androidpackagename", default="com.YourCompany.[PROJECT]")
         ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
         ArgParser.add_argument("-ioscert",default = "MediaLab")
         ## CreateTask handles it to be the base dir under the project dir
