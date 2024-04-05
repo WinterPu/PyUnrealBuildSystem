@@ -31,7 +31,7 @@ class BaseHostPlatform:
         self.OneUATCommand = UATCommand(self.Params['uat_path'])
 
     def GetHostPlatform(self):
-        return self.GetParamVal("platform")
+        return SystemHelper.Get().GetHostPlatform()
     
     def SetupEnvironment(self):
        PrintLog("BaseHostPlatform - SetupEnvironment")
