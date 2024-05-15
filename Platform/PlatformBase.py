@@ -48,7 +48,7 @@ class BaseHostPlatform:
         params = ParamsUAT()
         params.path_uplugin_file = uplugin_file
         params.target_platform = target_platform
-        params.get_path_plugin_output_dir = output_path
+        params.path_plugin_output_dir = output_path
         
         self.RunUAT().BuildPlugin(params)
 

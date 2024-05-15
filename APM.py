@@ -201,7 +201,6 @@ class AgoraPluginManager(BaseSystem):
         if Args.skipgit == False:
             VersionControlTool.CheckOutOneRepo(git_url,repo_path,git_branch)
 
-        return 
 
         repo_name = git_url.split('/')[-1].split('.')[0]
         repo_path = repo_path / repo_name
@@ -220,6 +219,10 @@ class AgoraPluginManager(BaseSystem):
         plugin_tmp_path.mkdir(parents= True, exist_ok= True)
         for plugin_cfg in platform_list:
             print(plugin_cfg)
+            if plugin_cfg['url'] == "":
+                PrintErr("[Download Native SDK Error] target platform [%s] URL is NULL "%(plugin_cfg["platform"]))
+                continue
+
             plugin_name = plugin_cfg['url'].split('/')[-1]
             path_plugin_zipfile = plugin_tmp_path / plugin_name
             
