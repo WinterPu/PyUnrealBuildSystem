@@ -75,12 +75,13 @@ class PyUnrealBuildSystem(BaseSystem):
 
         ArgParser.add_argument("-enginepath", default="")
         ArgParser.add_argument("-enginever", default="4.27")
-        ArgParser.add_argument("-uprojectpath", default=Path("/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject"))   
+        ArgParser.add_argument("-uprojectpath", default=Path("/Users/admin/Documents/uedemo/UE427Wwise2019Win.uproject"))   
         ArgParser.add_argument("-upluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-androidpackagename", default="com.YourCompany.[PROJECT]")
-        ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
-        ArgParser.add_argument("-ioscert",default = "MediaLab")
+        #ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
+        ArgParser.add_argument("-iosbundlename", default="io.agora.UE427Wwise2019Win")
+        ArgParser.add_argument("-ioscert",default = "C")
         ## CreateTask handles it to be the base dir under the project dir
         ## otherwise it would be under the engine dir
         ArgParser.add_argument("-archive_dir",default = "")
@@ -100,6 +101,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ## IOS Resign
         ## Use -ioscert specify the certificate
         ArgParser.add_argument("-IPAResign", action='store_true')
+        ArgParser.add_argument("-IPAPath", default="")
         
         ## Utility Command
         ArgParser.add_argument("-GitClone", action='store_true')
@@ -140,17 +142,17 @@ class PyUnrealBuildSystem(BaseSystem):
         
 
         if Args.BuildPlugin == True:
-            pass
-            ## [TBD] Modify
-            # arg_targetplatform = Args.targetplatform
+            
+            # [TBD] Modify
+            arg_targetplatform = Args.targetplatform
             # arg_path_uproject_file = Args.uprojectpath
             # arg_path_project = arg_path_uproject_file.parent
             # plugin_path = arg_path_project  / Path("Plugins/AgoraVoicePlugin/AgoraVoicePlugin.uplugin")
             # output_path = arg_path_project  / Path("Saved/PluginOutput/")
-            # if Args.upluginpath != "":
-            #     plugin_path = Path(Args.upluginpath)
-            #     output_path = plugin_path.parent.parent / Path("output/")
-            # host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
+            if Args.upluginpath != "":
+                plugin_path = Path(Args.upluginpath)
+                output_path = plugin_path.parent.parent / Path("output/")
+            host_platform.BuildPlugin(plugin_path,arg_targetplatform,output_path)
         
         if Args.BuildCookRun == True:
             target_platform_type_list = ParsePlatformArg(Args.targetplatform)
@@ -198,6 +200,8 @@ class PyUnrealBuildSystem(BaseSystem):
             name_app = path_uproject.stem + ".ipa"
 
             path_ipa = Path(Args.uprojectpath).parent / "ArchivedBuilds"/ "IOS" / name_app
+            if Args.IPAPath != "":
+                path_ipa = Path(Args.IPAPath)
             
             tag_name_ios_cert = Args.ioscert
             if ConfigParser.Get().IsIOSCertValid(tag_name_ios_cert) :
