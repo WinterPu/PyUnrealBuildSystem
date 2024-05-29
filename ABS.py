@@ -116,7 +116,7 @@ class AgoraBuildSystem(BaseSystem):
         bdo_macratrust = Args.MacTrust
         sdkinfo = AgoraSDKInfo(Args.agorasdk, Args.sdkisaudioonly, Args.agorasdktype)
         
-        dst_project_path = Args.uprojectpath.parent
+        dst_project_path = Path(Args.uprojectpath).parent
         dst_plugin_path = dst_project_path.joinpath("Plugins")
         dst_plugin_path.mkdir(parents= True, exist_ok= True)
 
