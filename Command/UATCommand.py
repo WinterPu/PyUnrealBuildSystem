@@ -120,6 +120,7 @@ class UATCommand:
                 PrintErr("TBD - Not Ready, Packaging IOS on Windows Platform")
                 return
             
+            platform_editor = "Mac"
 
             ## Gen UE Project On Mac
             OneGenerateProjectFilesWithShellCommand = GenerateProjectFilesWithShellCommand(self.__path_genproj_script)
@@ -130,7 +131,7 @@ class UATCommand:
             command = (
                 '"' + str(self.__uatpath) + '"' +
                 r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
-                r" -targetplatform="+target_platform+
+                r" -targetplatform="+platform_editor+
                 r" -clientconfig=Development"
                 r" -Build"
                 r" -GenerateDSYM"
