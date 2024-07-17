@@ -96,8 +96,11 @@ class UBSHelper():
         return Path(self.__path_archive_dir_base) / folder_platform
     
 
-    def GetName_ProjectName(self,path_uproject_file):
-        return Path(path_uproject_file).stem
+    def GetName_ProjectName(self,path_uproject_file = ""):
+        if path_uproject_file == "":
+            return Path(self.__path_uproject_file).stem
+        else:
+            return Path(path_uproject_file).stem
     
 
     def GetName_PackagedApp(self,target_platform):
