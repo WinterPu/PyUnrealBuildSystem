@@ -57,7 +57,7 @@ class FileUtility:
             ## In [Intermediate] Folder, there are some Android files with names containing dollar signs, such as:
             # [GameActivity$VirtualKeyboardInput$VirtualKeyboardInputConnection.class]
             command = (
-                r"rmdir /s /q " + '"' + path + '"'
+                r"rmdir /s /q " + '"' + str(path) + '"'
             )
 
             RUNCMD(command, "gbk")
