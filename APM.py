@@ -332,10 +332,23 @@ class AgoraPluginManager(BaseSystem):
             
                 ### Copy Native Libs To Tmp Plugin Dst Path 
                 PrintLog(" from %s ---> %s " %(target_plugin_src_lib_path , target_plugin_dst_lib_path))
-                if plugin_cfg["platform"] == "Mac":
-                    FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
+                if self.GetHostPlatform() == SystemHelper.Mac_HostName():
+                    ## On Mac
+                    if plugin_cfg["platform"] == "Mac":
+                        FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
+                    else:
+                        ## Copy Other Platform Libs to Dst Path
+                        FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
                 else:
-                    FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path)
+                    ## On Windows
+                    if plugin_cfg["platform"] == "IOS" or plugin_cfg["platform"] == "Mac":
+                        ## Ex. D:\\Github\\PluginWorkDir\\PluginTemp\\tmp_plugin_files\\AgoraPlugin\\Source\\ThirdParty\\AgoraPluginLibrary\\IOS\\Release\
+                        # Copy target_plugin_src_lib_root_path/*.xcframework/[architecture]/* to target_plugin_dst_lib_path 
+                        target_plugin_src_lib_root_path = target_plugin_src_lib_path.parent.parent
+                        FileUtility.CopyAllXCFrameworksToDst_OnWin(target_plugin_src_lib_root_path,architecture,target_plugin_dst_lib_path)
+                    else:
+                        ## Copy Other Platform Libs to Dst Path
+                        FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
 
 
                 ### [After Lib Copy] IOS: modify directory hierarchy

@@ -38,7 +38,20 @@ class FileUtility:
             #PrintLog(command)
             RUNCMD(command)
         else:
+            ## Windows
+            ## Example Copy D:\\Github\\PluginWorkDir\\PluginTemp\\Mac\\libs\\*.xcframework\\macos-arm64_x86_64 ---> 
+            ## D:\\Github\\PluginWorkDir\\PluginTemp\\tmp_plugin_files\\AgoraPlugin\\Source\\ThirdParty\\AgoraPluginLibrary\\Mac\\Release 
             shutil.copytree(str(src_path),str(dst_path),dirs_exist_ok= True)
+
+
+    def CopyAllXCFrameworksToDst_OnWin(src_root_path,src_sub_path,dst_path,pattern = "*.xcframework"):
+        # Copy src_root_path/[pattern]/[src_sub_path]/* to dst_path
+        src_sub_path = Path(src_sub_path) / "*"
+        PrintLog("CopyAllXCFrameworksToDst_OnWin with pattern[%s] src_root[%s]/pattern[%s]/src_sub_path[%s] to dst_path[%s] " %(str(pattern),str(src_root_path),str(pattern),str(src_sub_path),str(dst_path)))
+        for pattern_dir in Path(src_root_path).glob(pattern):
+            for file in pattern_dir.glob(str(src_sub_path)):
+                dest_file = Path(dst_path) / file.name
+                shutil.copytree(str(file),str(dest_file),dirs_exist_ok= True)
 
     def DeleteFile(path,bForce = False):
         PrintLog("DeleteFile " + str(path))

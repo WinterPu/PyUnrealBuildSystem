@@ -28,10 +28,16 @@ class ZipCommand:
 
     def ZipFile(self,src_dir_name,dst_zip_file_path, src_root_path = Path("."), command_param = "ry"):        
         # dst_zip_file_path: with "zip" file extension
-        if self.__host_platform == SystemHelper.Win_HostName():        
+        if self.__host_platform == SystemHelper.Win_HostName():
+
+            ## Ex.
+            # src_dir_name: AgoraVideoSegmentationExtension.embeddedframework 
+            # src_root_path: D:\\Github\\PluginWorkDir\\PluginTemp\\tmp_plugin_files\\AgoraPlugin\\Source\\ThirdParty\\AgoraPluginLibrary\\IOS\\Release
+            src_path = Path(src_root_path) / Path(src_dir_name) / "*"
             command = (
-                r"7z a  " + '"'+str(dst_zip_file_path) + '" -o"' + str(src_dir_name) + '"' 
+                r"7z a -tzip " + '"'+str(dst_zip_file_path) + '" "' + str(src_path) + '"' 
             )
+
             RUNCMD(command)
 
         elif self.__host_platform == SystemHelper.Mac_HostName():
