@@ -1,7 +1,6 @@
 from Utility.HeaderBase import *
 from ConfigParser import *
 from Utility.UnrealProjectManager import *
-from Utility.VersionControlTool import *
 from Utility.UnrealConfigIniManager import *
 
 from Command.GitCommand import *
@@ -75,7 +74,7 @@ class PyUnrealBuildSystem(BaseSystem):
 
         ArgParser.add_argument("-enginepath", default="")
         ArgParser.add_argument("-enginever", default="4.27")
-        ArgParser.add_argument("-uprojectpath", default=Path("/Users/admin/Documents/uedemo/UE427Wwise2019Win.uproject"))   
+        ArgParser.add_argument("-uprojectpath", default=Path("Users/admin/Documents/AgoraBPExample/AgoraBPExample.uproject"))   
         ArgParser.add_argument("-upluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-androidpackagename", default="com.YourCompany.[PROJECT]")
@@ -104,8 +103,6 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-IPAPath", default="")
         
         ## Utility Command
-        ArgParser.add_argument("-GitClone", action='store_true')
-        ArgParser.add_argument("-GitRevert", action='store_true')
         ArgParser.add_argument("-Clean", action='store_true')
         ArgParser.add_argument("-GenProject", action='store_true')
         ArgParser.add_argument("-GenIOSProject", action='store_true')
@@ -180,12 +177,6 @@ class PyUnrealBuildSystem(BaseSystem):
             path_uproject_file = Path(Args.uprojectpath)
             ## [TBD] some needs \ and some doesn't need \
             UnrealProjectManager.GenerateIOSProject(host_platform,path_uproject_file)
-
-        if Args.GitClone == True:
-            url = ""
-            OneGitCommand = GitCommand()
-            VersionControlTool.Init(OneGitCommand)
-            VersionControlTool.CheckOutOneRepo(url)
 
         bTestCommand = False
         if bTestCommand:
