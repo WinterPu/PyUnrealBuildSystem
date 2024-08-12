@@ -4,7 +4,9 @@ from Utility.HeaderBase import *
 from pathlib import Path
 from SystemBase import *
 from Base.AgoraSDKInfo import *
+from Utility.PathConfiger import *
 
+import shutil
 path_val = Path("/Users/admin/Documents/PyUnrealBuildSystem/Config/Config.json")
 
 class ConfigParser(BaseSystem):
@@ -146,4 +148,15 @@ class ConfigParser(BaseSystem):
             "path_mobileprovision" : str(base_path / self.IOSCertData[tag_name]["mobileprovision_filename"])
         }
 
-    
+
+    def CopyAllMobileProvisionsToDstPath(self):
+        if SystemHelper.Get().GetHostPlatform() == SystemHelper.Mac_HostName():
+            current_dir = Path(__file__).parent
+            src_path = current_dir / Path("Config/UEConfig/Platforms/IOS/Certs")
+            dst_path = Path(PathConfiger.GetMobileProvisionCachePath())
+
+            if dst_path.exists():
+                for file in src_path.glob("*.mobileprovision"):
+                    dst_file = dst_path / file.name
+                    shutil.copy(file, dst_file)
+                    PrintLog(f"Copy Src['{file}'] to Dst['{dst_file}']")
