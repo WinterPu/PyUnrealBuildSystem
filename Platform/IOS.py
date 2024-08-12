@@ -31,6 +31,8 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
         path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
 
+        PrintLog("IOSTargetPlatform - SetupEnvironment: Copying Mobile Provisions To Environment")
+        ConfigParser.Get().CopyAllMobileProvisionsToDstPath()
 
         bUseMordenXcodeSetting = UBSHelper.Get().Is_UE53_Or_Later()
         bRet = UnrealConfigIniManager.SetConfig_IOSCert(path_uproject_file,self.Params['ioscert'],bUseMordenXcodeSetting)
