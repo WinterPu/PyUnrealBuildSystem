@@ -31,13 +31,10 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
         path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
 
-        if ConfigParser.Get().IsIOSCertValid(self.Params['ioscert']):
-            OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(self.Params['ioscert'])
-            if UBSHelper.Get().Is_UE53_Or_Later():
-                UnrealConfigIniManager.SetConfig_IOSCert_XCodeProject(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["path_mobileprovision"])
-            else:
-                UnrealConfigIniManager.SetConfig_IOSCert(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["name_mobileprovision"])
-            
+
+        bUseMordenXcodeSetting = UBSHelper.Get().Is_UE53_Or_Later()
+        bRet = UnrealConfigIniManager.SetConfig_IOSCert(path_uproject_file,self.Params['ioscert'],bUseMordenXcodeSetting)
+        if bRet:
             PrintLog("IOSTargetPlatform - SetupEnvironment Certificate %s Set Done!" % self.Params['ioscert'] )
         else:
             PrintErr("IOSTargetPlatform - SetupEnvironment Certificate Set Failed")

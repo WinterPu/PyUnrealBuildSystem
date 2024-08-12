@@ -139,6 +139,8 @@ class UBSHelper():
     def Is_UE5_Or_Later(self):
         return VersionControlTool.Get().VerParse(self.__ver_engine) >= VersionControlTool.Get().VerParse("5.0.0")
 
+    def Is_UE4_Or_Earlier(self):
+        return VersionControlTool.Get().VerParse(self.__ver_engine) < VersionControlTool.Get().VerParse("5.0.0")
 
     
 

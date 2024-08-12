@@ -2,7 +2,6 @@ from FileIO.FileUtility import *
 from Utility.HeaderBase import *
 
 
-
 class UnrealProjectManager:
     def ValidateProject(path):
         PrintLog("Validate Project")
@@ -33,6 +32,25 @@ class UnrealProjectManager:
                     folder_path = os.path.join(plugin_path, folder)
                     PrintLog("CleanPluginProject %s " % (folder_path))
                     FileUtility.DeleteDir(folder_path)
+
+        ### Handle UE5 new Config Ini
+        config_path = Path(project_path) / "Config"
+        original_defaultinput_ini_filename = "DefaultInput.ini"
+        bak_defaultinput_ini_filename = "DefaultInput_bak.ini"
+        if UBSHelper.Get().Is_UE5_Or_Later():
+
+            ## Restore
+            # ini_defaultinput_file = config_path / original_defaultinput_ini_filename
+            # bak_ini_defaultinput_file = config_path / bak_defaultinput_ini_filename
+            # if ini_defaultinput_file.exists() == False and  bak_ini_defaultinput_file.exists():
+            #     bak_ini_defaultinput_file.rename( config_path / original_defaultinput_ini_filename)
+            
+            pass 
+        else:
+            ini_defaultinput_file = config_path / original_defaultinput_ini_filename
+            if ini_defaultinput_file.exists():
+                ini_defaultinput_file.rename( config_path / bak_defaultinput_ini_filename )
+
 
     def GenerateProject(host_platform,path_uproject_file):
         host_platform.GenerateProject(path_uproject_file)

@@ -47,7 +47,7 @@ class UnrealConfigIniManager:
         else:
             PrintErr("Config Ini File [%s] Not Found" %path_ini)
 
-    def SetConfig_IOSCert(path_uproject,signing_certificate,mobile_provision):
+    def SetConfig_IOSCert_UEConfig(path_uproject,signing_certificate,mobile_provision):
         path = Path(path_uproject)
         path_ini = path.parent / "Config" / "DefaultEngine.ini"
         if path_ini.exists():
@@ -57,10 +57,20 @@ class UnrealConfigIniManager:
         else:
             PrintErr("Config Ini File [%s] Not Found" %path_ini)
 
-    def SetConfig_IOSCert(params_ioscert):
-        OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(params_ioscert)
-        UnrealConfigIniManager.SetConfig_IOSCert(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["name_mobileprovision"])
+    def SetConfig_IOSCert(path_uproject_file,params_ioscert,bUseMordenXcode = False):
+        bRet = True
+        if ConfigParser.Get().IsIOSCertValid(params_ioscert):
+            OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(params_ioscert)
+            if bUseMordenXcode:
+                UnrealConfigIniManager.SetConfig_IOSCert_XCodeProject(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["path_mobileprovision"])
+            else:
+                UnrealConfigIniManager.SetConfig_IOSCert_UEConfig(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["name_mobileprovision"])
 
+            bRet = True        
+        else:
+            bRet = False
+        return bRet
+    
     ## section etc = "[/Script/IOSRuntimeSettings.IOSRuntimeSettings]"
     def SetConfig(path_ini,section,key,val,bAppendIfNotFounded = False):
 
