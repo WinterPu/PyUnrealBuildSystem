@@ -10,7 +10,6 @@ from Utility.Downloader import *
 from Command.GitCommand import *
 from Command.ZipCommand import *
 from Command.MacRATrustCommand import *
-from Utility.VersionControlTool import *
 
 from SystemBase import *
 
@@ -195,11 +194,9 @@ class AgoraPluginManager(BaseSystem):
         ## >>> Update Git Repo <<< 
         ### [TBD] these are 2 Async Jobs (git & download ), they need to be synced.
         repo_path = root_path_plugin_working_dir
-        OneGitCommand = GitCommand()
-        VersionControlTool.Init(OneGitCommand)
 
         if Args.skipgit == False:
-            VersionControlTool.CheckOutOneRepo(git_url,repo_path,git_branch)
+            VersionControlTool.Get().CGit_CheckOutOneRepo(git_url,repo_path,git_branch)
 
 
         repo_name = git_url.split('/')[-1].split('.')[0]

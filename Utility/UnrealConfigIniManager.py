@@ -1,5 +1,6 @@
 from Logger.Logger import *
 from pathlib import Path
+from ConfigParser import *
 class UnrealConfigIniManager:
     
     def GenIniVal_Path(path):
@@ -24,6 +25,27 @@ class UnrealConfigIniManager:
         else:
             PrintErr("Config Ini File [%s] Not Found" %path_ini)
 
+    def SetConfig_IOSCert_XCodeProject(path_uproject,signing_certificate,path_mobileprovision):
+        path = Path(path_uproject)
+        path_ini = path.parent / "Config" / "DefaultEngine.ini"
+        str_path_mobileprovision = '(FilePath="' + str(path_mobileprovision) + '")'
+        if path_ini.exists():
+           ## MobileProvision needs to be specified with a file name
+           UnrealConfigIniManager.SetConfig(path_ini,"[/Script/MacTargetPlatform.XcodeProjectSettings]","bUseAutomaticCodeSigning","False")
+           UnrealConfigIniManager.SetConfig(path_ini,"[/Script/MacTargetPlatform.XcodeProjectSettings]","IOSSigningIdentity",signing_certificate)
+           UnrealConfigIniManager.SetConfig(path_ini,"[/Script/MacTargetPlatform.XcodeProjectSettings]","IOSProvisioningProfile",str_path_mobileprovision)
+        else:
+            PrintErr("Config Ini File [%s] Not Found" %path_ini)
+
+    def SetConfig_Mac_XCodeProject(path_uproject,signing_certificate):
+        path = Path(path_uproject)
+        path_ini = path.parent / "Config" / "DefaultEngine.ini"
+        if path_ini.exists():
+           ## MobileProvision needs to be specified with a file name
+           UnrealConfigIniManager.SetConfig(path_ini,"[/Script/MacTargetPlatform.XcodeProjectSettings]","bUseAutomaticCodeSigning","False")
+           UnrealConfigIniManager.SetConfig(path_ini,"[/Script/MacTargetPlatform.XcodeProjectSettings]","MacSigningIdentity",signing_certificate)
+        else:
+            PrintErr("Config Ini File [%s] Not Found" %path_ini)
 
     def SetConfig_IOSCert(path_uproject,signing_certificate,mobile_provision):
         path = Path(path_uproject)
@@ -34,6 +56,10 @@ class UnrealConfigIniManager:
            UnrealConfigIniManager.SetConfig(path_ini,"[/Script/IOSRuntimeSettings.IOSRuntimeSettings]","SigningCertificate",signing_certificate)
         else:
             PrintErr("Config Ini File [%s] Not Found" %path_ini)
+
+    def SetConfig_IOSCert(params_ioscert):
+        OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(params_ioscert)
+        UnrealConfigIniManager.SetConfig_IOSCert(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["name_mobileprovision"])
 
     ## section etc = "[/Script/IOSRuntimeSettings.IOSRuntimeSettings]"
     def SetConfig(path_ini,section,key,val,bAppendIfNotFounded = False):

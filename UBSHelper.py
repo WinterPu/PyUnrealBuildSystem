@@ -2,6 +2,7 @@ from pathlib import Path
 from Logger.Logger import *
 from ConfigParser import *
 from SystemHelper import *
+from Utility.VersionControlTool import *
 
 class UBSHelper():
     __instance = None
@@ -129,6 +130,15 @@ class UBSHelper():
                     PrintErr("[GetPluginInfo] the plugin folder name [%s] is not equal to uplugin file name [%s]" %( path_uplugin_file.parent.name,name_plugin))
         
         return name_plugin, path_uplugin_file
+    
+
+
+    def Is_UE53_Or_Later(self):
+        return VersionControlTool.Get().VerParse(self.__ver_engine) >= VersionControlTool.Get().VerParse("5.3.0")
+    
+    def Is_UE5_Or_Later(self):
+        return VersionControlTool.Get().VerParse(self.__ver_engine) >= VersionControlTool.Get().VerParse("5.0.0")
+
 
     
 

@@ -136,7 +136,9 @@ class ConfigParser(BaseSystem):
 
 
     def GetOneIOSCertificate(self,tag_name):
-        base_path = Path("Config/UEConfig/Platforms/IOS/Certs")
+        ## Get current script working dir
+        current_dir = Path(__file__).parent
+        base_path = current_dir / Path("Config/UEConfig/Platforms/IOS/Certs")
         return {
             "signing_identity": self.IOSCertData[tag_name]["signing_identity"],
             "provisioning_profile": self.IOSCertData[tag_name]["provisioning_profile"],
