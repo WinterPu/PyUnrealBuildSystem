@@ -256,7 +256,7 @@ class PyUnrealBuildSystem(BaseSystem):
 
         PrintStageLog("Test Plugin Complete --- Use keyword [%s] to search in your log" %test_complete_log_keyword )
 
-        ## [Ater Test] Recover UE Engine
+        ## [After Test] Recover UE Engine
         UBSHelper.Get().SetUEEngineWithVer(cur_enginever)
 
         if path_output_dir.exists():
