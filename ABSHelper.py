@@ -23,7 +23,7 @@ class ABSHelper():
         
 
     def __InitInner_IsAudioOnly(self,Args):
-        self.__bIs_AudioOnly = Path(Args.sdkisaudioonly)
+        self.__bIs_AudioOnly = Args.sdkisaudioonly
 
     def IsAgoraUEProject(self):
         ## it means this is an ue project with agora sdk
