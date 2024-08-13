@@ -219,7 +219,7 @@ class PyUnrealBuildSystem(BaseSystem):
     
         ## Prepare :
         ## Unzip the plugin to get uplugin file path
-        OneZipCommand =ZipCommand(self.GetHostPlatform())
+        OneZipCommand =ZipCommand()
         OneZipCommand.UnZipFile(path_plugin_zipfile,path_unzip)
         name_plugin,path_uplugin_file = UBSHelper.Get().GetInfo_PluginNameAndUPluginFilePath(path_unzip)
         

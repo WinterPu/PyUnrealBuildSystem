@@ -228,7 +228,7 @@ class AgoraPluginManager(BaseSystem):
                     path_plugin_zipfile.unlink()
                 FileDownloader.DownloadWithRequests(plugin_cfg['url'],path_plugin_zipfile)
 
-            OneZipCommand =ZipCommand(self.GetHostPlatform())
+            OneZipCommand =ZipCommand()
             tmp_copy_dst_path = plugin_tmp_path / plugin_cfg["platform"]
             tmp_copy_dst_path.mkdir(parents=True,exist_ok= True)
             OneZipCommand.UnZipFile(path_plugin_zipfile,tmp_copy_dst_path)
@@ -645,7 +645,7 @@ class AgoraPluginManager(BaseSystem):
         src_path_zipfile = Path(src_path_zipfile)
         dst_path = Path(dst_path)
 
-        OneZipCommand =ZipCommand(self.GetHostPlatform())
+        OneZipCommand =ZipCommand()
         unzip_path = src_path_zipfile.parent / Path("UnzipPlugin" + src_path_zipfile.stem)
         if not unzip_path.exists() == True:
             FileUtility.DeleteDir(str(unzip_path))

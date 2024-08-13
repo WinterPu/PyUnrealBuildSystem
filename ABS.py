@@ -5,6 +5,8 @@ from APM import *
 from UBS import *
 
 from UBSHelper import *
+from ABSHelper import *
+
 ## Combine UBS + APM
 class AgoraBuildSystem(BaseSystem):
 
@@ -63,7 +65,7 @@ class AgoraBuildSystem(BaseSystem):
         #ArgParser.add_argument("-NeedCopySDKWhenBuilding",action = "store_true")
         ArgParser.add_argument("-MacTrust",action = "store_true")
         ArgParser.add_argument("-Password",default="")
-        # ArgParser.add_argument("-MacTrust",action = "store_true")
+        
         
         ArgParser.add_argument("-TestUEPlugin",action = "store_true")
         ArgParser.add_argument("-TestPluginPath",default = "/Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1/AgoraPlugin.zip")
@@ -79,6 +81,8 @@ class AgoraBuildSystem(BaseSystem):
             pass
 
     def CreateTask(self,Args):
+        ABSHelper.Get().Init(Args)
+
         if Args.GenPlugin == True:
             AgoraPluginManager.Get().StartGenPlugin(Args)
 
@@ -137,7 +141,7 @@ class AgoraBuildSystem(BaseSystem):
 
         ## Prepare :
         ## Unzip the plugin to get uplugin file path
-        OneZipCommand =ZipCommand(self.GetHostPlatform())
+        OneZipCommand =ZipCommand()
         OneZipCommand.UnZipFile(path_plugin_zipfile,path_unzip)
         name_plugin,path_uplugin_file = UBSHelper.Get().GetInfo_PluginNameAndUPluginFilePath(path_unzip)
         path_plugin = Path(path_uplugin_file).parent

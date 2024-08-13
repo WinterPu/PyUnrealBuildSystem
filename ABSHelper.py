@@ -6,6 +6,9 @@ from SystemHelper import *
 class ABSHelper():
     __instance = None
 
+    __Args = None
+    __bIs_AudioOnly = False
+
     def __new__(cls, *args, **kwargs):
         if not cls.__instance:
             cls.__instance = super().__new__(cls, *args, **kwargs)
@@ -15,9 +18,17 @@ class ABSHelper():
         return ABSHelper()
     
     def Init(self,Args):
-        pass
+        self.__Args = Args
+        self.__InitInner_IsAudioOnly(Args)
+        
 
+    def __InitInner_IsAudioOnly(self,Args):
+        self.__bIs_AudioOnly = Path(Args.sdkisaudioonly)
 
     def IsAgoraUEProject(self):
         ## it means this is an ue project with agora sdk
         return True
+    
+
+    def IsAgoraSDKAudioOnly(self):
+        return self.__bIs_AudioOnly

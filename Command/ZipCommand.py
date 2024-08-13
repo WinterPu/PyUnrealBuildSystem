@@ -6,7 +6,7 @@ from SystemHelper import *
 
 class ZipCommand:
     __host_platform = "Win"
-    def __init__(self,param_platform = "Win") -> None:
+    def __init__(self) -> None:
         self.__host_platform = SystemHelper.Get().GetHostPlatform()
         
 
