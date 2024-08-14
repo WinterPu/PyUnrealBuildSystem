@@ -1,7 +1,7 @@
 import subprocess
 import threading
 
-from Utility.HeaderBase import *
+from Logger.Logger import *
 
 
 def ExportCMDLog(readline):

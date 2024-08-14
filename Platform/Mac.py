@@ -145,7 +145,7 @@ class MacTargetPlatform(BaseTargetPlatform):
             PrintLog("Copy Framework: src: [ " + str(src_path) + "] dst: [ " + str(dst_path)+"]")
             #PrintLog(str(dst_path))
             #shutil.copytree(src_path,dst_path,dirs_exist_ok= True)
-            FileUtility.CopyFilesWithSymbolicLink(src_path,dst_path)
+            FileUtility.CopyDir(src_path,dst_path)
 
     def Package(self):
         self.SetupEnvironment()

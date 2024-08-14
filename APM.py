@@ -340,20 +340,22 @@ class AgoraPluginManager(BaseSystem):
                 if self.GetHostPlatform() == SystemHelper.Mac_HostName():
                     ## On Mac
                     if plugin_cfg["platform"] == "Mac":
-                        FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
+                        FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
                     else:
                         ## Copy Other Platform Libs to Dst Path
-                        FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
+                        FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path)
                 else:
                     ## On Windows
                     if plugin_cfg["platform"] == "IOS" or plugin_cfg["platform"] == "Mac":
                         ## Ex. D:\\Github\\PluginWorkDir\\PluginTemp\\tmp_plugin_files\\AgoraPlugin\\Source\\ThirdParty\\AgoraPluginLibrary\\IOS\\Release\
                         # Copy target_plugin_src_lib_root_path/*.xcframework/[architecture]/* to target_plugin_dst_lib_path 
                         target_plugin_src_lib_root_path = target_plugin_src_lib_path.parent.parent
-                        FileUtility.CopyAllXCFrameworksToDst_OnWin(target_plugin_src_lib_root_path,architecture,target_plugin_dst_lib_path)
+                        FileUtility.CopyDirWithWildcardCharInPath_Win(target_plugin_src_lib_root_path,architecture,target_plugin_dst_lib_path)
+                        PrintLog(f"Copy: {target_plugin_src_lib_path}  to {target_plugin_dst_lib_path}")
+                        shutil.copytree(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path),dirs_exist_ok= True)
                     else:
                         ## Copy Other Platform Libs to Dst Path
-                        FileUtility.CopyFilesWithSymbolicLink(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
+                        FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path)
 
 
                 ### [After Lib Copy] IOS: modify directory hierarchy
@@ -541,10 +543,10 @@ class AgoraPluginManager(BaseSystem):
             if tmp_dir_for_sort.exists():
                 FileUtility.DeleteDir(tmp_dir_for_sort)
             tmp_dir_for_sort.mkdir(parents=True,exist_ok=True)
-            FileUtility.CopyFilesWithSymbolicLink(framework_path,tmp_dir_for_sort,False)
+            FileUtility.CopyDir(framework_path,tmp_dir_for_sort,False)
             FileUtility.DeleteDir(framework_path)
             framework_path.mkdir(parents=True,exist_ok=True)
-            FileUtility.CopyFilesWithSymbolicLink(tmp_dir_for_sort,framework_path,False)
+            FileUtility.CopyDir(tmp_dir_for_sort,framework_path,False)
             FileUtility.DeleteDir(tmp_dir_for_sort)
 
 
@@ -666,7 +668,7 @@ class AgoraPluginManager(BaseSystem):
         dst_plugin_path.mkdir(parents= True, exist_ok= True)
 
         PrintLog("[CopyPlugin] Src Path: [%s] to Dst Path [%s] " % (str(src_plugin_path) , str(dst_plugin_path)))
-        FileUtility.CopyFilesWithSymbolicLink(src_plugin_path,dst_plugin_path,bkeep_symlink)
+        FileUtility.CopyDir(src_plugin_path,dst_plugin_path,bkeep_symlink)
 
         FileUtility.DeleteDir(str(unzip_path))
 
