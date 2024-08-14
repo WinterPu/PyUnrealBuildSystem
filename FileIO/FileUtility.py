@@ -17,7 +17,7 @@ class FileUtility:
 
 
     def CopyFile(src_path,dst_path):
-        PrintLog("CopyFile: " + str(src_path) + " to " + str(dst_path))
+        PrintLog(f"CopyFile: [{src_path}] -> [{dst_path}] ")
         shutil.copy2(str(src_path),str(dst_path))
 
 

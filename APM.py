@@ -255,7 +255,7 @@ class AgoraPluginManager(BaseSystem):
         target_plugin_dst_path.mkdir(parents= True, exist_ok= True)
     
         PrintLog("[CopyGitRepoPluginFiles] Copy from [%s] to [%s] " %(str(target_plugin_src_code_path),str(target_plugin_dst_path)))
-        shutil.copytree(target_plugin_src_code_path,target_plugin_dst_path,dirs_exist_ok= True)
+        FileUtility.CopyDir(target_plugin_src_code_path,target_plugin_dst_path)
 
 
         ## >>> Modify Android Template Here <<<
@@ -276,7 +276,7 @@ class AgoraPluginManager(BaseSystem):
 
         path_src_android_tmpl = path_android_tmpl_src / filename_src_tmpl
         path_dst_android_tmpl = path_android_tmpl_src / filename_target_tmpl
-        shutil.copy(path_src_android_tmpl,path_dst_android_tmpl)
+        FileUtility.CopyFile(path_src_android_tmpl,path_dst_android_tmpl)
 
 
         ## >>> Copy Every Platform's lib to FinalPluginTmpDir<<<
@@ -352,7 +352,7 @@ class AgoraPluginManager(BaseSystem):
                         target_plugin_src_lib_root_path = target_plugin_src_lib_path.parent.parent
                         FileUtility.CopyDirWithWildcardCharInPath_Win(target_plugin_src_lib_root_path,architecture,target_plugin_dst_lib_path)
                         PrintLog(f"Copy: {target_plugin_src_lib_path}  to {target_plugin_dst_lib_path}")
-                        shutil.copytree(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path),dirs_exist_ok= True)
+                        FileUtility.CopyDir(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path))
                     else:
                         ## Copy Other Platform Libs to Dst Path
                         FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path)

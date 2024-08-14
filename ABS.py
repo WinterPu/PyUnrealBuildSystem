@@ -121,7 +121,7 @@ class AgoraBuildSystem(BaseSystem):
                 self.TestAgoraPlugin(Args,Args.TestPluginPath)
 
         if Args.AppToIPA == True:
-            self.ConvertMacAppToIPA(Args.AppPath)
+            UnrealProjectManager.ConvertMacAppToIPA(Args.AppPath)
 
     def CopySDKToUEProject(self,Args):
         
@@ -164,45 +164,7 @@ class AgoraBuildSystem(BaseSystem):
         if path_unzip.exists():
             FileUtility.DeleteDir(path_unzip)
 
-    
 
-
-    def ConvertMacAppToIPA(self,path_app):
-
-        ## Ex. [Root] / AgoraExample.app
-        path_app = Path(path_app)
-        if not path_app.exists():
-            PrintErr(f"Target App {path_app} doesn't exist.")
-            return
-        
-        root_path = path_app.parent
-        tmp_payload_name = "Payload"
-        
-        ## Ex. [Root] / Payload
-        path_payload = root_path / tmp_payload_name
-        if path_payload.exists():
-            FileUtility.DeleteDir(path_payload)
-        path_payload.mkdir(parents=True)
-        
-        ##shutil.copy(path_app, path_payload / path_app.name)
-        ## App is a directory
-        shutil.copytree(path_app,path_payload / path_app.name)
-
-
-        OneZipCommand = ZipCommand()
-        
-        dst_framework_path = root_path / (tmp_payload_name + ".zip")
-        OneZipCommand.ZipFile(tmp_payload_name,dst_framework_path,root_path)
-        
-        ## Ex. [Root] / Payload.zip -> AgoraExample.zip
-        path_final_product = path_app.parent / (path_app.stem + ".ipa")
-        if path_final_product.exists():
-            FileUtility.DeleteFile(path_final_product)
-            
-        PrintLog(f"Final Product ==> {path_final_product}")
-        dst_framework_path.rename(path_final_product)
-
-        FileUtility.DeleteDir(path_payload)
 
 
 if __name__ == '__main__':
