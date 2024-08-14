@@ -96,7 +96,8 @@ class UnrealProjectManager:
         OneZipCommand = ZipCommand()
         
         dst_framework_path = root_path / (tmp_payload_name + ".zip")
-        OneZipCommand.ZipFile(tmp_payload_name,dst_framework_path,root_path)
+        src_framework_path = root_path / tmp_payload_name
+        OneZipCommand.ZipFile(src_framework_path,dst_framework_path)
         
         ## Ex. [Root] / Payload.zip -> AgoraExample.zip
         path_final_product = path_app.parent / (path_app.stem + ".ipa")

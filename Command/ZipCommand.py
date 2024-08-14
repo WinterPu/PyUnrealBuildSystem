@@ -10,30 +10,33 @@ class ZipCommand:
         self.__host_platform = SystemHelper.Get().GetHostPlatform()
         
 
-    def UnZipFile(self,src_path,dst_path):
+    def UnZipFile(self,src_zip_path,dst_dir_path):
+        ## Unzip [src_zip_path's content] under dst_dir_path
+        ## Ex. Mac2.zip (content: /Mac/....)   dst_dir_path: Mac3
+        ## Final: Mac3/Mac/...
 
         if self.__host_platform == SystemHelper.Win_HostName():        
             command = (
-                r"7z x  " + '"'+str(src_path) + '"  -o"' + str(dst_path) + '"' 
+                r"7z x  " + '"'+str(src_zip_path) + '"  -o"' + str(dst_dir_path) + '"' 
             )
             RUNCMD(command)
         elif self.__host_platform == SystemHelper.Mac_HostName():
             command = (
-                r"unzip  " + '"'+str(src_path) + '"  -d "' + str(dst_path) + '"' 
+                r"unzip  " + '"'+str(src_zip_path) + '"  -d "' + str(dst_dir_path) + '"' 
             )
             RUNCMD(command)
         
         else:
             PrintErr("Command - Invalid Platform " +  self.__host_platform )
 
-    def ZipFile(self,src_dir_name,dst_zip_file_path, src_root_path = Path("."), command_param = "ry"):        
+    def ZipFile(self,src_dir_path,dst_zip_file_path, command_param = "ry"):        
         # dst_zip_file_path: with "zip" file extension
         if self.__host_platform == SystemHelper.Win_HostName():
 
             ## Ex.
-            # src_dir_name: AgoraVideoSegmentationExtension.embeddedframework 
-            # src_root_path: D:\\Github\\PluginWorkDir\\PluginTemp\\tmp_plugin_files\\AgoraPlugin\\Source\\ThirdParty\\AgoraPluginLibrary\\IOS\\Release
-            src_path = Path(src_root_path) / Path(src_dir_name) / "*"
+            ## src_dir_path: 
+            #  D:\\Github\\PluginWorkDir\\PluginTemp\\tmp_plugin_files\\AgoraPlugin\\Source\\ThirdParty\\AgoraPluginLibrary\\IOS\\Release\\AgoraVideoSegmentationExtension.embeddedframework 
+            src_path = Path(src_dir_path) / "*"
             command = (
                 r"7z a -tzip " + '"'+str(dst_zip_file_path) + '" "' + str(src_path) + '"' 
             )
@@ -44,10 +47,11 @@ class ZipCommand:
             ## [TBD] Check if it is needed 
             
             ## if not use [src_root_path], the zip file would start from /user (example: /user/admin/xxxx/the_zip_folder_you_want)
+            src_root_path = Path(src_dir_path).parent
             cur_path = Path.cwd()
             os.chdir(str(src_root_path))
             command = (
-                r"zip -" + command_param + ' "'+str(dst_zip_file_path) + '" "' + str(src_dir_name) + '"' 
+                r"zip -" + command_param + ' "'+str(dst_zip_file_path) + '" "' + str(src_dir_path.name) + '"' 
             )
             RUNCMD(command)
 

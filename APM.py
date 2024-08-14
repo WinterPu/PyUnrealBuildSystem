@@ -160,7 +160,8 @@ class AgoraPluginManager(BaseSystem):
         sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly)
         
         sdk_build_config = Args.agorasdkbuildconfig
-        bis_mac_remove_symbolic_link =Args.rmmacslink
+        ## keep mac symbolic link
+        bkeep_symlink =True if not Args.rmmacslink else False
 
         plugin_tmp_file_dir = self.GetName_PluginTmpDir()
         plugin_tmp_sort_dir_suffix_name = self.GetName_PluginTmpSortSuffixName()
@@ -269,7 +270,7 @@ class AgoraPluginManager(BaseSystem):
             filename_src_tmpl = filename_full_tmpl if sdkinfo.Get_SDKIsAudioOnly() == False else filename_voice_tmpl
             filename_target_tmpl = "APL_armv7Template.xml"
         else:
-            filename_full_tmpl = "APL_TemplateSourceFULL.xml"
+            filename_full_tmpl = "APL_TemplateSourceFull.xml"
             filename_voice_tmpl = "APL_TemplateSourceVoice.xml"
             filename_src_tmpl = filename_full_tmpl if sdkinfo.Get_SDKIsAudioOnly() == False else filename_voice_tmpl
             filename_target_tmpl = "APL_Template.xml"
@@ -340,7 +341,7 @@ class AgoraPluginManager(BaseSystem):
                 if self.GetHostPlatform() == SystemHelper.Mac_HostName():
                     ## On Mac
                     if plugin_cfg["platform"] == "Mac":
-                        FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path,bis_mac_remove_symbolic_link)
+                        FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path,bkeep_symlink)
                     else:
                         ## Copy Other Platform Libs to Dst Path
                         FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path)
@@ -374,7 +375,8 @@ class AgoraPluginManager(BaseSystem):
                         ## A.embeddedframework/A.framework ->  A.embeddedframework.zip
                         zip_framework_name = Path(embeddedframework_path).name
                         dst_framework_path = target_plugin_dst_lib_path / (zip_framework_name + ".zip")
-                        OneZipCommand.ZipFile(zip_framework_name,dst_framework_path,target_plugin_dst_lib_path)
+                        src_framework_path = target_plugin_dst_lib_path / zip_framework_name
+                        OneZipCommand.ZipFile(src_framework_path,dst_framework_path)
                         FileUtility.DeleteDir(embeddedframework_path)
 
             target_plugin_src_lib_path = original_src
@@ -395,7 +397,8 @@ class AgoraPluginManager(BaseSystem):
         dst_zip_file_path.mkdir(parents= True, exist_ok= True)
         dst_zip_file_path = self.GetPath_FinalPluginArchivePlacedDir(dst_zip_file_path,sdkinfo)
         dst_zip_file_path = dst_zip_file_path / (PLUGIN_NAME + ".zip")
-        OneZipCommand.ZipFile(PLUGIN_NAME,dst_zip_file_path,src_zip_files_root_path)
+        src_zip_file_dir_path = src_zip_files_root_path / PLUGIN_NAME
+        OneZipCommand.ZipFile(src_zip_file_dir_path,dst_zip_file_path)
         
         PrintLog(">>>> Final Product Path: " + str(dst_zip_file_path))
 

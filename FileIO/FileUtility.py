@@ -22,12 +22,21 @@ class FileUtility:
 
 
 
-    def CopyDir(src_path,dst_path,bkeep_symlink = True,bmac_use_shutil = False,mac_cp_custom_params = ""):
-        ## Case: Copy .app:
+    def CopyDir(src_path,dst_path,bkeep_symlink = True,bmac_use_shutil = False,bmac_cp_copyinside= True,mac_cp_custom_params = ""):
+        ## Case: Copy .app on Mac:
         ### there are 2 ways:
         ### 1. bmac_use_shutil = True
-        ### 2. mac_cp_custom_params = "PR"
+        ### 2. bmac_use_shutil = False, bmac_cp_copyinside = False, mac_cp_custom_params = "PR"
+
+        ## Case: [bmac_cp_copyinside = False] CopyDir([src]../AgoraPlugin , [dst]../AgoraPlugin)
+        ## [dst] should use dst.parent, otherwise src would be copied under dst:
+        ## that would be  ../AgoraPlugin/AgoraPlugin
         if FileUtility.IsPlatform_Mac() and (not bmac_use_shutil):
+            
+            ## By default, it would copy [SrcPath/*] -> [DstPath] 
+            if bmac_cp_copyinside:
+                src_path = src_path / "*"
+
             if mac_cp_custom_params != "":
                 mac_cp_custom_params =  "-" + mac_cp_custom_params if mac_cp_custom_params != " " else ""
                 command = (
@@ -37,12 +46,12 @@ class FileUtility:
                 RUNCMD(command)
             else:
                 if bkeep_symlink:
-                    param = "PRfa"
+                    param = "-PRfa"
                 else:
-                    param = "RLf"
+                    param = "-RLf"
             
                 command = (
-                    r" cp -"+param + " " + str(src_path) + " " + str(dst_path)
+                    r" cp "+param + " " + str(src_path) + " " + str(dst_path)
                 )
                 #PrintLog(command)
                 RUNCMD(command)
