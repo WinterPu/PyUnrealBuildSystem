@@ -122,7 +122,7 @@ class UnrealProjectManager:
             PrintLog("[UpdateXcodeProject] Delete xcworksapce [%s]" %xcworkspace_dir.name )
 
         for xcworkspace_dir in src_root_path_resources.glob("*.xcworkspace"):
-            FileUtility.CopyDir(xcworkspace_dir,path_project/xcworkspace_dir.name)
+            FileUtility.CopyDir(xcworkspace_dir,path_project/xcworkspace_dir.name,True,bmac_use_shutil=True)
         
         path_intermediate = path_project / "Intermediate"
         path_projectfiles = path_intermediate / "ProjectFiles"

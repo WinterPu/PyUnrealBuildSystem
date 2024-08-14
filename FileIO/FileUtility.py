@@ -31,11 +31,15 @@ class FileUtility:
         ## Case: [bmac_cp_copyinside = False] CopyDir([src]../AgoraPlugin , [dst]../AgoraPlugin)
         ## [dst] should use dst.parent, otherwise src would be copied under dst:
         ## that would be  ../AgoraPlugin/AgoraPlugin
+        src_path = Path(src_path)
+        dst_path = Path(dst_path)
         if FileUtility.IsPlatform_Mac() and (not bmac_use_shutil):
             
             ## By default, it would copy [SrcPath/*] -> [DstPath] 
             if bmac_cp_copyinside:
                 src_path = src_path / "*"
+                if not dst_path.exists():
+                    dst_path.mkdir(parents=True,exist_ok=True)
 
             if mac_cp_custom_params != "":
                 mac_cp_custom_params =  "-" + mac_cp_custom_params if mac_cp_custom_params != " " else ""
