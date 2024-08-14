@@ -23,10 +23,15 @@ class FileUtility:
 
 
     def CopyDir(src_path,dst_path,bkeep_symlink = True,bmac_use_shutil = False,mac_cp_custom_params = ""):
+        ## Case: Copy .app:
+        ### there are 2 ways:
+        ### 1. bmac_use_shutil = True
+        ### 2. mac_cp_custom_params = "PR"
         if FileUtility.IsPlatform_Mac() and (not bmac_use_shutil):
             if mac_cp_custom_params != "":
+                mac_cp_custom_params =  "-" + mac_cp_custom_params if mac_cp_custom_params != " " else ""
                 command = (
-                    r" cp -"+param + " " + str(src_path) + "/* " + str(dst_path)
+                    r" cp "+ str(mac_cp_custom_params) + " " + str(src_path) + " " + str(dst_path)
                 )
                 #PrintLog(command)
                 RUNCMD(command)
@@ -37,7 +42,7 @@ class FileUtility:
                     param = "RLf"
             
                 command = (
-                    r" cp -"+param + " " + str(src_path) + "/* " + str(dst_path)
+                    r" cp -"+param + " " + str(src_path) + " " + str(dst_path)
                 )
                 #PrintLog(command)
                 RUNCMD(command)
