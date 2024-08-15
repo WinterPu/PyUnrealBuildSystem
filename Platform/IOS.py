@@ -144,19 +144,20 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
         bhas_add_postxcodebuild = ABSHelper.Get().HasPostXcodeBuildAdded()
 
-        PrintLog(f"{bis_agora_ue_project} {bhas_add_postxcodebuild}  {uproject_name}")
+        PrintLog(f"Status: IsAgoraProject: {bis_agora_ue_project} NeedAddPostXcodeBuild {bhas_add_postxcodebuild}")
         if bis_agora_ue_project and bhas_add_postxcodebuild:
             
             ## Ex. AgoraExample_UE5
             resource_tag_name = uproject_name + "_UE5"
             src_root_path_resource = ConfigParser.Get().GetResourcesRootPath(resource_tag_name)
+            PrintLog(f"ResourcePath: [{src_root_path_resource}]")
 
             if not src_root_path_resource.exists():
                 PrintErr(f"Cannot find resource root path {src_root_path_resource}")
                 return 
 
 
-            UnrealProjectManager.UpdateXcodeProject(path_project_root,src_root_path_resource)
+            UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource)
             OneXcodeCommand = XcodeCommand()
             params = ParamsXcodebuild()
 
@@ -178,7 +179,48 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
 
     def PostPackaged_UseLegencyXcodeProject(self):
-        pass
+        PrintSubStageLog("IOS - PostPackaged_UseLegencyXcodeProject")
+
+        ## Make sure the previous build is successful
+        bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
+        bis_audioonly = ABSHelper.Get().IsAgoraSDKAudioOnly()
+        path_project_root = Path(UBSHelper.Get().GetPath_ProjectRoot())
+        uproject_name = UBSHelper.Get().GetName_ProjectName()
+
+        bhas_add_postxcodebuild = ABSHelper.Get().HasPostXcodeBuildAdded()
+
+        PrintLog(f"Status: IsAgoraProject: {bis_agora_ue_project} NeedAddPostXcodeBuild {bhas_add_postxcodebuild}")
+        if bis_agora_ue_project and bhas_add_postxcodebuild:
+            ## Ex. AgoraExample_UE4
+            resource_tag_name = uproject_name + "_UE4"
+            src_root_path_resource = ConfigParser.Get().GetResourcesRootPath(resource_tag_name)
+            PrintLog(f"ResourcePath: [{src_root_path_resource}]")
+
+
+            if not src_root_path_resource.exists():
+                PrintErr(f"Cannot find resource root path {src_root_path_resource}")
+                return 
+
+
+            UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource,"ProjectFilesIOS")
+            OneXcodeCommand = XcodeCommand()
+
+            params = ParamsXcodebuild()
+            name_workspace = uproject_name + "_IOS.xcworkspace"
+            params.workspace =  path_project_root / name_workspace
+
+            ioscert_tag_name = self.Params['ioscert']
+            OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
+            if OneIOSCert != None:
+                params.codesign_identity = OneIOSCert.get_signing_identity
+                params.provisioning_profile_specifier = OneIOSCert.get_provisioning_profile_specifier
+            
+            OneXcodeCommand.XcodeBuild(params)
+
+            ## Ex. [project_root_path] /  "Binaries" / "IOS" / "AgoraExample.app"
+            name_app =  uproject_name + ".app"
+            path_app = path_project_root / "Binaries" / "IOS" / "Payload" / name_app
+            UnrealProjectManager.ConvertMacAppToIPA(path_app)
 
             
             

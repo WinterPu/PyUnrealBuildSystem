@@ -112,25 +112,25 @@ class UnrealProjectManager:
     
 
 
-    def UpdateXcodeProject(path_project_root,src_root_path_resources):
+    def ReplaceXcodeProject(path_project_root,src_root_path_resources,dir_name_projectfiles = "ProjectFiles"):
         path_project = Path(path_project_root)
         for xcworkspace_dir in path_project.glob("*.xcworkspace"):
             try:
                 FileUtility.DeleteDir(xcworkspace_dir)
             except PermissionError as error:
-                PrintErr("[UpdateXcodeProject] Delete xcworksapce dir [%s] Failed! - PermissionError [%s]" %(xcworkspace_dir.name,error.strerror + "  " + error.filename),error.errno)
-            PrintLog("[UpdateXcodeProject] Delete xcworksapce [%s]" %xcworkspace_dir.name )
+                PrintErr("[ReplaceXcodeProject] Delete xcworksapce dir [%s] Failed! - PermissionError [%s]" %(xcworkspace_dir.name,error.strerror + "  " + error.filename),error.errno)
+            PrintLog("[ReplaceXcodeProject] Delete xcworksapce [%s]" %xcworkspace_dir.name )
 
         for xcworkspace_dir in src_root_path_resources.glob("*.xcworkspace"):
             FileUtility.CopyDir(xcworkspace_dir,path_project/xcworkspace_dir.name,True,bmac_use_shutil=True)
         
         path_intermediate = path_project / "Intermediate"
-        path_projectfiles = path_intermediate / "ProjectFiles"
+        path_projectfiles = path_intermediate / dir_name_projectfiles
 
         if path_projectfiles.exists():
             FileUtility.DeleteDir(path_projectfiles)
 
-        src_path_projectfiles = src_root_path_resources / "ProjectFiles"
+        src_path_projectfiles = src_root_path_resources / dir_name_projectfiles
         dst_path_projectfiles = path_projectfiles
         PrintLog(f"Copy: {src_path_projectfiles} -> {dst_path_projectfiles}")
         FileUtility.CopyDir(src_path_projectfiles,dst_path_projectfiles)

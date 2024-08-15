@@ -178,7 +178,7 @@ class MacTargetPlatform(BaseTargetPlatform):
                 PrintErr(f"Cannot find resource root path {src_root_path_resource}")
                 return 
 
-            UnrealProjectManager.UpdateXcodeProject(path_project_root,src_root_path_resource)
+            UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource)
             OneXcodeCommand = XcodeCommand()
             params = ParamsXcodebuild()
 
@@ -188,6 +188,7 @@ class MacTargetPlatform(BaseTargetPlatform):
             OneXcodeCommand.XcodeBuild(params)
 
     def PostPackaged_UseLegencyXcodeProject(self):
+        ## for now, no need further actions
         pass
 
 
