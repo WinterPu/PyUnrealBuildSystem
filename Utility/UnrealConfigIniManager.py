@@ -84,7 +84,7 @@ class UnrealConfigIniManager:
         return bRet
     
     ## section etc = "[/Script/IOSRuntimeSettings.IOSRuntimeSettings]"
-    def SetConfig(path_ini,section,key,val,bAppendIfNotFounded = False):
+    def SetConfig(path_ini,section,key,val,bAppendIfNotFounded = True):
 
         path_ini = Path(path_ini)
 
@@ -93,21 +93,28 @@ class UnrealConfigIniManager:
 
         bFoundedSection = False
         bSectionExists = False
-        bHasAddedKeyVal = False
+        bFoundedKeyVal = False
         new_lines = []
         for line in lines:
+
+            ## Check if it is a section
             if line.strip().startswith('[') and line.strip().endswith(']'):
 
                 ## Precheck
-                if bFoundedSection and not bHasAddedKeyVal:
+                if bFoundedSection and not bFoundedKeyVal:
                     ## Only Found Section
                     ## Section was found but key=val was not fouond within it
                     ## add key=val
                     
+
+                    ## Ex. section=[A] key=[K] val=[V]
+                    # --> check section[B]
+                    # --> it would add key-val line first
+                    # --> then,  new_lines.append(line) ==> add section [B]
                     if bAppendIfNotFounded:
                         PrintLog("[ModifyConfig Ini] File[%s] Section[%s] AddKeyVal: Key[%s] -> NewVal[%s]"%(path_ini.name,section,key,val))
                         new_lines.append(f'{key}={val}\n\n\n')
-                        bHasAddedKeyVal = True
+                        bFoundedKeyVal = True
 
 
                 if line.strip() == section:
@@ -118,7 +125,7 @@ class UnrealConfigIniManager:
 
             elif bFoundedSection and line.strip().startswith(key + '='):
                 ### Found Section & Key=Val
-                bHasAddedKeyVal = True
+                bFoundedKeyVal = True
                 new_lines.append(f'{key}={val}\n')
                 PrintLog("[ModifyConfig Ini] File[%s] Section[%s] ModifyKeyVal: Key[%s] -> NewVal[%s]"%(path_ini.name,section,key,val))
                 continue
@@ -132,6 +139,12 @@ class UnrealConfigIniManager:
                 new_lines.append(section +"\n")
                 new_lines.append(f'{key}={val}\n')
                 PrintLog("[ModifyConfig Ini] File[%s] Add All At The Bottom:  Section[%s]: Key[%s] -> NewVal[%s]"%(path_ini.name,section,key,val))
+            elif not bFoundedKeyVal:
+                ## to the end, not found the key-val
+                new_lines.append("\n")
+                new_lines.append(f'{key}={val}\n')
+                PrintLog("[ModifyConfig Ini] File[%s] Add All At The Bottom:  Section[%s]: Key[%s] -> NewVal[%s]"%(path_ini.name,section,key,val))
+
 
         with open(path_ini, 'w') as file:
             file.writelines(new_lines)

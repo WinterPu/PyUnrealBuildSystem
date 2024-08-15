@@ -162,6 +162,7 @@ class IOSTargetPlatform(BaseTargetPlatform):
             params = ParamsXcodebuild()
 
             name_workspace = uproject_name + " (IOS).xcworkspace"
+            params.scheme = uproject_name
             params.workspace =  path_project_root / name_workspace
 
             ioscert_tag_name = self.Params['ioscert']
@@ -208,7 +209,8 @@ class IOSTargetPlatform(BaseTargetPlatform):
             params = ParamsXcodebuild()
             name_workspace = uproject_name + "_IOS.xcworkspace"
             params.workspace =  path_project_root / name_workspace
-
+            params.scheme = uproject_name
+            
             ioscert_tag_name = self.Params['ioscert']
             OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
             if OneIOSCert != None:

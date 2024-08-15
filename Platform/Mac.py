@@ -183,6 +183,7 @@ class MacTargetPlatform(BaseTargetPlatform):
             params = ParamsXcodebuild()
 
             name_workspace = uproject_name + " (Mac).xcworkspace"
+            params.scheme = uproject_name
             params.workspace =  path_project_root / name_workspace
             params.destination = "generic/platform=Mac"
             OneXcodeCommand.XcodeBuild(params)
