@@ -103,4 +103,25 @@ class XcodeCommand:
             subcommand_provisioning_profile_specifier
         )
 
-        RUNCMD(command)       
+        RUNCMD(command)
+
+
+
+    def PlistBuddy(self,command,path_infoplist):
+        ## Ex.
+        ## Add :UIBackgroundModes array
+        ## Add :UIBackgroundModes:0 string audio
+        ## Add :UIBackgroundModes:1 string fetch
+        ## Add :UIBackgroundModes:2 string location
+        ## Add :UIBackgroundModes:3 string voip
+        ## Add :UIBackgroundModes:4 string processing
+
+        path_infoplist =  Path(path_infoplist)
+        command = (
+            r"/usr/libexec/PlistBuddy "
+            r" -c " + '"' + str(command)  + '"' +
+            path_infoplist
+        )
+
+        RUNCMD(command)
+        
