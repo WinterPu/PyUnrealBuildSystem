@@ -62,6 +62,9 @@ class AgoraBuildSystem(BaseSystem):
     def AddArgsToParser(self,ArgParser,bIncludeConflictArgs = True):
 
         ArgParser.add_argument("-BuildUEProject",action = "store_true")
+
+        ArgParser.add_argument("-AddPostXcodeBuild",action = "store_true") ## after packaging, updated Xcode project and use 'xcodebuild' to build again
+
         #ArgParser.add_argument("-NeedCopySDKWhenBuilding",action = "store_true")
         ArgParser.add_argument("-MacTrust",action = "store_true")
         ArgParser.add_argument("-Password",default="")
@@ -76,6 +79,7 @@ class AgoraBuildSystem(BaseSystem):
 
         ArgParser.add_argument("-GenPlugin",action = "store_true")
         ArgParser.add_argument("-SkipCopySDKToProject",action = "store_true")
+        ArgParser.add_argument("-SkipClean",action = "store_true")
 
 
 
@@ -96,9 +100,11 @@ class AgoraBuildSystem(BaseSystem):
             if Args.SkipCopySDKToProject != True:
                 self.CopySDKToUEProject(Args)
 
-            Args.Clean = True
-            PyUnrealBuildSystem.Get().CreateTask(Args)
-            Args.Clean = False
+            if Args.SkipClean != True:
+                Args.Clean = True
+                PyUnrealBuildSystem.Get().CreateTask(Args)
+                Args.Clean = False
+            
             Args.BuildCookRun = True
             PyUnrealBuildSystem.Get().CreateTask(Args)
             Args.BuildCookRun = False

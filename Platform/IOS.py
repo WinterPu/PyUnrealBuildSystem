@@ -10,6 +10,9 @@ from FileIO.FileUtility import *
 from UBSHelper import *
 from ABSHelper import *
 
+from Utility.UnrealProjectManager import *
+
+
 class IOSPlatformPathUtility:
     @staticmethod
     def GetBCExtensionFrameworkDir():
@@ -70,6 +73,8 @@ class IOSTargetPlatform(BaseTargetPlatform):
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
 
         self.RunUAT().BuildCookRun(params)
+
+        self.PostPackaged()
         
     
     def PrepareMannualOp_BCExtension(self):
@@ -96,7 +101,7 @@ class IOSTargetPlatform(BaseTargetPlatform):
             #     Dst: [Project] / IOSFramework / AgoraReplayKitExtension.embeddedframework.zip
             src_zip_file_path_replay_kit = path_project_root / IOSPlatformPathUtility.GetSrcReplayKitExtensionZipFilePath()
             dst_zip_file_path_replay_kit  = root_path_framework_dir / src_zip_file_path_replay_kit.name
-            shutil.copy(src_zip_file_path_replay_kit,dst_zip_file_path_replay_kit)
+            FileUtility.CopyFile(src_zip_file_path_replay_kit,dst_zip_file_path_replay_kit)
 
             OneZipCommand = ZipCommand()
             OneZipCommand.UnZipFile(dst_zip_file_path_replay_kit,root_path_framework_dir)
@@ -115,7 +120,60 @@ class IOSTargetPlatform(BaseTargetPlatform):
             FileUtility.DeleteDir(target_unzip_path)
 
 
+    def PostPackaged(self):
+        PrintStageLog("PostPackaged")
 
+        self.PostPackaged_DoXcodeBuild()
+
+    def PostPackaged_DoXcodeBuild(self):
+        ## The Morden Xcode Project Feature was introduced in UE53
+        bis_ue53_or_later = UBSHelper.Get().Is_UE53_Or_Later()
+        if bis_ue53_or_later:
+            self.PostPackaged_UseMordenXcodeProject()
+        else:
+            self.PostPackaged_UseLegencyXcodeProject()
+            
+    def PostPackaged_UseMordenXcodeProject(self):
+        PrintSubStageLog("IOS - PostPackaged_UseMordenXcodeProject")
+
+        ## Make sure the previous build is successful
+        bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
+        bis_audioonly = ABSHelper.Get().IsAgoraSDKAudioOnly()
+        path_project_root = Path(UBSHelper.Get().GetPath_ProjectRoot())
+        uproject_name = UBSHelper.Get().GetName_ProjectName()
+
+        bhas_add_postxcodebuild = ABSHelper.Get().HasPostXcodeBuildAdded()
+
+        PrintLog(f"{bis_agora_ue_project} {bhas_add_postxcodebuild}  {uproject_name}")
+        if bis_agora_ue_project and bhas_add_postxcodebuild:
+            
+            ## Ex. AgoraExample_UE5
+            resource_tag_name = uproject_name + "_UE5"
+            src_root_path_resource = ConfigParser.Get().GetResourcesRootPath(resource_tag_name)
+
+            UnrealProjectManager.UpdateXcodeProject(path_project_root,src_root_path_resource)
+            OneXcodeCommand = XcodeCommand()
+            params = ParamsXcodebuild()
+
+            name_workspace = uproject_name + " (IOS).xcworkspace"
+            params.workspace =  path_project_root / name_workspace
+
+            ioscert_tag_name = self.Params['ioscert']
+            OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
+            if OneIOSCert != None:
+                params.codesign_identity = OneIOSCert.get_signing_identity
+                params.provisioning_profile_specifier = OneIOSCert.get_provisioning_profile_specifier
+            
+            OneXcodeCommand.XcodeBuild(params)
+
+            ## Ex. [project_root_path] /  "Binaries" / "IOS" / "AgoraExample.app"
+            name_app =  uproject_name + ".app"
+            path_app = path_project_root / "Binaries" / "IOS" / name_app
+            UnrealProjectManager.ConvertMacAppToIPA(path_app)
+
+
+    def PostPackaged_UseLegencyXcodeProject(self):
+        pass
 
             
             

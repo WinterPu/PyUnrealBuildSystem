@@ -4,12 +4,14 @@ from Command.GenerateProjectFilesWithShellCommand import *
 from Command.IPhonePackagerCommand import *
 from Command.UBTCommand import * 
 from pathlib import Path
-from FileIO.FileUtility import FileUtility
+from FileIO.FileUtility import *
 
 from UBSHelper import *
 from ABSHelper import *
 
 import shutil
+
+from Utility.UnrealProjectManager import *
 
 class MacPlatformPathUtility:
     @staticmethod
@@ -143,9 +145,48 @@ class MacTargetPlatform(BaseTargetPlatform):
             src_path = project_folder_path / MacPlatformPathUtility.GetFrameworkSrcPathFromSDK()
             dst_path = app_dst_achieve_folder / MacPlatformPathUtility.GetFrameworkDstPathInApplication()
             PrintLog("Copy Framework: src: [ " + str(src_path) + "] dst: [ " + str(dst_path)+"]")
-            #PrintLog(str(dst_path))
-            #shutil.copytree(src_path,dst_path,dirs_exist_ok= True)
             FileUtility.CopyDir(src_path,dst_path)
+        
+        self.PostPackaged_DoXcodeBuild()
+
+    
+    def PostPackaged_DoXcodeBuild(self):
+        ## The Morden Xcode Project Feature was introduced in UE53
+        bis_ue53_or_later = UBSHelper.Get().Is_UE53_Or_Later()
+        if bis_ue53_or_later:
+            self.PostPackaged_UseMordenXcodeProject()
+        else:
+            self.PostPackaged_UseLegencyXcodeProject()
+
+    def PostPackaged_UseMordenXcodeProject(self):
+        PrintSubStageLog("Mac - PostPackaged_UseMordenXcodeProject")
+
+        ## Make sure the previous build is successful
+        bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
+        bis_sdkaudioonly = ABSHelper.Get().IsAgoraSDKAudioOnly()
+        path_project_root = Path(UBSHelper.Get().GetPath_ProjectRoot())
+        uproject_name = UBSHelper.Get().GetName_ProjectName()
+
+        bhas_add_postxcodebuild = ABSHelper.Get().HasPostXcodeBuildAdded()
+
+        if bis_agora_ue_project and bhas_add_postxcodebuild:
+            ## Ex. AgoraExample_UE5
+            resource_tag_name = uproject_name + "_UE5"
+            src_root_path_resource = ConfigParser.Get().GetResourcesRootPath(resource_tag_name)
+
+            UnrealProjectManager.UpdateXcodeProject(path_project_root,src_root_path_resource)
+            OneXcodeCommand = XcodeCommand()
+            params = ParamsXcodebuild()
+
+            name_workspace = uproject_name + " (Mac).xcworkspace"
+            params.workspace =  path_project_root / name_workspace
+            params.destination = "generic/platform=Mac"
+            OneXcodeCommand.XcodeBuild(params)
+
+    def PostPackaged_UseLegencyXcodeProject(self):
+        pass
+
+
 
     def Package(self):
         self.SetupEnvironment()

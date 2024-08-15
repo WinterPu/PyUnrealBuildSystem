@@ -61,10 +61,22 @@ class UnrealConfigIniManager:
         bRet = True
         if ConfigParser.Get().IsIOSCertValid(params_ioscert):
             OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(params_ioscert)
+            
+            if OneIOSCert == None:
+                return False
+            
             if bUseMordenXcode:
-                UnrealConfigIniManager.SetConfig_IOSCert_XCodeProject(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["path_mobileprovision"])
+                UnrealConfigIniManager.SetConfig_IOSCert_XCodeProject(
+                    path_uproject_file,
+                    OneIOSCert.get_signing_identity,
+                    OneIOSCert.get_filepath_mobileprovision
+                )
             else:
-                UnrealConfigIniManager.SetConfig_IOSCert_UEConfig(path_uproject_file,OneIOSCert["signing_identity"],OneIOSCert["name_mobileprovision"])
+                UnrealConfigIniManager.SetConfig_IOSCert_UEConfig(
+                    path_uproject_file,
+                    OneIOSCert.get_signing_identity,
+                    OneIOSCert.get_filename_mobileprovision
+                )
 
             bRet = True        
         else:

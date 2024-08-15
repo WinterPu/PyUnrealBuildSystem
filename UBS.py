@@ -198,7 +198,11 @@ class PyUnrealBuildSystem(BaseSystem):
             if ConfigParser.Get().IsIOSCertValid(tag_name_ios_cert) :
                 PrintLog("[IPAResign] Use IOS Certificate %s " %tag_name_ios_cert)
                 OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(tag_name_ios_cert)
-                OneFastLaneCommand.IPAResign(path_ipa,OneIOSCert["signing_identity"],OneIOSCert["path_mobileprovision"])
+                OneFastLaneCommand.IPAResign(
+                    path_ipa,
+                    OneIOSCert.get_signing_identity,
+                    OneIOSCert.get_filepath_mobileprovision
+                )
             
         
         if Args.SetUEConfigIni == True:

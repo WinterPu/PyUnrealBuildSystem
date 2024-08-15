@@ -9,6 +9,42 @@ from FileIO.FileUtility import *
 path_val = Path("/Users/admin/Documents/PyUnrealBuildSystem/Config/Config.json")
 
 
+class IOSCertInfo:
+    def __init__(self,signing_identity,provisioning_profile,name_mobileprovision,path_mobileprovision,provisioning_profile_specifier):
+        self.__signing_identity = signing_identity
+        self.__provisioning_profile = provisioning_profile
+        self.__name_mobileprovision = name_mobileprovision
+        self.__path_mobileprovision = Path(path_mobileprovision)
+        self.__provisioning_profile_specifier = provisioning_profile_specifier
+
+    @property
+    def get_signing_identity(self):
+        return self.__signing_identity
+    
+    ## currently get it from UE Config
+    @property
+    def get_provisioning_profile(self):
+        return self.__provisioning_profile
+    
+    @property
+    def get_filename_mobileprovision(self):
+        return self.__name_mobileprovision
+    
+    @property
+    def get_filepath_mobileprovision(self):
+        return self.__path_mobileprovision
+    
+
+    ## use security cms -D -i [path_mobile_provision]
+    ## to check UUID
+    ## could be used in Xcode[provisioning_profile_specifier]
+    @property
+    def get_provisioning_profile_specifier(self):
+        return self.__provisioning_profile_specifier
+
+
+
+
 
 class ConfigParser(BaseSystem):
     _instance = None
@@ -42,10 +78,12 @@ class ConfigParser(BaseSystem):
         self.ParseIOSCertConfig()
 
     def ParseUEConfig(self):
+        ## Load Basic Config
         base_config_path=Path("Config/UEConfig/Config.json")
         base_config_file = open(base_config_path)
         base_config_json_data = json.load(base_config_file)
 
+        ## Load Platforms Config
         platform_config_path = base_config_path.parent.joinpath("Platforms",self.GetHostPlatform(),"Config.json")
         platform_config_file = open(platform_config_path)
         platform_config_json_data = json.load(platform_config_file)
@@ -138,16 +176,22 @@ class ConfigParser(BaseSystem):
         return bIsValid
 
 
-    def GetOneIOSCertificate(self,tag_name):
+    def GetOneIOSCertificate(self,tag_name) -> IOSCertInfo:
         ## Get current script working dir
+        
+        if not self.IsIOSCertValid(tag_name):
+            return None
+        
         current_dir = Path(__file__).parent
         base_path = current_dir / Path("Config/UEConfig/Platforms/IOS/Certs")
-        return {
-            "signing_identity": self.IOSCertData[tag_name]["signing_identity"],
-            "provisioning_profile": self.IOSCertData[tag_name]["provisioning_profile"],
-            "name_mobileprovision": self.IOSCertData[tag_name]["mobileprovision_filename"],
-            "path_mobileprovision" : str(base_path / self.IOSCertData[tag_name]["mobileprovision_filename"])
-        }
+
+        return IOSCertInfo(
+            signing_identity = self.IOSCertData[tag_name]["signing_identity"],
+            provisioning_profile = self.IOSCertData[tag_name]["provisioning_profile"],
+            name_mobileprovision = self.IOSCertData[tag_name]["mobileprovision_filename"],
+            path_mobileprovision = str(base_path / self.IOSCertData[tag_name]["mobileprovision_filename"]),
+            provisioning_profile_specifier = self.IOSCertData[tag_name]["provisioning_profile_specifier"]
+        )
 
 
     def CopyAllMobileProvisionsToDstPath(self):
@@ -161,3 +205,16 @@ class ConfigParser(BaseSystem):
                 for file in src_path.glob("*.mobileprovision"):
                     dst_file = dst_path / file.name
                     FileUtility.CopyFile(file, dst_file)
+
+
+    
+
+
+    ### For Resources Related
+    def GetResourcesRootPath(self,resource_tag_name):
+        current_dir = Path(__file__).parent
+        final_path = current_dir / Path("Config/UEConfig/Resources") / resource_tag_name
+        return final_path
+    
+
+
