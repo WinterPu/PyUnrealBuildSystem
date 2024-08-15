@@ -151,6 +151,11 @@ class IOSTargetPlatform(BaseTargetPlatform):
             resource_tag_name = uproject_name + "_UE5"
             src_root_path_resource = ConfigParser.Get().GetResourcesRootPath(resource_tag_name)
 
+            if not src_root_path_resource.exists():
+                PrintErr(f"Cannot find resource root path {src_root_path_resource}")
+                return 
+
+
             UnrealProjectManager.UpdateXcodeProject(path_project_root,src_root_path_resource)
             OneXcodeCommand = XcodeCommand()
             params = ParamsXcodebuild()
