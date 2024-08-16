@@ -71,6 +71,9 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-pluginname", default="AgoraPlugin")
         ArgParser.add_argument("-giturl", default= "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git")
         ArgParser.add_argument("-gitbranch", default="") 
+
+        ArgParser.add_argument("-setenginever",action = "store_true")
+
         ## empty: full copy, copy all the files under the target folder.
         ArgParser.add_argument("-winarch", default="") 
         ArgParser.add_argument("-macarch", default="macos-arm64_x86_64") 
@@ -514,7 +517,12 @@ class AgoraPluginManager(BaseSystem):
         ### Modification
 
         template_arr['VersionName'] = sdk_version
-        template_arr['EngineVersion'] = min_engine_version
+
+        bNeedSetEngineVersion = Args.setenginever
+        if bNeedSetEngineVersion:
+            ## it would influence the BP example
+            template_arr['EngineVersion'] = min_engine_version
+
         if marketplace_url != "":
             template_arr['MarketplaceURL'] = marketplace_url
         template_arr['WhitelistPlatforms'] = support_platforms
