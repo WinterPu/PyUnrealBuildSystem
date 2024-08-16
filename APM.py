@@ -71,6 +71,9 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-pluginname", default="AgoraPlugin")
         ArgParser.add_argument("-giturl", default= "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git")
         ArgParser.add_argument("-gitbranch", default="") 
+
+        ArgParser.add_argument("-setenginever",action = "store_true")
+
         ## empty: full copy, copy all the files under the target folder.
         ArgParser.add_argument("-winarch", default="") 
         ArgParser.add_argument("-macarch", default="macos-arm64_x86_64") 
@@ -352,8 +355,6 @@ class AgoraPluginManager(BaseSystem):
                         # Copy target_plugin_src_lib_root_path/*.xcframework/[architecture]/* to target_plugin_dst_lib_path 
                         target_plugin_src_lib_root_path = target_plugin_src_lib_path.parent.parent
                         FileUtility.CopyDirWithWildcardCharInPath_Win(target_plugin_src_lib_root_path,architecture,target_plugin_dst_lib_path)
-                        PrintLog(f"Copy: {target_plugin_src_lib_path}  to {target_plugin_dst_lib_path}")
-                        FileUtility.CopyDir(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path))
                     else:
                         ## Copy Other Platform Libs to Dst Path
                         FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path)
@@ -489,7 +490,7 @@ class AgoraPluginManager(BaseSystem):
             "Version": 1,
             "VersionName": "4.2.1", ####
             "FriendlyName": "AgoraPlugin",
-            "EngineVersion": "5.3.0", ###
+            "EngineVersion": "", ###
             "Description": "develop",
             "Category": "Other",
             "CreatedBy": "Agora",
@@ -516,7 +517,12 @@ class AgoraPluginManager(BaseSystem):
         ### Modification
 
         template_arr['VersionName'] = sdk_version
-        template_arr['EngineVersion'] = min_engine_version
+
+        bNeedSetEngineVersion = Args.setenginever
+        if bNeedSetEngineVersion:
+            ## it would influence the BP example
+            template_arr['EngineVersion'] = min_engine_version
+
         if marketplace_url != "":
             template_arr['MarketplaceURL'] = marketplace_url
         template_arr['WhitelistPlatforms'] = support_platforms
