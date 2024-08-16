@@ -490,7 +490,7 @@ class AgoraPluginManager(BaseSystem):
             "Version": 1,
             "VersionName": "4.2.1", ####
             "FriendlyName": "AgoraPlugin",
-            "EngineVersion": "5.3.0", ###
+            "EngineVersion": "", ###
             "Description": "develop",
             "Category": "Other",
             "CreatedBy": "Agora",
