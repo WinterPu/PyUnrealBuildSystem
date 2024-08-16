@@ -113,6 +113,9 @@ class UnrealProjectManager:
 
 
     def ReplaceXcodeProject(path_project_root,src_root_path_resources,dir_name_projectfiles = "ProjectFiles"):
+        ## It requires the project has the same directory: which means: 
+        ### * it should have the same user account [ Ex. admin ]
+
         path_project = Path(path_project_root)
         for xcworkspace_dir in path_project.glob("*.xcworkspace"):
             try:
