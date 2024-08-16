@@ -352,8 +352,6 @@ class AgoraPluginManager(BaseSystem):
                         # Copy target_plugin_src_lib_root_path/*.xcframework/[architecture]/* to target_plugin_dst_lib_path 
                         target_plugin_src_lib_root_path = target_plugin_src_lib_path.parent.parent
                         FileUtility.CopyDirWithWildcardCharInPath_Win(target_plugin_src_lib_root_path,architecture,target_plugin_dst_lib_path)
-                        PrintLog(f"Copy: {target_plugin_src_lib_path}  to {target_plugin_dst_lib_path}")
-                        FileUtility.CopyDir(str(target_plugin_src_lib_path),str(target_plugin_dst_lib_path))
                     else:
                         ## Copy Other Platform Libs to Dst Path
                         FileUtility.CopyDir(target_plugin_src_lib_path,target_plugin_dst_lib_path)
