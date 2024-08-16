@@ -85,6 +85,21 @@ class MacHostPlatform(BaseHostPlatform):
         path_script_genproj = Path(UBSHelper.Get().GetPath_UEEngine()) / MacPlatformPathUtility.GetGenerateProjectScriptPath()
         self.OneUATCommand = UATCommand(self.Params['uat_path'],path_script_genproj)
 
+    def SetupEnvironment(self):
+        self.SetEngineInfoPlistTmpl()
+
+    def SetEngineInfoPlistTmpl(self):
+        bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
+        if bis_agora_ue_project:
+
+            # Ex. "/Users/Shared/Epic Games/UE_4.27"
+            path_engine_root = UBSHelper.Get().GetPath_UEEngine()
+            path_mac_infoplist_tmpl = path_engine_root / Path("Engine/Source/Runtime/Launch/Resources/Mac/Info.plist")
+
+            OneXcodeCommand = XcodeCommand()
+            OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,True)
+            OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,True)
+
     def GenerateProject(self,path_uproject_file):
         ## uproject file could be any uproject file, not only the target project
         genproj_script = self.GetParamVal("genprojfiles_path")

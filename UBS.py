@@ -84,7 +84,9 @@ class PyUnrealBuildSystem(BaseSystem):
         ## CreateTask handles it to be the base dir under the project dir
         ## otherwise it would be under the engine dir
         ArgParser.add_argument("-archive_dir",default = "")
-    
+
+        ## Setup Machine For Packaging
+        ArgParser.add_argument("-SetupHostMachine", action='store_true')
         
         ## Config Set
         ArgParser.add_argument("-SetUEConfigIni", action='store_true')
@@ -136,6 +138,9 @@ class PyUnrealBuildSystem(BaseSystem):
         if ret_host == False:
             PrintErrWithFrame(sys._getframe())
             return
+        
+        if Args.SetupHostMachine:
+            host_platform.SetupEnvironment()
         
 
         if Args.BuildPlugin == True:

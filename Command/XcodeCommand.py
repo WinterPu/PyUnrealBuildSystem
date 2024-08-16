@@ -107,7 +107,7 @@ class XcodeCommand:
 
 
 
-    def PlistBuddy(self,command,path_infoplist):
+    def PlistBuddy(self,command,path_infoplist,buse_sudo = False):
         ## Ex.
         ## Add :UIBackgroundModes array
         ## Add :UIBackgroundModes:0 string audio
@@ -116,11 +116,13 @@ class XcodeCommand:
         ## Add :UIBackgroundModes:3 string voip
         ## Add :UIBackgroundModes:4 string processing
 
+        sudo_command = ""
+        if buse_sudo:
+            sudo_command = "sudo "
         path_infoplist =  Path(path_infoplist)
         command = (
-            r"/usr/libexec/PlistBuddy "
-            r" -c " + '"' + str(command)  + '"' +
-            path_infoplist
+            sudo_command + r"/usr/libexec/PlistBuddy "
+            r" -c " + '"' + str(command)  + '" ' + f" '{path_infoplist}' "
         )
 
         RUNCMD(command)

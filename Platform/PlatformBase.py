@@ -32,9 +32,9 @@ class BaseHostPlatform:
 
     def GetHostPlatform(self):
         return SystemHelper.Get().GetHostPlatform()
-    
+        
     def SetupEnvironment(self):
-       PrintLog("BaseHostPlatform - SetupEnvironment")
+       PrintLog("BaseHostPlatform - SetupEnvironment (Usually do sth once which requires like: sudo permission)")
 
     def GetParamVal(self,key):
         return self.Params[key]
