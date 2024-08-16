@@ -69,7 +69,10 @@ class AgoraBuildSystem(BaseSystem):
         ArgParser.add_argument("-MacTrust",action = "store_true")
         ArgParser.add_argument("-Password",default="")
         
-        
+        ## Related to resources file dir: Ex. xcode project files (used for ios / mac post packaging actions)
+        ArgParser.add_argument("-ResourceTagName",default="admin@MAGIT04038")
+
+
         ArgParser.add_argument("-TestUEPlugin",action = "store_true")
         ArgParser.add_argument("-TestPluginPath",default = "/Users/admin/Documents/PluginWorkDir/PluginArchive/4.3.1/AgoraPlugin.zip")
         ArgParser.add_argument("-TestAgoraPlugin",action = "store_true") ## Test Agora Plugin
@@ -80,7 +83,6 @@ class AgoraBuildSystem(BaseSystem):
         ArgParser.add_argument("-GenPlugin",action = "store_true")
         ArgParser.add_argument("-SkipCopySDKToProject",action = "store_true")
         ArgParser.add_argument("-SkipClean",action = "store_true")
-
 
 
         ArgParser.add_argument("-AppToIPA",action="store_true")

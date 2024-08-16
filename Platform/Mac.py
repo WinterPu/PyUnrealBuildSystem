@@ -186,8 +186,9 @@ class MacTargetPlatform(BaseTargetPlatform):
 
         if bis_agora_ue_project and bhas_add_postxcodebuild:
             ## Ex. AgoraExample_UE5
-            resource_tag_name = uproject_name + "_UE5"
-            src_root_path_resource = ConfigParser.Get().GetResourcesRootPath(resource_tag_name)
+            resource_index_key = uproject_name + "_UE5"
+            resource_tag_name = ABSHelper.Get().GetResourceTagName()
+            src_root_path_resource = ConfigParser.Get().GetResourcesRootPath(resource_index_key,resource_tag_name)
 
             if not src_root_path_resource.exists():
                 PrintErr(f"Cannot find resource root path {src_root_path_resource}")

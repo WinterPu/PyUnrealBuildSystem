@@ -211,9 +211,9 @@ class ConfigParser(BaseSystem):
 
 
     ### For Resources Related
-    def GetResourcesRootPath(self,resource_tag_name):
+    def GetResourcesRootPath(self,resource_index_key,resource_tag_name):
         current_dir = Path(__file__).parent
-        final_path = current_dir / Path("Config/UEConfig/Resources") / resource_tag_name
+        final_path = current_dir / Path("Config/UEConfig/Resources") / resource_index_key / resource_tag_name
         return final_path
     
 
