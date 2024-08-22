@@ -114,35 +114,71 @@ class UATCommand:
         #  )
         # RUNCMD(command)
 
-        if target_platform == SystemHelper.IOS_TargetName():
+
+        
+
+        ## Step 01: BuildEditor
+
+    
+        platform_editor = "Mac"
+
+        if self.__host_platform == SystemHelper.Win_HostName():
             
-            if self.__host_platform == SystemHelper.Win_HostName():
+            if target_platform == SystemHelper.IOS_TargetName():
                 PrintErr("TBD - Not Ready, Packaging IOS on Windows Platform")
                 return
             
+            if target_platform == SystemHelper.Mac_TargetName():
+                PrintErr("Not Support, Packaging Mac on Windows Platform")
+                return
+            
+            platform_editor = "Win"
+
+        elif self.__host_platform == SystemHelper.Mac_HostName():
+
+            if target_platform == SystemHelper.Android_TargetName():
+                PrintErr("TBD - Not Ready, Packaging Android on Mac Platform")
+                return
+            
+            if target_platform == SystemHelper.Win64_TargetName():
+                PrintErr("Not Support, Packaging Win on Mac Platform")
+                return
+
+
             platform_editor = "Mac"
 
-            ## Gen UE Project On Mac
-            OneGenerateProjectFilesWithShellCommand = GenerateProjectFilesWithShellCommand(self.__path_genproj_script)
-            params_genwithshell = ParamsGenProjectWithShell()
-            params_genwithshell.path_uproject_file = path_uproject_file
-            OneGenerateProjectFilesWithShellCommand.GenerateProjectFiles(params_genwithshell)
 
-            command = (
+        command = (
                 '"' + str(self.__uatpath) + '"' +
                 r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
-                r" -targetplatform="+platform_editor+
+                r" -targetplatform="+target_platform+
                 r" -clientconfig=Development"
                 r" -Build"
                 r" -GenerateDSYM"
                 r" -Cook"
+                #r" -allmaps -pak"
                 r" -Stage"
                 r" -Archive"
                 r" -package"
                 r" -verbose"+
                 subcommand_extras
-             )
-            RUNCMD(command)
+        
+        )
+        
+        RUNCMD(command)
+
+
+
+
+        ## Step 02: BuildCookRun
+
+        if target_platform == SystemHelper.IOS_TargetName():
+            
+            ## Gen UE Project On Mac
+            OneGenerateProjectFilesWithShellCommand = GenerateProjectFilesWithShellCommand(self.__path_genproj_script)
+            params_genwithshell = ParamsGenProjectWithShell()
+            params_genwithshell.path_uproject_file = path_uproject_file
+            OneGenerateProjectFilesWithShellCommand.GenerateProjectFiles(params_genwithshell)
 
             command = (
                 '"' + str(self.__uatpath) + '"' +
@@ -162,23 +198,6 @@ class UATCommand:
             RUNCMD(command)
 
         elif target_platform == SystemHelper.Mac_TargetName() :
-            
-            command = (
-                '"' + str(self.__uatpath) + '"' +
-                r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
-                r" -targetplatform="+target_platform+
-                r" -clientconfig=Development"
-                r" -Build"
-                r" -GenerateDSYM"
-                r" -Cook"
-                #r" -allmaps -pak"
-                r" -Stage"
-                r" -Archive"
-                r" -package"
-                r" -verbose"+
-                subcommand_extras
-             )
-            RUNCMD(command)
 
             command = (
                 '"' + str(self.__uatpath) + '"' +
@@ -218,6 +237,8 @@ class UATCommand:
                 subcommand_extras
             )
             RUNCMD(command)
+
+    
 
     def BuildPlugin(self,params:ParamsUAT):
         ## Command
