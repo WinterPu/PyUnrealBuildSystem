@@ -8,6 +8,7 @@ from Command.MacRATrustCommand import *
 from Command.ZipCommand import *
 from Command.FastLaneCommand import * 
 from Utility.Downloader import *
+from Command.AndroidCommand import *
 
 from APM import *
 
@@ -108,6 +109,13 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-Clean", action='store_true')
         ArgParser.add_argument("-GenProject", action='store_true')
         ArgParser.add_argument("-GenIOSProject", action='store_true')
+
+        ArgParser.add_argument("-InstallAndroidAPI", action='store_true')
+        ArgParser.add_argument("-UnInstallAndroidAPI", action='store_true')
+        ArgParser.add_argument("-AndroidSDKManagerList", action='store_true')
+        ArgParser.add_argument("-AndroidSDKManagerSubCommand",default="")
+
+        ArgParser.add_argument("-ValidatePlatforms", action='store_true')
 
         if bIncludeConflictArgs:
             ArgParser.add_argument("-TestPlugin", action='store_true')
@@ -215,6 +223,24 @@ class PyUnrealBuildSystem(BaseSystem):
             
             #OneIOSCert = ConfigParser.Get().GetOneIOSCertificate("D")
             #UnrealConfigIniManager.SetConfig_IOSCert(Args.uprojectpath,OneIOSCert["signing_identity"],OneIOSCert["provisioning_profile"])
+
+        
+        if Args.InstallAndroidAPI or Args.UnInstallAndroidAPI or Args.AndroidSDKManagerList:
+            OneAndroidCommand = AndroidCommand()
+
+            if Args.UnInstallAndroidAPI:
+                OneAndroidCommand.SDKManager_UnInstall(Args.AndroidSDKManagerSubCommand,False)
+            elif Args.InstallAndroidAPI:
+                OneAndroidCommand.SDKManager_Install(Args.AndroidSDKManagerSubCommand,False)
+            elif Args.AndroidSDKManagerList:
+                OneAndroidCommand.SDKManager_List()
+
+        
+        if Args.ValidatePlatforms:
+            ubt_path = Path(UBSHelper.Get().GetPath_UEEngine()) / Path(WinPlatformPathUtility.GetUBTPath())
+            OneUBTCommand = UBTCommand(ubt_path)
+            OneUBTCommand.ValidPlatforms()
+
         
 
     def BuildPlugin(self,Args,path_plugin_zipfile):

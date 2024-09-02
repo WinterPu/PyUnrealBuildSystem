@@ -78,3 +78,12 @@ class UBTCommand:
              )
         
         RUNCMD(command)
+
+
+
+    def ValidPlatforms(self):
+        command = (
+            '"' + str(self.__path_ubt) + '"' +
+            r" -Mode=ValidatePlatforms -AllPlatforms -OutputSDKs"
+        )
+        RUNCMD(command)

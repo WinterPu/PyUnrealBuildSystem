@@ -13,7 +13,12 @@ class WinPlatformPathUtility:
         return Path("Engine/Binaries/DotNET/IOS/IPhonePackager.exe")
 
     def GetUBTPath():
-        return Path("Engine/Binaries/DotNET/UnrealBuildTool.exe")
+        path  = Path("Engine/Binaries/DotNET/UnrealBuildTool.exe")
+
+        if UBSHelper.Get().Is_UE53_Or_Later():
+            path = Path("Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe")
+
+        return path
 
 
 class WinPlatformBase(PlatformBase):
