@@ -4,7 +4,7 @@ from ConfigParser import *
 class UnrealConfigIniManager:
     
     def GenIniVal_Path(path):
-        return "(Path=\"%s\")" % path
+        return "(Path=\"%s\")" % str(path).replace('\\', '/')
 
     def SetConfig_AndroidPackageName(path_uproject,package_name):
         path = Path(path_uproject)
