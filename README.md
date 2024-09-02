@@ -13,3 +13,10 @@ Unreal Build System with Python
    1. UBSHelper.py: handle Unreal related Args from UBS
 2. APM.py: Agora Plugin Manager
 3. ABS.py = UBS.py + APM.py: Agora Build System
+
+
+
+### Example
+```
+ python ABS.py -uprojectpath='/Users/admin/Documents/Agora-Unreal-RTC-SDK/Agora-Unreal-SDK-Blueprint-Example/AgoraBPExample.uproject' -enginever=5.4 -ioscert="D" -BuildUEProject -agorasdk="4.4.0" -targetplatform=IOS -AddPostXcodeBuild
+```
