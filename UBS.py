@@ -99,6 +99,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ## Build Command
         ArgParser.add_argument("-BuildCookRun", action='store_true')
         ArgParser.add_argument("-BuildPlugin", action='store_true')
+        ArgParser.add_argument("-BuildPluginEngineList", default="all")
         
         ## IOS Resign
         ## Use -ioscert specify the certificate
@@ -280,6 +281,15 @@ class PyUnrealBuildSystem(BaseSystem):
         arg_targetplatform = Args.targetplatform
 
         all_engine_list = ConfigParser.Get().GetAllAvailableEngineList()
+        if Args.BuildPluginEngineList == "all" or Args.BuildPluginEngineList == "" :
+            pass
+        elif Args.BuildPluginEngineList == "Top3":
+            sorted_versions = sorted(all_engine_list, key=float, reverse=True)
+            all_engine_list = sorted_versions[:3]
+        elif Args.BuildPluginEngineList != "":
+            param_enginelist = str(Args.BuildPluginEngineList)
+            all_engine_list = param_enginelist.split("+")
+
         test_complete_log_keyword = "Test Plugin Complete"
         for engine_ver in all_engine_list:
             PrintStageLog("Test Use Engine Ver [%s]" % engine_ver)

@@ -116,6 +116,8 @@ class AgoraBuildSystem(BaseSystem):
             PyUnrealBuildSystem.Get().BuildPlugin(Args,Args.TestPluginPath)
 
         if Args.TestAgoraPlugin == True:
+
+            PyUnrealBuildSystem.Get().CreateTask(Args)
             
             btest_use_agora_sdk_info = Args.QuerySDK
             if btest_use_agora_sdk_info:
