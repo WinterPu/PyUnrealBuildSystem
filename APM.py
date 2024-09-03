@@ -85,7 +85,8 @@ class AgoraPluginManager(BaseSystem):
         #uplugin modification
         ArgParser.add_argument("-mmodifycompileoptions",action='store_true')
         ArgParser.add_argument("-mminenginever", default="5.3.0")  
-        ArgParser.add_argument("-mmarketplaceurl", default="com.epicgames.launcher://ue/marketplace/product/4976717f4e9847d8b161f7c5adb4c1a9")  
+        ArgParser.add_argument("-mmarketplaceurl", default="com.epicgames.launcher://ue/marketplace/product/4976717f4e9847d8b161f7c5adb4c1a9")
+        ArgParser.add_argument("-msupporturl", default="https://www.agora.io/en/")  
         ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android") 
 
         if bIncludeConflictArgs:
@@ -471,7 +472,6 @@ class AgoraPluginManager(BaseSystem):
         with open(file_path,'w') as file:
             file.writelines(new_lines)
 
-
     def UpdateUpluginFile(self,uplugin_file_path,Args):
         # file_path = Path("/Users/admin/Documents/PluginTemp/Agora-Unreal-RTC-SDK/PluginTmp/tmp_plugin_files/AgoraPlugin/AgoraPlugin.uplugin")
         # UPLUGIN_FILE = "AgoraPlugin.uplugin"
@@ -480,39 +480,55 @@ class AgoraPluginManager(BaseSystem):
         min_engine_version = Args.mminenginever
         support_platforms = Args.msupportplatforms
         marketplace_url = Args.mmarketplaceurl
+        msupporturl = Args.msupporturl
         sdkinfo  = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly,Args.agorasdktype)
         val_description = "Agora UE Plugin: %s " %(sdkinfo.ToString())
 
         support_platforms = support_platforms.split("+")
 
-        template_arr = {
+
+        ## unused: just an example for reference view
+        ## [###] means it would be modified
+        ## modules are controlled by the source file
+        unused_template_arr = {
             "FileVersion": 3,
             "Version": 1,
             "VersionName": "4.2.1", ####
             "FriendlyName": "AgoraPlugin",
             "EngineVersion": "", ###
-            "Description": "develop",
+            "Description": "develop", ###
             "Category": "Other",
             "CreatedBy": "Agora",
             "CreatedByURL": "",
             "DocsURL": "",
             "MarketplaceURL": "", ###
-            "SupportURL": "https://www.agora.io/en/",
+            "SupportURL": "https://www.agora.io/en/", ###
             "CanContainContent": True,
             "IsBetaVersion": False,
             "IsExperimentalVersion": False,
             "Installed": False,
-            "WhitelistPlatforms":["Win64","Mac","IOS","Android"],
+            "WhitelistPlatforms":["Win64","Mac","IOS","Android"], ###
             "Modules": [
+                {
+                    "Name": "AgoraUtilityHelper",
+                    "Type": "Runtime",
+                    "LoadingPhase": "Default",
+                    "PlatformAllowList":["Win64","Mac","IOS","Android"] ###
+                },
                 {
                     "Name": "AgoraPlugin",
                     "Type": "Runtime",
                     "LoadingPhase": "Default",
-                    "PlatformAllowList":["Win64","Mac","IOS","Android"]
+                    "PlatformAllowList":["Win64","Mac","IOS","Android"] ###
                 }
             ]
         }
 
+        ## read data from the original uplugin file
+        template_arr = unused_template_arr
+        with open(uplugin_file_path, 'r', encoding='utf-8') as file:
+            PrintLog(f"Loading uplugin from file {uplugin_file_path} ...... ")
+            template_arr = json.load(file)
 
         ### Modification
 
@@ -523,12 +539,21 @@ class AgoraPluginManager(BaseSystem):
             ## it would influence the BP example
             template_arr['EngineVersion'] = min_engine_version
 
+        template_arr['Description'] = val_description
+
         if marketplace_url != "":
             template_arr['MarketplaceURL'] = marketplace_url
+
+        if msupporturl != "":
+            template_arr['SupportURL'] = msupporturl
+
         template_arr['WhitelistPlatforms'] = support_platforms
-        template_arr['Modules'][0]['PlatformAllowList'] = support_platforms
-        template_arr['Description'] = val_description
-        ### 
+        # template_arr['Modules'][0]['PlatformAllowList'] = support_platforms
+
+        for module in template_arr["Modules"]:
+            module["PlatformAllowList"] = support_platforms
+
+        ###
 
         uplugin_json_str = json.dumps(template_arr, sort_keys=False, indent=4, separators=(',', ': '))
         print(uplugin_json_str)
