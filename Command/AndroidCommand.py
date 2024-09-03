@@ -1,5 +1,6 @@
 from Command.CommandBase import *
 from pathlib import Path
+from SystemHelper import *
 import os 
 
 
@@ -7,10 +8,13 @@ import os
 class AndroidCommand:
 
     ## Win
+    __path_sdkmanager = None
+    __path_adb = None
 
-    __path_sdkmanager = Path(os.getenv('LOCALAPPDATA')) / Path("Android/Sdk/cmdline-tools/10.0/bin/sdkmanager.bat")
-    __path_adb = Path(os.getenv('LOCALAPPDATA')) / Path("Android/Sdk/platform-tools/adb.exe")
-
+    def __init__(self) -> None:
+        if SystemHelper.Get().GetHostPlatform() ==  SystemHelper.Win_HostName():
+            __path_sdkmanager = Path(os.getenv('LOCALAPPDATA')) / Path("Android/Sdk/cmdline-tools/10.0/bin/sdkmanager.bat")
+            __path_adb = Path(os.getenv('LOCALAPPDATA')) / Path("Android/Sdk/platform-tools/adb.exe")
 
     def SDKManager_Install(self,install_subcommand,bshow_list = False):
         # sub_command = "platforms;android-"+api_version
