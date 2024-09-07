@@ -3,6 +3,7 @@ from Utility.UnrealConfigIniManager import *
 import os
 
 from UBSHelper import *
+from Command.AndroidCommand import *
 
 class AnndroidPlatformPathUtility:
     def GetPath_AndroidSDKConfigIniOnWindows():
@@ -74,6 +75,16 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
         
         UnrealConfigIniManager.SetConfig_AndroidPackageName(UBSHelper.Get().GetPath_UProjectFile(),self.Params['androidpackagename'])
+
+
+
+        ## SDKManager
+        engine_ver = UBSHelper.Get().GetVer_UEEngine()
+        if engine_ver == "4.27" or engine_ver == "4.25":
+            PrintLog("SDKManager - UnInstall Android API")
+            OneAndroidCommand = AndroidCommand()
+            OneAndroidCommand.SDKManager_UnInstall("platforms;android-33")
+            
 
     def Package(self):
         self.SetupEnvironment()
