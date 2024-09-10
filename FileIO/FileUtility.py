@@ -79,7 +79,7 @@ class FileUtility:
         for pattern_dir in Path(src_root_path).glob(pattern):
             for file in pattern_dir.glob(str(src_sub_path)):
                 dest_file = Path(dst_path) / file.name
-                shutil.copytree(str(file),str(dest_file),dirs_exist_ok= True)
+                shutil.copytree(str(file),str(dest_file),dirs_exist_ok= True,symlinks= True)
     
 
     def DeleteFile(path,bForce = False):
