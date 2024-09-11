@@ -71,3 +71,9 @@ class WinTargetPlatform(BaseTargetPlatform):
         params.path_engine = UBSHelper.Get().GetPath_UEEngine()
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
         self.RunUAT().BuildCookRun(params)
+
+        self.PostPackaged()
+
+    
+    def PostPackaged(self):
+        PrintStageLog("PostPackaged - Win")

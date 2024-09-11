@@ -121,7 +121,7 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
 
     def PostPackaged(self):
-        PrintStageLog("PostPackaged")
+        PrintStageLog("PostPackaged - IOS")
 
         self.PostPackaged_DoXcodeBuild()
 

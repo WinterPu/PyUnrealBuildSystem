@@ -97,3 +97,9 @@ class AndroidTargetPlatform(BaseTargetPlatform):
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
 
         self.RunUAT().BuildCookRun(params)
+
+        self.PostPackaged()
+
+    
+    def PostPackaged(self):
+        PrintStageLog("PostPackaged - Android")

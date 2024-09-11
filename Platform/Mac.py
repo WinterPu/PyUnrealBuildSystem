@@ -144,7 +144,7 @@ class MacTargetPlatform(BaseTargetPlatform):
         print("SetupEnvironment - Mac Platform")
 
     def PostPackaged(self):
-        PrintStageLog("PostPackaged")
+        PrintStageLog("PostPackaged - Mac")
 
         bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
         if bis_agora_ue_project:
