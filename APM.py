@@ -24,6 +24,10 @@ from Base.AgoraSDKInfo import *
 
 from UBS import *
 
+import copy
+
+from APMHelper import *
+
 class AgoraPluginManager(BaseSystem):
 
     __instance = None
@@ -87,7 +91,16 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-mminenginever", default="5.3.0")  
         ArgParser.add_argument("-mmarketplaceurl", default="com.epicgames.launcher://ue/marketplace/product/4976717f4e9847d8b161f7c5adb4c1a9")
         ArgParser.add_argument("-msupporturl", default="https://www.agora.io/en/")  
-        ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android") 
+        ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android")
+
+
+        ArgParser.add_argument("-pluginarchivedir", default="")
+        ArgParser.add_argument("-pluginfiledisplayname", default="")
+        ArgParser.add_argument("-pluginsourcecodepath", default="")
+
+        ArgParser.add_argument("-SkipGenPlugin",action='store_true')
+        ArgParser.add_argument("-GenUEMarketplacePlugin",action='store_true')
+        ArgParser.add_argument("-MarketplacePluginEngineList",default="")
 
         if bIncludeConflictArgs:
             pass
@@ -105,6 +118,8 @@ class AgoraPluginManager(BaseSystem):
         return "tmp_plugin_files"
     def GetName_PluginArchive(self):
         return "PluginArchive"
+    def GetName_PluginUEMarketplaceArchive(self):
+        return "UEMarketplaceArchive"
     def GetName_PluginTmpSortSuffixName(self):
         return "_To_BE_DELETED"
     def GetName_PluginTmpDownloadDir(self):
@@ -124,6 +139,9 @@ class AgoraPluginManager(BaseSystem):
     
     def GetPath_PluginArchiveDir(self):
         return Path(self.GetPath_PluginWorkingDir()) / self.GetName_PluginArchive()
+    
+    def GetPath_PluginUEMarketplaceArchiveDir(self):
+        return Path(self.GetPath_PluginWorkingDir()) / self.GetName_PluginUEMarketplaceArchive()
     
     
     def GetPath_FinalPluginArchivePlacedDir(self,root_plugin_archive_path,sdkinfo:AgoraSDKInfo):
@@ -148,7 +166,11 @@ class AgoraPluginManager(BaseSystem):
         self.CreateTask(args)
 
     def CreateTask(self,Args):
-        self.StartGenPlugin(Args)
+        if not Args.SkipGenPlugin:
+            self.StartGenPlugin(Args)
+        
+        if Args.GenUEMarketplacePlugin:
+            self.GenUEMarketplacePlugins(Args)
 
     def StartGenPlugin(self,Args):
         
@@ -160,6 +182,9 @@ class AgoraPluginManager(BaseSystem):
 
         git_url = Args.giturl
         git_branch = Args.gitbranch
+
+        final_dst_plugin_path = Args.pluginarchivedir
+        plugin_source_code_path = Args.pluginsourcecodepath
 
         sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly)
         
@@ -253,7 +278,9 @@ class AgoraPluginManager(BaseSystem):
                     
         ## >>> Copy Repo Plugin Files <<<
         ### Ex. Copy Repo[Agora-Unreal-SDK-CPP]/PLUGIN_NAME to Dst
-        target_plugin_src_code_path = repo_path / "Agora-Unreal-SDK-CPP" / PLUGIN_NAME
+        target_plugin_src_code_path = plugin_source_code_path
+        if str(plugin_source_code_path) == "":
+            target_plugin_src_code_path = repo_path / "Agora-Unreal-SDK-CPP" / PLUGIN_NAME
   
         ### Ex. [/Users/admin/Documents/PluginWorkDir/PluginTemp] / [tmp_plugin_files] / [AgoraPlugin]
         target_plugin_dst_path = plugin_tmp_path / final_plugin_file_dir / PLUGIN_NAME
@@ -265,7 +292,7 @@ class AgoraPluginManager(BaseSystem):
 
         ## >>> Modify Android Template Here <<<
         ### [TBD] Add Arch Here
-        target_plugin_dst_lib_path = target_plugin_dst_path / "Source"/ "ThirdParty" / "AgoraPluginLibrary"
+        target_plugin_dst_lib_path = target_plugin_dst_path / "Source"/ "ThirdParty" / (PLUGIN_NAME + "Library")
         path_android_tmpl_src = target_plugin_dst_lib_path / "Android" / sdk_build_config
         
         if sdkinfo.Get_SDKVer() == "4.2.1":
@@ -395,11 +422,22 @@ class AgoraPluginManager(BaseSystem):
         
         ### >>> Zip FinalPluginTmp to Archive Dir <<<
         src_zip_files_root_path = target_plugin_dst_path.parent
-        dst_zip_file_path = root_path_plugin_working_dir / plugin_archive_dir
-        dst_zip_file_path.mkdir(parents= True, exist_ok= True)
-        dst_zip_file_path = self.GetPath_FinalPluginArchivePlacedDir(dst_zip_file_path,sdkinfo)
-        dst_zip_file_path = dst_zip_file_path / (PLUGIN_NAME + ".zip")
+
+
+        ## default final_dst_plugin_path == ""
+        dst_zip_file_path = Path(final_dst_plugin_path)
+        if str(final_dst_plugin_path) == "":
+            dst_zip_file_path = root_path_plugin_working_dir / plugin_archive_dir
+            dst_zip_file_path.mkdir(parents= True, exist_ok= True)
+            dst_zip_file_path = self.GetPath_FinalPluginArchivePlacedDir(dst_zip_file_path,sdkinfo)
+
+        filename_final_dst_plugin = Args.pluginfiledisplayname
+        if filename_final_dst_plugin == "" :
+            filename_final_dst_plugin = PLUGIN_NAME
+        
+        dst_zip_file_path = dst_zip_file_path / (filename_final_dst_plugin + ".zip")
         src_zip_file_dir_path = src_zip_files_root_path / PLUGIN_NAME
+        
         OneZipCommand.ZipFile(src_zip_file_dir_path,dst_zip_file_path)
         
         PrintLog(">>>> Final Product Path: " + str(dst_zip_file_path))
@@ -706,6 +744,126 @@ class AgoraPluginManager(BaseSystem):
 
         FileUtility.DeleteDir(str(unzip_path))
 
+
+
+###### For UE Marketplace #####
+    def GenRenamedPluginSrcFiles(self,path_root_repo,old_plugin_name,new_plugin_name):
+
+        path_src_dir = path_root_repo / str(old_plugin_name)
+        path_dst_dir = path_root_repo / str(new_plugin_name)
+
+        extensions = ['.cpp', '.h', '.cs', '.uplugin']
+
+        # pattern02: [content_replacements]: [old , new] replace the old one with the new one
+        content_replacements = {
+            'AgoraPlugin': 'AgoraVoicePlugin',
+            'AGORAPLUGIN_API': 'AGORAVOICEPLUGIN_API',
+            'FAgoraPluginModule': 'FAgoraVoicePluginModule'
+        }
+
+        # pattern03: [name_replacements] [old , new] replace the old one with the new one
+        name_replacements = {
+            'AgoraPlugin': 'AgoraVoicePlugin'
+        }
+
+
+        exclude_path01 = path_dst_dir / "Source/AgoraVoicePlugin/Public/AgoraCppPlugin/include"
+        
+
+        exclude_paths = [exclude_path01]
+
+        APMHelper.Get().CopyDirWithContentReplaced(path_src_dir,path_dst_dir,extensions,content_replacements,name_replacements,exclude_paths)
+
+
+
+
+    def GenUEMarketplacePlugins(self,Args):
+        
+        path_root_ue_marketplace_archive_dir = self.GetPath_PluginUEMarketplaceArchiveDir()
+
+
+        target_enginelist = ['5.4.0','5.3.0','5.2.0']
+        if Args.MarketplacePluginEngineList != "":
+            target_enginelist = str(Args.MarketplacePluginEngineList).split('+')
+
+        gen_configs = {
+            "FullSDK": {
+                "enginelist":target_enginelist,
+                "issdkaudioonly":False,
+                "filename":"Agora_RTC_FULL_SDK_#_Unreal",
+                "pluginname":"AgoraPlugin"
+            },
+            "VoiceSDK":{
+                "enginelist":target_enginelist,
+                "issdkaudioonly":False,
+                "filename":"Agora_RTC_VOICE_SDK_#_Unreal",
+                "pluginname":"AgoraVoicePlugin"
+            }
+        }
+
+        for key_one_config ,val_one_config in gen_configs.items():
+            path_one_config = Path(path_root_ue_marketplace_archive_dir)/ str(key_one_config)
+            if path_one_config.exists():
+                FileUtility.DeleteDir(path_one_config)
+            path_one_config.mkdir(exist_ok=True,parents=True)
+
+            bfirst_time = True
+            for one_engine_ver in val_one_config['enginelist']:
+                path_one_gen_plugin = path_one_config / Path(str(one_engine_ver))
+                if path_one_gen_plugin.exists():
+                    FileUtility.DeleteDir(path_one_gen_plugin)
+                path_one_gen_plugin.mkdir(exist_ok=True,parents=True)
+                
+
+                sdkinfo = AgoraSDKInfo(Args.agorasdk,val_one_config['issdkaudioonly'])
+
+                one_time_args = copy.deepcopy(Args)
+
+                one_time_args.setenginever = True
+                one_time_args.mminenginever = one_engine_ver
+                one_time_args.pluginarchivedir = str(path_one_gen_plugin)
+                zip_filename = val_one_config['filename']
+                zip_filename = str(zip_filename).replace('#',sdkinfo.Get_SDKVer())
+                one_time_args.pluginfiledisplayname = zip_filename
+            
+
+                git_url = Args.giturl
+                repo_name = git_url.split('/')[-1].split('.')[0]
+                path_root_repo = self.GetPath_PluginWorkingDir() / repo_name / "Agora-Unreal-SDK-CPP"
+                plugin_name = str(val_one_config['pluginname'])
+                target_plugin_src_code_path = path_root_repo / plugin_name
+                one_time_args.pluginsourcecodepath = target_plugin_src_code_path
+                PrintLog(f"Plugin Src Code Path: {target_plugin_src_code_path}")
+                one_time_args.pluginname = plugin_name
+
+                if bfirst_time == True:
+                    one_time_args.skipgit = True
+                    one_time_args.skipnativedownload = True
+                    
+                    
+                    original_plugin_name = "AgoraPlugin"
+                    cur_plugin_name = val_one_config['pluginname'] 
+                    if cur_plugin_name != original_plugin_name:
+                        self.GenRenamedPluginSrcFiles(path_root_repo,original_plugin_name,cur_plugin_name)
+
+                    bfirst_time = False
+
+                else:
+                    one_time_args.skipgit = True
+                    one_time_args.skipnativedownload = True 
+                
+                
+                PrintStageLog(f"Gen One Plugin Config[{key_one_config}] Engine[{one_engine_ver}]")
+                dst_zip_file_path = self.GetPath_PluginArchiveDir()
+                path_final_plugin_file = self.GetPath_FinalPluginArchivePlacedDir(dst_zip_file_path,sdkinfo)
+
+                self.StartGenPlugin(one_time_args)
+                FileUtility.CopyDir(path_final_plugin_file,path_one_gen_plugin)
+                PrintLog(f"Check Args {one_time_args}")
+                
+                PrintStageLog(f"Complete Gen One Plugin Config[{key_one_config}] Engine[{one_engine_ver}]")
+
+###### For UE Marketplace #####
 
 if __name__ == '__main__':
     AgoraPluginManager.Get().Start()

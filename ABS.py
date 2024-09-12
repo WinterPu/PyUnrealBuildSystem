@@ -88,6 +88,10 @@ class AgoraBuildSystem(BaseSystem):
         ArgParser.add_argument("-AppToIPA",action="store_true")
         ArgParser.add_argument("-AppPath",default="")
 
+
+        ArgParser.add_argument("-GenUEMarketplacePlugin",action = "store_true")
+
+
         if bIncludeConflictArgs:
             pass
 
@@ -133,6 +137,10 @@ class AgoraBuildSystem(BaseSystem):
         if Args.AppToIPA == True:
             UnrealProjectManager.ConvertMacAppToIPA(Args.AppPath)
 
+        if Args.GenUEMarketplacePlugin == True:
+            self.GenUEMarketplacePlugin(Args)
+            
+
     def CopySDKToUEProject(self,Args):
         
         bdo_macratrust = Args.MacTrust
@@ -173,6 +181,9 @@ class AgoraBuildSystem(BaseSystem):
         ### [After Build] Clean Environment
         if path_unzip.exists():
             FileUtility.DeleteDir(path_unzip)
+
+    def GenUEMarketplacePlugin(self,Args):
+        AgoraPluginManager.Get().GenUEMarketplacePlugins(Args)
 
 
 
