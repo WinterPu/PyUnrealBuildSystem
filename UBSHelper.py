@@ -96,6 +96,50 @@ class UBSHelper():
 
         return Path(self.__path_archive_dir_base) / folder_platform
     
+    def GetPath_BinariesTargetDir(self,target_platform):
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return
+        return Path(self.__Args.uprojectpath).parent / "Binaries" / target_platform
+    
+    def GetPath_Binaries(self):
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return
+
+        return Path(self.__Args.uprojectpath).parent / "Binaries"
+    
+    def GetName_GenericPackagedAppName(self,target_platform,extra_tag = ""):
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return
+        name_genericbase = Path(self.__Args.uprojectpath).stem
+        name_app = "UnknownPlatform"
+        if target_platform == SystemHelper.Win_InArgsTargetName() or target_platform == SystemHelper.Win64_TargetName():
+            name_app = f"{name_genericbase}{extra_tag}.exe"
+        elif  target_platform == SystemHelper.Mac_TargetName():
+            name_app = f"{name_genericbase}{extra_tag}.app"
+        elif target_platform == SystemHelper.IOS_TargetName():
+            name_app = f"{name_genericbase}{extra_tag}.ipa"
+        elif target_platform == SystemHelper.Android_TargetName():
+            name_app = f"{name_genericbase}{extra_tag}.apk"
+
+        return name_app
+    
+
+  
+### Archive Product Path
+
+    def GetPath_FinalProduct(self,target_platform,bInBinaries = False):
+        name_product = self.GetName_GenericPackagedAppName(target_platform)
+        path = self.GetPath_ArchiveDir(target_platform) / name_product
+        if bInBinaries:
+            path = self.GetPath_BinariesTargetDir(target_platform) / name_product
+        path = Path(path)
+        PrintLog(f"**** Final Product Path: {path}")
+        return path
+    
+###   
 
     def GetName_ProjectName(self,path_uproject_file = ""):
         if path_uproject_file == "":

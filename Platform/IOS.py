@@ -124,8 +124,14 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
     def PostPackaged(self):
         PrintStageLog("PostPackaged - IOS")
+        
+        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries= False)
+        self.SetArchivePath_FinalProduct(path_final_product)
 
         self.PostPackaged_DoXcodeBuild()
+        
+        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True)
+        self.SetArchivePath_FinalProduct(path_final_product)
 
     def PostPackaged_DoXcodeBuild(self):
         ## The Morden Xcode Project Feature was introduced in UE53

@@ -154,6 +154,10 @@ class MacTargetPlatform(BaseTargetPlatform):
     def PostPackaged(self):
         PrintStageLog("PostPackaged - Mac")
 
+        ## Set Final Product
+        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform())
+        self.SetArchivePath_FinalProduct(path_final_product)
+
         bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
         if bis_agora_ue_project:
             
@@ -172,6 +176,8 @@ class MacTargetPlatform(BaseTargetPlatform):
         
         self.PostPackaged_DoXcodeBuild()
 
+        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True)
+        self.SetArchivePath_FinalProduct(path_final_product)
     
     def PostPackaged_DoXcodeBuild(self):
         ## The Morden Xcode Project Feature was introduced in UE53
@@ -180,6 +186,8 @@ class MacTargetPlatform(BaseTargetPlatform):
             self.PostPackaged_UseMordenXcodeProject()
         else:
             self.PostPackaged_UseLegencyXcodeProject()
+
+
 
     def PostPackaged_UseMordenXcodeProject(self):
         PrintSubStageLog("Mac - PostPackaged_UseMordenXcodeProject")
@@ -229,9 +237,9 @@ class MacTargetPlatform(BaseTargetPlatform):
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
         self.RunUAT().BuildCookRun(params)
 
-        self.__path_final_product = UBSHelper.Get().GetPath_ArchiveDirBase() / MacPlatformPathUtility.GetBuildFolderName() / (f"{Path(UBSHelper.Get().GetPath_UProjectFile()).stem}.app")
-
         self.PostPackaged()
 
         self.ArchiveProduct()
+
+
 

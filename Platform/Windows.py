@@ -80,4 +80,6 @@ class WinTargetPlatform(BaseTargetPlatform):
     def PostPackaged(self):
         PrintStageLog("PostPackaged - Win")
 
+        path_archive_dir = self.GetPath_ArchiveDir(self.GetTargetPlatform())
+        self.SetArchivePath_FinalProductDir(path_archive_dir)
     
