@@ -123,8 +123,8 @@ class ArchiveManager:
         if self.__path_mannual_set_archive_root != None:
             path_archive_root = Path(self.__path_mannual_set_archive_root)
             if not path_archive_root.exists():
-                PrintWarn(f"[ArchiveRootDir] mannually set path doesn't exist, return back to default path {path_archive_root}")
-                path_archive_root = None
+                PrintWarn(f"[ArchiveRootDir] mannually set path doesn't exist == create path {path_archive_root}")
+                path_archive_root.mkdir(parents=True,exist_ok=True)
 
         if path_archive_root == None:
             cur_path = Path(__file__).parent.parent.absolute()
