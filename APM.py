@@ -95,7 +95,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-msupporturl", default="https://www.agora.io/en/")  
         ArgParser.add_argument("-msupportplatforms", default="Win64+Mac+IOS+Android")
 
-
+        ArgParser.add_argument("-skipgenoriginal",action='store_true')
         ArgParser.add_argument("-pluginarchivedir", default="")
         ArgParser.add_argument("-pluginfiledisplayname", default="")
         ArgParser.add_argument("-pluginsourcecodepath", default="")
@@ -204,6 +204,8 @@ class AgoraPluginManager(BaseSystem):
 
         bshould_archive = Args.archiveplugin
         path_archive_plugin_root = Args.archivepluginrootpath
+
+        bkeep_original_archive = not Args.skipgenoriginal
 
         # url_windows = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/windows/full/Agora_Native_SDK_for_Windows_rel.v4.2.1_21296_FULL_20230727_1707_272784.zip"
         # url_mac = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/mac/full/Agora_Native_SDK_for_Mac_rel.v4.2.1_46142_FULL_20230727_1549_272786.zip"
@@ -432,12 +434,15 @@ class AgoraPluginManager(BaseSystem):
         src_zip_files_root_path = target_plugin_dst_path.parent
 
 
-        ## default final_dst_plugin_path == ""
-        dst_zip_file_path = Path(final_dst_plugin_path)
-        if str(final_dst_plugin_path) == "":
+        if not bkeep_original_archive and str(final_dst_plugin_path) != "":
+            ## directly change dst_zip_file_path to [the path you assigned]
+            dst_zip_file_path = Path(final_dst_plugin_path)
+        else:
+            ## use default one
             dst_zip_file_path = root_path_plugin_working_dir / plugin_archive_dir
             dst_zip_file_path.mkdir(parents= True, exist_ok= True)
             dst_zip_file_path = self.GetPath_FinalPluginArchivePlacedDir(dst_zip_file_path,sdkinfo)
+
 
         filename_final_dst_plugin = Args.pluginfiledisplayname
         if filename_final_dst_plugin == "" :
@@ -447,6 +452,13 @@ class AgoraPluginManager(BaseSystem):
         src_zip_file_dir_path = src_zip_files_root_path / PLUGIN_NAME
         
         OneZipCommand.ZipFile(src_zip_file_dir_path,dst_zip_file_path)
+
+        if bkeep_original_archive and final_dst_plugin_path != "":
+            ## after generation, if bkeep_original_archive is true, and final_dst_plugin_path has value,
+            ## it means: the final destination is the value you assigned
+            ## Copy to the destination
+            FileUtility.CopyFile(dst_zip_file_path,final_dst_plugin_path)
+            dst_zip_file_path = final_dst_plugin_path
         
         PrintLog(">>>> Final Product Path: " + str(dst_zip_file_path))
 
@@ -799,6 +811,9 @@ class AgoraPluginManager(BaseSystem):
         
         path_root_ue_marketplace_archive_dir = self.GetPath_PluginUEMarketplaceArchiveDir()
 
+        if Args.archiveplugin:
+            path_root_ue_marketplace_archive_dir = ArchiveManager.Get().GetPath_TargetArchiveDir(ArchiveInfo_AgoraPluginMarketplace())
+            PrintLog(f"Notice! ArchivePlugin Eanbled, Root Path Changed {path_root_ue_marketplace_archive_dir}")
 
         target_enginelist = ['5.4.0','5.3.0','5.2.0']
         if Args.MarketplacePluginEngineList != "":
@@ -854,10 +869,11 @@ class AgoraPluginManager(BaseSystem):
                 PrintLog(f"Plugin Src Code Path: {target_plugin_src_code_path}")
                 one_time_args.pluginname = plugin_name
 
+                one_time_args.archiveplugin = False
+
                 if bfirst_time == True:
                     one_time_args.skipgit = True
-                    one_time_args.skipnativedownload = True
-                    
+                    one_time_args.skipnativedownload = True                    
                     
                     original_plugin_name = "AgoraPlugin"
                     cur_plugin_name = val_one_config['pluginname'] 

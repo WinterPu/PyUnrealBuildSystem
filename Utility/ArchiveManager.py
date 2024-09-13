@@ -87,6 +87,16 @@ class ArchiveInfo_AgoraPlugin(ArchiveInfoBase):
         str_sdkver = self.sdk_ver
         return path_root / str_sdkver / str_sdkaudioonly
 
+class ArchiveInfo_AgoraPluginMarketplace(ArchiveInfoBase):
+    def __init__(self) -> None:
+        pass
+
+    def GetPath_CurRootArchiveDir(self):
+        return Path("Archive_UEMarketplace")
+    
+    def GetArchivePath(self):
+        path_root = self.GetPath_CurRootArchiveDir()
+        return path_root
 
 class ArchiveManager:
     __instance = None
@@ -137,6 +147,15 @@ class ArchiveManager:
     
     def SetPath_ArchiveRootDir(self,path):
         self.__path_mannual_set_archive_root = path
+
+
+    def GetPath_TargetArchiveDir(self,archive_info : ArchiveInfoBase):
+        path_archive_root = self.GetPath_ArchiveRootDir()
+        path_archive_root.mkdir(parents=True,exist_ok= True)
+
+        path_target_archive_dir = Path(path_archive_root) / archive_info.GetArchivePath()
+        path_target_archive_dir.mkdir(parents=True,exist_ok= True)
+        return path_target_archive_dir
 
     ## Unreal_Cpp
 
