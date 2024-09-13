@@ -12,7 +12,7 @@ def ExportCMDLog(readline):
 
 
 ## [val_encoding] On Windows, 'utf-8' UnicodeDecodeError: ‘utf-8’ codec can’t decode byte 0x92 in position in Python.
-def RUNCMD(command, val_encoding="UTF-8", bSync=True):
+def RUNCMD(command, val_encoding="UTF-8", bignore_error_for_no_termination = False, bSync=True):
     popen = subprocess.Popen(
         command,
         shell=True,
@@ -53,7 +53,7 @@ def RUNCMD(command, val_encoding="UTF-8", bSync=True):
         ## wait for the process to complete
         popen.wait() # This will block until the command completes
 
-    if popen.returncode != 0:
+    if not bignore_error_for_no_termination and popen.returncode != 0:
         PrintErr(f"ErrorCode[{popen.returncode}] RunCommand Failed [{command}]")
         sys.exit(popen.returncode)
 

@@ -119,7 +119,7 @@ class FileUtility:
                 r"rmdir /s /q " + '"' + str(path) + '"'
             )
 
-            RUNCMD(command, "gbk")
+            RUNCMD(command, "gbk", True)
 
         else:
             if os.path.exists(str(path)):

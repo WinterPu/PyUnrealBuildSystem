@@ -30,6 +30,10 @@ def PrintSubStageLog(content):
     print(formated_time_stamp + " >>> [ " + str(content) + " ] <<< ")
 
 
+def PrintWarn(msg = "NoMsg"):
+    msg = f"[---- Warning ---- Warning ----] -- {msg}"
+    PrintLog(msg,0)
+
 def PrintErr(error_msg = "NoMsg",errorcode = 1,terminate_program_when_erroring = True):
     PrintLog(error_msg,errorcode)
     print(traceback.format_stack())

@@ -171,7 +171,7 @@ class UBSHelper():
                 name_plugin = Path(path_uplugin_file).stem
                 PrintLog("[GetPluginInfo] plugin name [%s] uplugin file path: [%s] " % (name_plugin , str(path_uplugin_file)))
                 if name_plugin != path_uplugin_file.parent.name:
-                    PrintErr("[GetPluginInfo] the plugin folder name [%s] is not equal to uplugin file name [%s]" %( path_uplugin_file.parent.name,name_plugin))
+                    PrintWarn("[GetPluginInfo] the plugin folder name [%s] is not equal to uplugin file name [%s]" %( path_uplugin_file.parent.name,name_plugin))
         
         return name_plugin, path_uplugin_file
     
