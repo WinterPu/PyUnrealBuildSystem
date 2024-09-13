@@ -106,5 +106,5 @@ class AndroidTargetPlatform(BaseTargetPlatform):
     def PostPackaged(self):
         PrintStageLog("PostPackaged - Android")
 
-        path_archive_dir = self.GetPath_ArchiveDir(self.GetTargetPlatform())
+        path_archive_dir = UBSHelper.Get().GetPath_ArchiveDir(self.GetTargetPlatform())
         self.SetArchivePath_FinalProductDir(path_archive_dir)
