@@ -28,6 +28,8 @@ import copy
 
 from APMHelper import *
 
+from Utility.ArchiveManager import *
+
 class AgoraPluginManager(BaseSystem):
 
     __instance = None
@@ -101,6 +103,9 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-SkipGenPlugin",action='store_true')
         ArgParser.add_argument("-GenUEMarketplacePlugin",action='store_true')
         ArgParser.add_argument("-MarketplacePluginEngineList",default="")
+
+        ArgParser.add_argument("-archiveplugin",action='store_true')
+        ArgParser.add_argument("-archivepluginrootpath",default="")
 
         if bIncludeConflictArgs:
             pass
@@ -196,6 +201,9 @@ class AgoraPluginManager(BaseSystem):
         plugin_tmp_sort_dir_suffix_name = self.GetName_PluginTmpSortSuffixName()
         final_plugin_file_dir = self.GetName_FinalPluginFileTmpDir() 
         plugin_archive_dir = self.GetName_PluginArchive()
+
+        bshould_archive = Args.archiveplugin
+        path_archive_plugin_root = Args.archivepluginrootpath
 
         # url_windows = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/windows/full/Agora_Native_SDK_for_Windows_rel.v4.2.1_21296_FULL_20230727_1707_272784.zip"
         # url_mac = "http://10.80.1.174:8090/agora_sdk/4.2.1/official_build/2023-07-27/mac/full/Agora_Native_SDK_for_Mac_rel.v4.2.1_46142_FULL_20230727_1549_272786.zip"
@@ -441,6 +449,16 @@ class AgoraPluginManager(BaseSystem):
         OneZipCommand.ZipFile(src_zip_file_dir_path,dst_zip_file_path)
         
         PrintLog(">>>> Final Product Path: " + str(dst_zip_file_path))
+
+        
+
+        if bshould_archive:
+            if path_archive_plugin_root != "":
+                ArchiveManager.Get().SetPath_ArchiveRootDir(path_archive_plugin_root)
+
+            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly,sdkinfo.Get_SDKVer())
+            ArchiveManager.Get().ArchiveBuild(dst_zip_file_path, OneArchiveInfo)
+        
 
  
     def CleanPlugin(self,Args,bFullClean = False):
