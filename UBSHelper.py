@@ -144,6 +144,9 @@ class UBSHelper():
 
     
 
+    def should_archive_product(self):
+        return True if self.__Args.ArchiveProduct else False
+
 
 
 

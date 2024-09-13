@@ -7,9 +7,6 @@ class ABSHelper():
     __instance = None
 
     __Args = None
-    __bIs_AudioOnly = False
-    __bHas_PostXcodeBuild = False
-    __ResourceTagName = ""
 
     def __new__(cls, *args, **kwargs):
         if not cls.__instance:
@@ -21,20 +18,7 @@ class ABSHelper():
     
     def Init(self,Args):
         self.__Args = Args
-        self.__InitInner_IsAudioOnly(Args)
-        self.__InitInner_AddPostXcodeBuild(Args)
-        self.__InitInner_ResourceTagName(Args)
-        
 
-    def __InitInner_IsAudioOnly(self,Args):
-        self.__bIs_AudioOnly = Args.sdkisaudioonly
-
-    def __InitInner_AddPostXcodeBuild(self,Args):
-        self.__bHas_PostXcodeBuild = Args.AddPostXcodeBuild
-
-    def __InitInner_ResourceTagName(self,Args):
-        self.__ResourceTagName = Args.ResourceTagName
-    
 
     def IsAgoraUEProject(self):
         ## it means this is an ue project with agora sdk
@@ -42,12 +26,30 @@ class ABSHelper():
     
 
     def IsAgoraSDKAudioOnly(self):
-        return self.__bIs_AudioOnly
+        return self.__Args.sdkisaudioonly if self.__Args else None
     
 
     def HasPostXcodeBuildAdded(self):
-        return self.__bHas_PostXcodeBuild
+        return self.__Args.AddPostXcodeBuild if self.__Args else None
     
 
     def GetResourceTagName(self):
-        return self.__ResourceTagName
+        return self.__Args.ResourceTagName if self.__Args else None
+    
+    def GetAgoraSDKVer(self):
+        return self.__Args.agorasdk if self.__Args else None
+    
+    def GetIOSCert(self):
+        return self.__Args.ioscert if self.__Args else None
+    
+
+    def IsExampleTypeUEBlueprint(self):
+        path_uproject_file = Path(self.__Args.uprojectpath)
+        uproject_name = path_uproject_file.stem
+        
+        bRet = True
+        if uproject_name == "AgoraBPExample":
+            bRet = True
+        else:
+            bRet = False
+        return bRet

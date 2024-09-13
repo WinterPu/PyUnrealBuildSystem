@@ -118,6 +118,9 @@ class PyUnrealBuildSystem(BaseSystem):
 
         ArgParser.add_argument("-ValidatePlatforms", action='store_true')
 
+        ## achive the final product to the target dir 
+        ArgParser.add_argument("-ArchiveProduct", action='store_true')
+
         if bIncludeConflictArgs:
             ArgParser.add_argument("-TestPlugin", action='store_true')
             ArgParser.add_argument("-agorasdktype", default="RTC")

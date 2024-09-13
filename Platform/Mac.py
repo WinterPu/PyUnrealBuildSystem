@@ -42,6 +42,14 @@ class MacPlatformPathUtility:
         return Path("Engine/Binaries/DotNET/UnrealBuildTool.exe")
     
 
+    def GetBuildFolderName():
+        if UBSHelper.Get().Is_UE5_Or_Later():
+            return "Mac"
+        else:
+            return "MacNoEditor"
+        
+    
+
 class MacPlatformBase(PlatformBase):
     def GenHostPlatformParams(args):
         ret,val = PlatformBase.GenHostPlatformParams(args)
@@ -221,4 +229,9 @@ class MacTargetPlatform(BaseTargetPlatform):
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
         self.RunUAT().BuildCookRun(params)
 
+        self.__path_final_product = UBSHelper.Get().GetPath_ArchiveDirBase() / MacPlatformPathUtility.GetBuildFolderName() / (f"{Path(UBSHelper.Get().GetPath_UProjectFile()).stem}.app")
+
         self.PostPackaged()
+
+        self.ArchiveProduct()
+

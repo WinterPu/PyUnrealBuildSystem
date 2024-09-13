@@ -100,6 +100,8 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
         self.PostPackaged()
 
+        self.ArchiveProduct()
+
     
     def PostPackaged(self):
         PrintStageLog("PostPackaged - Android")

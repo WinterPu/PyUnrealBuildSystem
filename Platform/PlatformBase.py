@@ -2,6 +2,9 @@ from Logger.Logger import *
 from Command.CommandBase import *
 from Command.UATCommand import *
 
+from UBSHelper import *
+from ABSHelper import *
+from Utility.ArchiveManager import *
 
 class PlatformBase:
     def GetRunUATPath():
@@ -59,9 +62,13 @@ class BaseHostPlatform:
 class BaseTargetPlatform:
     HostPlatform = None
     Params = None
-    def __init__(self,host_platform,target_params) -> None:
+    __target_platform_type = ""
+    __path_final_product = ""
+    def __init__(self,host_platform,target_params,target_platform_type) -> None:
         self.HostPlatform = host_platform
         self.Params = target_params
+        self.__target_platform_type = target_platform_type
+        self.__path_final_product = ""
     
     def GetParamVal(self,key):
         return self.Params[key]
@@ -73,10 +80,10 @@ class BaseTargetPlatform:
     def SetupEnvironment(self):
         print("SetupEnvironment - Base Platform")
 
-    def Package():
+    def Package(self):
         print("Package - Base Platform")
 
-    def PostPackaged():
+    def PostPackaged(self):
         print("PostPackaged - Base Platform")
 
     def GetHostPlatform(self):
@@ -84,3 +91,35 @@ class BaseTargetPlatform:
     
     def GetTargetPlatform(self):
         print("SystemBase - GetTargetPlatform")
+
+
+    def ArchiveProduct(self):
+        print("SystemBase - ArchiveProduct")
+        bshould_archive = UBSHelper.Get().should_archive_product()
+
+        if bshould_archive:
+            self.Archive_AgoraExample()
+
+
+
+    def Archive_AgoraExample(self):
+        bisagora_example = ABSHelper.Get().IsAgoraUEProject()
+        if bisagora_example:
+            
+            val_platform = self.__target_platform_type
+            val_bis_audioonly_sdk = ABSHelper.Get().IsAgoraSDKAudioOnly()
+            val_bis_cpp = not ABSHelper.Get().IsExampleTypeUEBlueprint()
+            val_ue_ver = UBSHelper.Get().GetVer_UEEngine()
+            val_sdk_ver = ABSHelper.Get().GetAgoraSDKVer()
+            val_ioscert = ABSHelper.Get().GetIOSCert() if str(val_platform).lower() == SystemHelper.IOS_TargetName().lower() else "" 
+            val_extra_info = ""
+            OneArchiveInfo = ArchiveInfo_AgoraExample(
+                val_platform,
+                val_bis_audioonly_sdk,
+                val_bis_cpp,
+                val_ue_ver,
+                val_sdk_ver,
+                val_ioscert,
+                val_extra_info)
+            
+            ArchiveManager.Get().ArchiveBuild(self.__path_final_product,OneArchiveInfo)

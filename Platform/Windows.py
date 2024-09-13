@@ -74,6 +74,10 @@ class WinTargetPlatform(BaseTargetPlatform):
 
         self.PostPackaged()
 
+        self.ArchiveProduct()
+
     
     def PostPackaged(self):
         PrintStageLog("PostPackaged - Win")
+
+    

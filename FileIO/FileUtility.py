@@ -15,11 +15,27 @@ class FileUtility:
     def IsPlatform_Mac():
         return "mac" in FileUtility.GetPlatform()
 
+    def SimpleCopy(path_src,path_dst,bshowlog = True):
+        path_src = Path(path_src)
+        path_dst = Path(path_dst)
+        if path_src.suffix != path_dst.suffix:
+            PrintErr(f"Extension not match! XXXXXXX SrcPath[{path_src}], DstPath[{path_dst}]")
+            return
+
+        type = "CopyFile"
+        if path_src.is_dir():
+            type = "CopyDir"
+            FileUtility.CopyDir(path_src,path_dst,True,True)
+        else:
+            FileUtility.CopyFile(path_src,path_dst)
+
+        if bshowlog:
+            PrintLog(f"SimpleCopy Type[{type}] SrcPath[{path_src}] => DstPath{path_dst}")
+
 
     def CopyFile(src_path,dst_path):
         PrintLog(f"CopyFile: [{src_path}] -> [{dst_path}] ")
         shutil.copy2(str(src_path),str(dst_path))
-
 
 
     def CopyDir(src_path,dst_path,bkeep_symlink = True,bmac_use_shutil = False,bmac_cp_copyinside= True,mac_cp_custom_params = ""):

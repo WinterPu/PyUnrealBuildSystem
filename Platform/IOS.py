@@ -75,6 +75,8 @@ class IOSTargetPlatform(BaseTargetPlatform):
         self.RunUAT().BuildCookRun(params)
 
         self.PostPackaged()
+
+        self.ArchiveProduct()
         
     
     def PrepareMannualOp_BCExtension(self):

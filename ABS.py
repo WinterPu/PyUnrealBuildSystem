@@ -89,9 +89,6 @@ class AgoraBuildSystem(BaseSystem):
         ArgParser.add_argument("-AppPath",default="")
 
 
-        ArgParser.add_argument("-GenUEMarketplacePlugin",action = "store_true")
-
-
         if bIncludeConflictArgs:
             pass
 

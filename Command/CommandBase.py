@@ -1,6 +1,6 @@
 import subprocess
 import threading
-
+import sys
 from Logger.Logger import *
 
 
@@ -47,7 +47,17 @@ def RUNCMD(command, val_encoding="UTF-8", bSync=True):
         ## Wait For Them to complete
         thread1.join()
         thread2.join()
-        PrintLog("[Command Complete]: " + command)
+        ##PrintLog("[Command Complete]: " + command)
+       
+
+        ## wait for the process to complete
+        popen.wait() # This will block until the command completes
+
+    if popen.returncode != 0:
+        PrintErr(f"ErrorCode[{popen.returncode}] RunCommand Failed [{command}]")
+        sys.exit(popen.returncode)
+
+    PrintLog("[Command Complete]: " + command)
 
     #  if ret.returncode == 0:
     #     print("Success RunCommand: ", ret.args)
