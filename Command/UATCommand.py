@@ -165,7 +165,7 @@ class UATCommand:
         
         )
         
-        RUNCMD(command)
+        RUNCMD(command,"UTF-8",True)
 
 
 
