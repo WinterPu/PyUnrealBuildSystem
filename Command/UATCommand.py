@@ -120,7 +120,7 @@ class UATCommand:
         ## Step 01: BuildEditor
 
     
-        platform_editor = "Mac"
+        platform_editor = SystemHelper.Mac_HostName()
 
         if self.__host_platform == SystemHelper.Win_HostName():
             
@@ -132,7 +132,7 @@ class UATCommand:
                 PrintErr("Not Support, Packaging Mac on Windows Platform")
                 return
             
-            platform_editor = "Win"
+            platform_editor = SystemHelper.Win_HostName()
 
         elif self.__host_platform == SystemHelper.Mac_HostName():
 
@@ -145,13 +145,13 @@ class UATCommand:
                 return
 
 
-            platform_editor = "Mac"
+            platform_editor = SystemHelper.Mac_HostName()
 
 
         command = (
                 '"' + str(self.__uatpath) + '"' +
                 r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
-                r" -targetplatform="+target_platform+
+                r" -targetplatform="+platform_editor+
                 r" -clientconfig=Development"
                 r" -Build"
                 r" -GenerateDSYM"
