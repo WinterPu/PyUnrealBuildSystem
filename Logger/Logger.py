@@ -30,16 +30,20 @@ def PrintSubStageLog(content):
     print(formated_time_stamp + " >>> [ " + str(content) + " ] <<< ")
 
 
-def PrintErr(error_msg = "NoMsg",errorcode = 1):
+def PrintErr(error_msg = "NoMsg",errorcode = 1,terminate_program_when_erroring = True):
     PrintLog(error_msg,errorcode)
     print(traceback.format_stack())
+    if terminate_program_when_erroring:
+        sys.exit(errorcode)
     
-def PrintErrWithFrame(frame, error_msg = "NoMsg"):
+def PrintErrWithFrame(frame, error_msg = "NoMsg",terminate_program_when_erroring = False):
     filename = frame.f_code.co_filename
     func_name = frame.f_code.co_name
     lineno = frame.f_lineno
     msg = "Error [%s] FuncName[%s] LineNumber[%s] In File <%s>"%(error_msg,func_name,lineno,filename)
     PrintLog(msg,1)
     print(traceback.format_stack())
+    if terminate_program_when_erroring:
+        sys.exit(1)
 
     
