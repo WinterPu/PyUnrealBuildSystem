@@ -721,7 +721,7 @@ class AgoraPluginManager(BaseSystem):
 
         OneZipCommand =ZipCommand()
         unzip_path = src_path_zipfile.parent / Path("UnzipPlugin" + src_path_zipfile.stem)
-        if not unzip_path.exists() == True:
+        if unzip_path.exists() == True:
             FileUtility.DeleteDir(str(unzip_path))
         OneZipCommand.UnZipFile(src_path_zipfile ,unzip_path)
 
