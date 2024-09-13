@@ -21,6 +21,8 @@ import platform
 from UBSHelper import *
 from SystemHelper import *
 
+from Utility.ArchiveManager import *
+
 version_info = {}
 class PyUnrealBuildSystem(BaseSystem):
     __instance = None
@@ -120,6 +122,8 @@ class PyUnrealBuildSystem(BaseSystem):
 
         ## achive the final product to the target dir 
         ArgParser.add_argument("-ArchiveProduct", action='store_true')
+        ArgParser.add_argument("-ArchiveRootPath", default="")
+
 
         if bIncludeConflictArgs:
             ArgParser.add_argument("-TestPlugin", action='store_true')
@@ -245,6 +249,8 @@ class PyUnrealBuildSystem(BaseSystem):
             OneUBTCommand = UBTCommand(ubt_path)
             OneUBTCommand.ValidPlatforms()
 
+        if Args.ArchiveRootPath != "":
+            ArchiveManager.Get().SetPath_ArchiveRootDir(Args.ArchiveRootPath)
         
 
     def BuildPlugin(self,Args,path_plugin_zipfile):
