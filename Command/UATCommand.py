@@ -120,7 +120,7 @@ class UATCommand:
         ## Step 01: BuildEditor
 
     
-        platform_editor = SystemHelper.Mac_HostName()
+        platform_editor = SystemHelper.Mac_TargetName()
 
         if self.__host_platform == SystemHelper.Win_HostName():
             
@@ -132,7 +132,7 @@ class UATCommand:
                 PrintErr("Not Support, Packaging Mac on Windows Platform")
                 return
             
-            platform_editor = SystemHelper.Win_HostName()
+            platform_editor = SystemHelper.Win64_TargetName()
 
         elif self.__host_platform == SystemHelper.Mac_HostName():
 
@@ -145,7 +145,7 @@ class UATCommand:
                 return
 
 
-            platform_editor = SystemHelper.Mac_HostName()
+            platform_editor = SystemHelper.Mac_TargetName()
 
 
         command = (
