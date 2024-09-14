@@ -6,7 +6,7 @@ class GitCommand:
     def GitVersion(self):
         command = (
             r"git"
-            r" -v"
+            r" --version"
         )
 
         RUNCMD(command)       
