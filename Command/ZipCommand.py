@@ -41,8 +41,8 @@ class ZipCommand:
             command = (
                 r"7z a -tzip " + '"'+str(dst_zip_file_path) + '" "' + str(src_path) + '"' 
             )
-
-            RUNCMD(command)
+            ### ignore erroring for zipping a zip file with symbolic links
+            RUNCMD(command,"UTF-8",True)
 
         elif self.__host_platform == SystemHelper.Mac_HostName():
             ## [TBD] Check if it is needed 
