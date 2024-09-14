@@ -88,7 +88,8 @@ class ArchiveInfo_AgoraPlugin(ArchiveInfoBase):
         return path_root / str_sdkver / str_sdkaudioonly
 
 class ArchiveInfo_AgoraPluginMarketplace(ArchiveInfoBase):
-    def __init__(self) -> None:
+    def __init__(self, sdk_ver) -> None:
+        self.sdk_ver = sdk_ver
         pass
 
     def GetPath_CurRootArchiveDir(self):
@@ -96,7 +97,7 @@ class ArchiveInfo_AgoraPluginMarketplace(ArchiveInfoBase):
     
     def GetArchivePath(self):
         path_root = self.GetPath_CurRootArchiveDir()
-        return path_root
+        return path_root / self.sdk_ver 
 
 class ArchiveManager:
     __instance = None

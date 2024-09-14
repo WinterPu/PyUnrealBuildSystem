@@ -812,7 +812,8 @@ class AgoraPluginManager(BaseSystem):
         path_root_ue_marketplace_archive_dir = self.GetPath_PluginUEMarketplaceArchiveDir()
 
         if Args.archiveplugin:
-            path_root_ue_marketplace_archive_dir = ArchiveManager.Get().GetPath_TargetArchiveDir(ArchiveInfo_AgoraPluginMarketplace())
+            sdk_version = Args.agorasdk
+            path_root_ue_marketplace_archive_dir = ArchiveManager.Get().GetPath_TargetArchiveDir(ArchiveInfo_AgoraPluginMarketplace(sdk_version))
             PrintLog(f"Notice! ArchivePlugin Eanbled, Root Path Changed {path_root_ue_marketplace_archive_dir}")
 
         target_enginelist = ['5.4.0','5.3.0','5.2.0']
