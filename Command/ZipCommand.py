@@ -19,7 +19,8 @@ class ZipCommand:
             command = (
                 r"7z x  " + '"'+str(src_zip_path) + '"  -o"' + str(dst_dir_path) + '"' 
             )
-            RUNCMD(command)
+            ### ignore erroring for unzipping a zip file with symbolic links
+            RUNCMD(command,"UTF-8",True)
         elif self.__host_platform == SystemHelper.Mac_HostName():
             command = (
                 r"unzip  " + '"'+str(src_zip_path) + '"  -d "' + str(dst_dir_path) + '"' 
