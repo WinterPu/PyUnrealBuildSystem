@@ -468,7 +468,7 @@ class AgoraPluginManager(BaseSystem):
             if path_archive_plugin_root != "":
                 ArchiveManager.Get().SetPath_ArchiveRootDir(path_archive_plugin_root)
 
-            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly,sdkinfo.Get_SDKVer())
+            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly(),sdkinfo.Get_SDKVer())
             ArchiveManager.Get().ArchiveBuild(dst_zip_file_path, OneArchiveInfo)
         
 
