@@ -102,6 +102,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-BuildCookRun", action='store_true')
         ArgParser.add_argument("-BuildPlugin", action='store_true')
         ArgParser.add_argument("-BuildPluginEngineList", default="all")
+        ArgParser.add_argument("-SkipBuildEditor", action='store_true')
         
         ## IOS Resign
         ## Use -ioscert specify the certificate

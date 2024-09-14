@@ -13,6 +13,8 @@ class ParamsUAT:
         self.__path_log = ""
         self.__subcommand_extras = ""
 
+        self.__bskip_build_editor = False
+
         ## Plugin 
         self.__path_uplugin_file = ""
         self.__path_plugin_output_dir = ""
@@ -39,6 +41,10 @@ class ParamsUAT:
     def get_subcommand_extras(self):
         return " " + self.__subcommand_extras
     
+    @property
+    def get_flag_skip_build_editor(self) -> bool:
+        return self.__bskip_build_editor
+
     ## BuildPlugin 
     @property
     def get_path_plugin_output_dir(self):
@@ -68,6 +74,10 @@ class ParamsUAT:
     def extra_commands(self,val):
         self.__subcommand_extras = val
 
+    @get_flag_skip_build_editor.setter
+    def skip_build_editor(self,val:bool):
+        self.__bskip_build_editor = val
+
     ## BuildPlugin
     @get_path_uplugin_file.setter
     def path_uplugin_file(self,val):
@@ -96,6 +106,8 @@ class UATCommand:
         subcommand_archive_dir = params.get_subcommand_archive_dir
         subcommand_extras = params.get_subcommand_extras
 
+        bshould_build_editor = not params.get_flag_skip_build_editor
+
         # ## need 
         # command = (
         #     '"' + str(self.uatpath) + '"' +
@@ -119,53 +131,57 @@ class UATCommand:
 
         ## Step 01: BuildEditor
 
-    
-        platform_editor = SystemHelper.Mac_TargetName()
-
-        if self.__host_platform == SystemHelper.Win_HostName():
-            
-            if target_platform == SystemHelper.IOS_TargetName():
-                PrintErr("TBD - Not Ready, Packaging IOS on Windows Platform")
-                return
-            
-            if target_platform == SystemHelper.Mac_TargetName():
-                PrintErr("Not Support, Packaging Mac on Windows Platform")
-                return
-            
-            platform_editor = SystemHelper.Win64_TargetName()
-
-        elif self.__host_platform == SystemHelper.Mac_HostName():
-
-            if target_platform == SystemHelper.Android_TargetName():
-                PrintErr("TBD - Not Ready, Packaging Android on Mac Platform")
-                return
-            
-            if target_platform == SystemHelper.Win64_TargetName():
-                PrintErr("Not Support, Packaging Win on Mac Platform")
-                return
-
+        if bshould_build_editor:
 
             platform_editor = SystemHelper.Mac_TargetName()
 
+            if self.__host_platform == SystemHelper.Win_HostName():
+                
+                if target_platform == SystemHelper.IOS_TargetName():
+                    PrintErr("TBD - Not Ready, Packaging IOS on Windows Platform")
+                    return
+                
+                if target_platform == SystemHelper.Mac_TargetName():
+                    PrintErr("Not Support, Packaging Mac on Windows Platform")
+                    return
+                
+                platform_editor = SystemHelper.Win64_TargetName()
 
-        command = (
-                '"' + str(self.__uatpath) + '"' +
-                r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
-                r" -targetplatform="+platform_editor+
-                r" -clientconfig=Development"
-                r" -Build"
-                r" -GenerateDSYM"
-                r" -Cook"
-                #r" -allmaps -pak"
-                r" -Stage"
-                r" -Archive"
-                r" -package"
-                r" -verbose"+
-                subcommand_extras
+            elif self.__host_platform == SystemHelper.Mac_HostName():
+
+                if target_platform == SystemHelper.Android_TargetName():
+                    PrintErr("TBD - Not Ready, Packaging Android on Mac Platform")
+                    return
+                
+                if target_platform == SystemHelper.Win64_TargetName():
+                    PrintErr("Not Support, Packaging Win on Mac Platform")
+                    return
+
+
+                platform_editor = SystemHelper.Mac_TargetName()
+
+
+            command = (
+                    '"' + str(self.__uatpath) + '"' +
+                    r" BuildCookRun  -project="+ '"' +str(path_uproject_file)+ '"' + 
+                    r" -targetplatform="+platform_editor+
+                    r" -clientconfig=Development"
+                    r" -Build"
+                    r" -GenerateDSYM"
+                    r" -Cook"
+                    #r" -allmaps -pak"
+                    r" -Stage"
+                    r" -Archive"
+                    r" -package"
+                    r" -verbose"+
+                    subcommand_extras
+            
+            )
+            
+            RUNCMD(command,"UTF-8",True)
         
-        )
-        
-        RUNCMD(command,"UTF-8",True)
+        else:
+            PrintWarn("Skip Building Editor ....")
 
 
 

@@ -235,6 +235,8 @@ class MacTargetPlatform(BaseTargetPlatform):
         params.path_uproject_file = UBSHelper.Get().GetPath_UProjectFile()
         params.path_engine = UBSHelper.Get().GetPath_UEEngine()
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
+        params.skip_build_editor = UBSHelper.Get().ShouldSkipBuildEditor()
+        
         self.RunUAT().BuildCookRun(params)
 
         self.PostPackaged()

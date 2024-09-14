@@ -127,6 +127,14 @@ class UBSHelper():
         return name_app
     
 
+    def ShouldSkipBuildEditor(self) -> bool:
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return False
+
+        return True if self.__Args.SkipBuildEditor else False
+    
+
   
 ### Archive Product Path
 
