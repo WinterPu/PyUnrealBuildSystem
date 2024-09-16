@@ -31,12 +31,13 @@ class ArchiveInfoBase:
 
 
 class ArchiveInfo_AgoraExample(ArchiveInfoBase):
-    def __init__(self,build_platform,bis_audioonly_sdk,bis_cpp,ue_ver,sdk_ver,ioscert = "",extra_info = "") -> None:
+    def __init__(self,build_platform,bis_audioonly_sdk,bis_cpp,ue_ver,sdk_ver,buse_all_ioscerts,ioscert = "",extra_info = "") -> None:
         self.build_platform = build_platform
         self.bis_audioonly_sdk = bis_audioonly_sdk
         self.bis_cpp = bis_cpp
         self.ue_ver = ue_ver
         self.sdk_ver = sdk_ver
+        self.buse_all_ios_certs = buse_all_ioscerts
         self.ioscert = ioscert
         self.extra_info = extra_info
 
@@ -52,6 +53,8 @@ class ArchiveInfo_AgoraExample(ArchiveInfoBase):
         str_ue_ver = f"UE{self.ue_ver}"
         str_sdk_ver = f"SDK{self.sdk_ver}"
         str_ioscert = f"_IOSCert{self.ioscert}" if self.ioscert != "" else ""
+        if self.buse_all_ios_certs:
+            str_ioscert = f"_AllIOSCerts"
         str_extra = f"_{self.extra_info}" if self.extra_info != "" else ""
 
         return f"UEDemo_{str_platform}_{str_sdktype}_{str_sdkaudioonly}_{str_ueprojecttype}_{str_ue_ver}_{str_sdk_ver}{str_ioscert}{str_extra}"

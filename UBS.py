@@ -88,6 +88,8 @@ class PyUnrealBuildSystem(BaseSystem):
         ## otherwise it would be under the engine dir
         ArgParser.add_argument("-archive_dir",default = "")
 
+        ArgParser.add_argument("-WithAllIOSCerts", action='store_true')
+
         ## Setup Machine For Packaging
         ArgParser.add_argument("-SetupHostMachine", action='store_true')
         
@@ -124,7 +126,6 @@ class PyUnrealBuildSystem(BaseSystem):
         ## achive the final product to the target dir 
         ArgParser.add_argument("-ArchiveProduct", action='store_true')
         ArgParser.add_argument("-ArchiveRootPath", default="")
-
 
         if bIncludeConflictArgs:
             ArgParser.add_argument("-TestPlugin", action='store_true')

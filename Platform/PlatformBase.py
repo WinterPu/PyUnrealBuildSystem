@@ -152,6 +152,7 @@ class BaseTargetPlatform:
             val_bis_cpp = not ABSHelper.Get().IsExampleTypeUEBlueprint()
             val_ue_ver = UBSHelper.Get().GetVer_UEEngine()
             val_sdk_ver = ABSHelper.Get().GetAgoraSDKVer()
+            val_use_all_ioscerts = UBSHelper.Get().ShouldPackageWithAllIOSCerts()
             val_ioscert = ABSHelper.Get().GetIOSCert() if str(val_platform).lower() == SystemHelper.IOS_TargetName().lower() else "" 
             val_extra_info = ""
             OneArchiveInfo = ArchiveInfo_AgoraExample(
@@ -160,6 +161,7 @@ class BaseTargetPlatform:
                 val_bis_cpp,
                 val_ue_ver,
                 val_sdk_ver,
+                val_use_all_ioscerts,
                 val_ioscert,
                 val_extra_info)
             

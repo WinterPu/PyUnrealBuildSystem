@@ -54,6 +54,9 @@ class UBSHelper():
         self.__path_archive_dir_base = val_archive_dir
         Args.archive_dir = val_archive_dir
 
+    def GetName_AllIOSCertsArchiveDir(self):
+        return "AllIOSCerts"
+
 
     def SetUEEngineWithVer(self,ver_engine):
         self.__Args.enginever = ver_engine
@@ -135,6 +138,13 @@ class UBSHelper():
         return True if self.__Args.SkipBuildEditor else False
     
 
+    def ShouldPackageWithAllIOSCerts(self) -> bool:
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return False
+        
+        return True if self.__Args.WithAllIOSCerts else False
+    
   
 ### Archive Product Path
 

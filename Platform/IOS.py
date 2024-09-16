@@ -11,7 +11,7 @@ from UBSHelper import *
 from ABSHelper import *
 
 from Utility.UnrealProjectManager import *
-
+from Command.FastLaneCommand import * 
 
 class IOSPlatformPathUtility:
     @staticmethod
@@ -72,7 +72,7 @@ class IOSTargetPlatform(BaseTargetPlatform):
         params.path_engine = UBSHelper.Get().GetPath_UEEngine()
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
         params.skip_build_editor = UBSHelper.Get().ShouldSkipBuildEditor()
-        
+
         self.RunUAT().BuildCookRun(params)
 
         self.PostPackaged()
@@ -133,6 +133,34 @@ class IOSTargetPlatform(BaseTargetPlatform):
         
         path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True)
         self.SetArchivePath_FinalProduct(path_final_product)
+
+
+        bshould_gen_with_all_ios_certs = UBSHelper.Get().ShouldPackageWithAllIOSCerts()
+
+        if bshould_gen_with_all_ios_certs:
+            name_final_ipa = path_final_product.stem
+            path_archive_all_ios_dir = path_final_product.parent / Path(UBSHelper.Get().GetName_AllIOSCertsArchiveDir())
+            if path_archive_all_ios_dir.exists():
+                FileUtility.DeleteDir(path_archive_all_ios_dir)
+            path_archive_all_ios_dir.mkdir(parents=True,exist_ok=True)
+            iocerts_items = ConfigParser.Get().GetAllIOSCertificates()
+
+            for tag_name, one_ioscert in iocerts_items:
+                path_app_with_target_ioscert = path_archive_all_ios_dir / (f"{name_final_ipa}_{tag_name}.ipa")
+                FileUtility.CopyFile(path_final_product,path_app_with_target_ioscert)
+                if ConfigParser.Get().IsIOSCertValid(tag_name) :
+                    PrintLog("[IPAResign] Use IOS Certificate %s " %tag_name)
+                    OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(tag_name)
+                    OneFastLaneCommand = FastLaneCommand()
+                    OneFastLaneCommand.IPAResign(
+                        path_app_with_target_ioscert,
+                        OneIOSCert.get_signing_identity,
+                        OneIOSCert.get_filepath_mobileprovision
+                    )
+                    PrintLog(f"Resign Complete ===> Path [{path_app_with_target_ioscert}]")
+
+                self.SetArchivePath_FinalProductDir(path_archive_all_ios_dir)
+
 
     def PostPackaged_DoXcodeBuild(self):
         ## The Morden Xcode Project Feature was introduced in UE53
