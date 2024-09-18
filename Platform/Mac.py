@@ -217,7 +217,7 @@ class MacTargetPlatform(BaseTargetPlatform):
             name_workspace = uproject_name + " (Mac).xcworkspace"
             params.scheme = uproject_name
             params.workspace =  path_project_root / name_workspace
-            params.destination = "generic/platform=Mac"
+            params.destination = "generic/platform=macOS"
             OneXcodeCommand.XcodeBuild(params)
 
     def PostPackaged_UseLegencyXcodeProject(self):
@@ -236,7 +236,7 @@ class MacTargetPlatform(BaseTargetPlatform):
         params.path_engine = UBSHelper.Get().GetPath_UEEngine()
         params.path_archive = UBSHelper.Get().GetPath_ArchiveDirBase()
         params.skip_build_editor = UBSHelper.Get().ShouldSkipBuildEditor()
-        
+
         self.RunUAT().BuildCookRun(params)
 
         self.PostPackaged()
