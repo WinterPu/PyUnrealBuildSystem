@@ -305,16 +305,20 @@ class AgoraPluginManager(BaseSystem):
         target_plugin_dst_lib_path = target_plugin_dst_path / "Source"/ "ThirdParty" / (PLUGIN_NAME + "Library")
         path_android_tmpl_src = target_plugin_dst_lib_path / "Android" / sdk_build_config
         
-        if sdkinfo.Get_SDKVer() == "4.2.1":
-            filename_full_tmpl = "APL_armv7TemplateFULL.xml"
-            filename_voice_tmpl = "APL_armv7TemplateVoice.xml"
-            filename_src_tmpl = filename_full_tmpl if sdkinfo.Get_SDKIsAudioOnly() == False else filename_voice_tmpl
-            filename_target_tmpl = "APL_armv7Template.xml"
-        else:
+
+        if VersionControlTool.Get().VerParse(sdkinfo.Get_SDKVer()) != VersionControlTool.Get().VerParse("4.2.1"):
             filename_full_tmpl = "APL_TemplateSourceFull.xml"
             filename_voice_tmpl = "APL_TemplateSourceVoice.xml"
             filename_src_tmpl = filename_full_tmpl if sdkinfo.Get_SDKIsAudioOnly() == False else filename_voice_tmpl
             filename_target_tmpl = "APL_Template.xml"
+
+        else:
+            filename_full_tmpl = "APL_armv7TemplateFULL.xml"
+            filename_voice_tmpl = "APL_armv7TemplateVoice.xml"
+            filename_src_tmpl = filename_full_tmpl if sdkinfo.Get_SDKIsAudioOnly() == False else filename_voice_tmpl
+            filename_target_tmpl = "APL_armv7Template.xml"
+
+
 
         path_src_android_tmpl = path_android_tmpl_src / filename_src_tmpl
         path_dst_android_tmpl = path_android_tmpl_src / filename_target_tmpl
