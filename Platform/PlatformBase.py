@@ -145,7 +145,8 @@ class BaseTargetPlatform:
         bisagora_example = ABSHelper.Get().IsAgoraUEProject()
         if bisagora_example:
             
-            bArchiveWithDir,path = self.GetStatus_ArchiveFinalProduct()
+            flag_archive_status,path = self.GetStatus_ArchiveFinalProduct()
+            bArchiveWithDir = flag_archive_status == ArchiveType.ArchiveWithDir
 
             val_platform = self.__target_platform_type
             val_bis_audioonly_sdk = ABSHelper.Get().IsAgoraSDKAudioOnly()

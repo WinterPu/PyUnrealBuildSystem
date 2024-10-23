@@ -169,20 +169,28 @@ class MacTargetPlatform(BaseTargetPlatform):
         
         self.PostPackaged_DoXcodeBuild()
 
-        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True)
-        self.SetArchivePath_FinalProduct(path_final_product)
+        bis_ue53_or_later = UBSHelper.Get().Is_UE53_Or_Later()
+        if bis_ue53_or_later:
+            path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True)
+            self.SetArchivePath_FinalProduct(path_final_product)
+        else:
+            ### no need to do anything 
+            pass
     
     def PostPackaged_DoXcodeBuild(self):
         ## The Morden Xcode Project Feature was introduced in UE53
         bis_ue53_or_later = UBSHelper.Get().Is_UE53_Or_Later()
         if bis_ue53_or_later:
             self.PostPackaged_UseMordenXcodeProject()
+
+            ## Copy Framework
+            dst_path_app_archive_dir = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True) / ".."
+            self.CopyFrameworkToApplication(dst_path_app_archive_dir)
+
         else:
             self.PostPackaged_UseLegencyXcodeProject()
 
-        ## Copy Framework
-        dst_path_app_archive_dir = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True) / ".."
-        self.CopyFrameworkToApplication(dst_path_app_archive_dir)
+
     
 
 
