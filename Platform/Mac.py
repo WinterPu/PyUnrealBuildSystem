@@ -163,16 +163,9 @@ class MacTargetPlatform(BaseTargetPlatform):
             
             PrintLog("IsAgoraUEProject [%s] " %(str(bis_agora_ue_project)))
 
-            ## Ex. "AgoraExample.app"
-            app_name = UBSHelper.Get().GetName_PackagedApp(self.GetTargetPlatform())
-            ## Ex."/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/"
-            project_folder_path = UBSHelper.Get().GetPath_ProjectRoot()
-            ## Ex. for 4.27 "/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/ArchiveBuilds/MacNoEditor/AgoraExample.app"
-            app_dst_achieve_folder = Path(UBSHelper.Get().GetPath_ArchiveDir(self.GetTargetPlatform())) / app_name
-            src_path = project_folder_path / MacPlatformPathUtility.GetFrameworkSrcPathFromSDK()
-            dst_path = app_dst_achieve_folder / MacPlatformPathUtility.GetFrameworkDstPathInApplication()
-            PrintLog("Copy Framework: src: [ " + str(src_path) + "] dst: [ " + str(dst_path)+"]")
-            FileUtility.CopyDir(src_path,dst_path)
+            dst_path_app_archive_dir = Path(UBSHelper.Get().GetPath_ArchiveDir(self.GetTargetPlatform()))
+            self.CopyFrameworkToApplication(dst_path_app_archive_dir)
+
         
         self.PostPackaged_DoXcodeBuild()
 
@@ -187,6 +180,10 @@ class MacTargetPlatform(BaseTargetPlatform):
         else:
             self.PostPackaged_UseLegencyXcodeProject()
 
+        ## Copy Framework
+        dst_path_app_archive_dir = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True) / ".."
+        self.CopyFrameworkToApplication(dst_path_app_archive_dir)
+    
 
 
     def PostPackaged_UseMordenXcodeProject(self):
@@ -225,6 +222,22 @@ class MacTargetPlatform(BaseTargetPlatform):
         pass
 
 
+    def CopyFrameworkToApplication(self,dst_path_app_archive_dir):
+
+        ## Ex."/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/"
+        project_folder_path = UBSHelper.Get().GetPath_ProjectRoot()
+        ## Ex. for 4.27 "/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/ArchiveBuilds/MacNoEditor/AgoraExample.app"
+        src_path = project_folder_path / MacPlatformPathUtility.GetFrameworkSrcPathFromSDK()
+
+        ## Ex. "AgoraExample.app"
+        app_name = UBSHelper.Get().GetName_PackagedApp(self.GetTargetPlatform())
+        ## Ex. "xxx/AgoraExample.app"
+        app_dst_achive_folder = dst_path_app_archive_dir / app_name
+        ## Ex. "xxx/AgoraExample.app/Contents/MacOS"
+        dst_path = app_dst_achive_folder / MacPlatformPathUtility.GetFrameworkDstPathInApplication()
+
+        PrintLog("Copy Framework: src: [ " + str(src_path) + "] dst: [ " + str(dst_path)+"]")
+        FileUtility.CopyDir(src_path,dst_path)
 
     def Package(self):
         self.SetupEnvironment()
