@@ -223,6 +223,7 @@ class MacTargetPlatform(BaseTargetPlatform):
             params.scheme = uproject_name
             params.workspace =  path_project_root / name_workspace
             params.destination = "generic/platform=macOS"
+            params.sdk = "macosx"
             OneXcodeCommand.XcodeBuild(params)
 
     def PostPackaged_UseLegencyXcodeProject(self):
