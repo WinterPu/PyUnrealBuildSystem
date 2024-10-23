@@ -208,6 +208,10 @@ class UBSHelper():
 
     def should_archive_product(self):
         return True if self.__Args.ArchiveProduct else False
+    
+
+    def should_clean_dir_before_archiving(self):
+        return True if self.__Args.CleanOldArchives else False
 
 
 

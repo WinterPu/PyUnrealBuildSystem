@@ -8,6 +8,10 @@ class ArchiveInfoBase:
     def __init__(self) -> None:
         pass
 
+    def GetPath_CurRootArchiveDirBase(self):
+        return Path("Undefined")
+    
+    ## For Clean Archive Dir
     def GetPath_CurRootArchiveDir(self):
         return Path("Undefined")
 
@@ -17,7 +21,7 @@ class ArchiveInfoBase:
     ## Relative Path
     def GetArchivePath(self):
         return Path("")
-    
+
     def GetRootPath(self):
         return self.__path_root
     
@@ -41,8 +45,11 @@ class ArchiveInfo_AgoraExample(ArchiveInfoBase):
         self.ioscert = ioscert
         self.extra_info = extra_info
 
-    def GetPath_CurRootArchiveDir(self):
+    def GetPath_CurRootArchiveDirBase(self):
         return Path("Archive_Example")
+    
+    def GetPath_CurRootArchiveDir(self):
+        return self.GetPath_CurRootArchiveDirBase() / Path(f"{self.sdk_ver}")
     
     def GetArchiveName(self):
         ## UnrealAPIExample_Full_Cpp_UE5.4_SDK_IOSCert_D_Extra
@@ -62,8 +69,7 @@ class ArchiveInfo_AgoraExample(ArchiveInfoBase):
     # Override
     def GetArchivePath(self):
         path_root = self.GetPath_CurRootArchiveDir()
-        path = Path(f"{self.sdk_ver}")
-        path = path / (Path("Full") if not self.bis_audioonly_sdk else Path("AudioOnly"))
+        path = (Path("Full") if not self.bis_audioonly_sdk else Path("AudioOnly"))
         path = path / ("Cpp" if self.bis_cpp else "Blueprint")
         path = path / (f"UE_{self.ue_ver}")
         return path_root / path
@@ -73,8 +79,11 @@ class ArchiveInfo_AgoraPlugin(ArchiveInfoBase):
         self.bis_audioonly_sdk = bis_audioonly_sdk
         self.sdk_ver = sdk_ver
 
-    def GetPath_CurRootArchiveDir(self):
+    def GetPath_CurRootArchiveDirBase(self):
         return Path("Archive_AgoraPlugin")
+    
+    def GetPath_CurRootArchiveDir(self):
+        return self.GetPath_CurRootArchiveDirBase() / self.sdk_ver
     
     def GetArchiveName(self):
         ## Agora_RTC_FULL_SDK_#_Unreal
@@ -87,20 +96,21 @@ class ArchiveInfo_AgoraPlugin(ArchiveInfoBase):
     def GetArchivePath(self):
         path_root = self.GetPath_CurRootArchiveDir()
         str_sdkaudioonly = "FULLSDK" if not self.bis_audioonly_sdk else "VOICESDK"
-        str_sdkver = self.sdk_ver
-        return path_root / str_sdkver / str_sdkaudioonly
+        return path_root / str_sdkaudioonly
 
 class ArchiveInfo_AgoraPluginMarketplace(ArchiveInfoBase):
     def __init__(self, sdk_ver) -> None:
         self.sdk_ver = sdk_ver
         pass
 
-    def GetPath_CurRootArchiveDir(self):
+    def GetPath_CurRootArchiveDirBase(self):
         return Path("Archive_UEMarketplace")
     
+    def GetPath_CurRootArchiveDir(self):
+        return self.GetPath_CurRootArchiveDirBase()/ self.sdk_ver
+    
     def GetArchivePath(self):
-        path_root = self.GetPath_CurRootArchiveDir()
-        return path_root / self.sdk_ver 
+        return self.GetPath_CurRootArchiveDir()
 
 class ArchiveManager:
     __instance = None
@@ -164,7 +174,7 @@ class ArchiveManager:
     ## Unreal_Cpp
 
     ## kept_extension: copy to archive dir with [kept_extension] file
-    def ArchiveBuild(self,path_src_file,archive_info : ArchiveInfoBase,kept_extension = ""):
+    def ArchiveBuild(self,path_src_file,archive_info : ArchiveInfoBase,bCleanTargetArchiveDir = False,kept_extension = ""):
         PrintStageLog("PyUnrealBuildSystem --- Archive Start")
 
         path_archive_root = self.GetPath_ArchiveRootDir()
@@ -174,8 +184,12 @@ class ArchiveManager:
         PrintLog(f"Archive Root Path {path_archive_root}")
 
         path_target_archive_dir = path_archive_root / Path(archive_info.GetArchivePath())
-        # if path_target_archive_dir.exists():
-        #     FileUtility.DeleteDir(path_target_archive_dir)
+        
+        if bCleanTargetArchiveDir == True:
+            path_clean_old_archives_dir = path_archive_root / Path(archive_info.GetPath_CurRootArchiveDir())
+            PrintLog(f"Need to clean target archive dir: {path_clean_old_archives_dir}")
+            FileUtility.DeleteDir(path_clean_old_archives_dir)
+
         path_target_archive_dir.mkdir(parents=True,exist_ok= True)
 
         bNeedToDelteTmpFile = False 

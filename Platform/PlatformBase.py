@@ -184,7 +184,8 @@ class BaseTargetPlatform:
                 PrintErr(f"Target Archive File not founded {path_target_archive_file}")
                 return 
 
-            ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo)
+            bshould_clean = UBSHelper.Get().should_clean_dir_before_archiving()
+            ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean)
 
             if bArchiveWithDir:
                 FileUtility.DeleteFile(path_target_archive_file)

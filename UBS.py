@@ -125,6 +125,7 @@ class PyUnrealBuildSystem(BaseSystem):
 
         ## achive the final product to the target dir 
         ArgParser.add_argument("-ArchiveProduct", action='store_true')
+        ArgParser.add_argument("-CleanOldArchives", action='store_true')
         ArgParser.add_argument("-ArchiveRootPath", default="")
 
         if bIncludeConflictArgs:
