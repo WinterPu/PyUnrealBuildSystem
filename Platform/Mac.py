@@ -99,7 +99,8 @@ class MacHostPlatform(BaseHostPlatform):
     def SetEngineInfoPlistTmpl(self):
         bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
         if bis_agora_ue_project:
-
+            
+            ## Legency Xcode Project Infoplist
             # Ex. "/Users/Shared/Epic Games/UE_4.27"
             path_engine_root = UBSHelper.Get().GetPath_UEEngine()
             path_mac_infoplist_tmpl = path_engine_root / Path("Engine/Source/Runtime/Launch/Resources/Mac/Info.plist")
@@ -107,6 +108,12 @@ class MacHostPlatform(BaseHostPlatform):
             OneXcodeCommand = XcodeCommand()
             OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,True)
             OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,True)
+
+            ## For Morden Xcode Project Infoplist
+            path_mac_infoplist_tmpl = UBSHelper.Get().GetPath_UEEngine() / Path("Engine/Build/Mac/Resources/Info.Template.plist")
+            if path_mac_infoplist_tmpl.exists():
+                OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,True)
+                OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,True)
 
     def GenerateProject(self,path_uproject_file):
         ## uproject file could be any uproject file, not only the target project
