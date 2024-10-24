@@ -18,5 +18,10 @@ Unreal Build System with Python
 
 ### Example
 ```
- python ABS.py -uprojectpath='/Users/admin/Documents/Agora-Unreal-RTC-SDK/Agora-Unreal-SDK-Blueprint-Example/AgoraBPExample.uproject' -enginever=5.4 -ioscert="D" -BuildUEProject -agorasdk="4.4.0" -targetplatform=IOS -AddPostXcodeBuild
+python ABS.py -uprojectpath='/Users/admin/Documents/Agora-Unreal-RTC-SDK/Agora-Unreal-SDK-Blueprint-Example/AgoraBPExample.uproject' -enginever=5.4 -ioscert="D" -BuildUEProject -agorasdk="4.4.0" -targetplatform=IOS -AddPostXcodeBuild
+
+python ABS.py -uprojectpath='/Users/admin/Documents/Agora-Unreal-RTC-SDK/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject'  -enginever=5.4 -ioscert="D" -BuildUEProject -agorasdk="4.4.0" -targetplatform=IOS -AddPostXcodeBuild
+
+python ABS.py -uprojectpath='/Users/admin/Documents/Agora-Unreal-RTC-SDK/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject'  -ioscert="D" -BuildUEProject -agorasdk="4.4.0" -targetplatform=IOS -AddPostXcodeBuild -SkipClean -SkipCopySDKToProject
+
 ```
