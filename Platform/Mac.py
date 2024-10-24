@@ -92,6 +92,7 @@ class MacHostPlatform(BaseHostPlatform):
         self.Params = host_params
         path_script_genproj = Path(UBSHelper.Get().GetPath_UEEngine()) / MacPlatformPathUtility.GetGenerateProjectScriptPath()
         self.OneUATCommand = UATCommand(self.Params['uat_path'],path_script_genproj)
+        self.SetupEnvironment()
 
     def SetupEnvironment(self):
         self.SetEngineInfoPlistTmpl()
@@ -105,15 +106,25 @@ class MacHostPlatform(BaseHostPlatform):
             path_engine_root = UBSHelper.Get().GetPath_UEEngine()
             path_mac_infoplist_tmpl = path_engine_root / Path("Engine/Source/Runtime/Launch/Resources/Mac/Info.plist")
 
-            OneXcodeCommand = XcodeCommand()
-            OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,True)
-            OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,True)
+            PrintLog(f"Mac Host Machine: Add [Camera] and [Microphone] permissions to UE Engine[{UBSHelper.Get().GetVer_UEEngine()}] 's (Launch Module) info plists")
+
+            try:
+                OneXcodeCommand = XcodeCommand()
+                OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,False)
+                OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,False)
+            except:
+                PrintWarn("PlistBuddy Failed to add permission to infoplist (in Launch module): maybe it has already been added.")
 
             ## For Morden Xcode Project Infoplist
             path_mac_infoplist_tmpl = UBSHelper.Get().GetPath_UEEngine() / Path("Engine/Build/Mac/Resources/Info.Template.plist")
             if path_mac_infoplist_tmpl.exists():
-                OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,True)
-                OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,True)
+                PrintLog(f"Mac Host Machine: Add [Camera] and [Microphone] permissions to UE Engine[{UBSHelper.Get().GetVer_UEEngine()}] 's (Build) info plists")
+
+                try:
+                    OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,False)
+                    OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,False)
+                except:
+                    PrintWarn("PlistBuddy Failed to add permission to infoplist (in Build): maybe it has already been added.")
 
     def GenerateProject(self,path_uproject_file):
         ## uproject file could be any uproject file, not only the target project
