@@ -95,7 +95,21 @@ class MacHostPlatform(BaseHostPlatform):
         self.SetupEnvironment()
 
     def SetupEnvironment(self):
+        PrintStageLog("Mac Host Platform: SetupEnvironment Begin")
+        
         self.SetEngineInfoPlistTmpl()
+        self.SetEngineEntitlementsTmpl()
+        
+        PrintStageLog("Mac Host Platform: SetupEnvironment End")
+
+    def CallCMD_PlistBuddy(self,one_command,target_file,error_msg_when_failed):
+        OneXcodeCommand = XcodeCommand()
+        try:
+            OneXcodeCommand.PlistBuddy(one_command,target_file,False)
+        except:
+            PrintWarn(error_msg_when_failed)
+                
+
 
     def SetEngineInfoPlistTmpl(self):
         bis_agora_ue_project = ABSHelper.Get().IsAgoraUEProject()
@@ -108,23 +122,78 @@ class MacHostPlatform(BaseHostPlatform):
 
             PrintLog(f"Mac Host Machine: Add [Camera] and [Microphone] permissions to UE Engine[{UBSHelper.Get().GetVer_UEEngine()}] 's (Launch Module) info plists")
 
-            try:
-                OneXcodeCommand = XcodeCommand()
-                OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,False)
-                OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,False)
-            except:
-                PrintWarn("PlistBuddy Failed to add permission to infoplist (in Launch module): maybe it has already been added.")
+            error_msg_when_failed_legency = "PlistBuddy Failed to add permission to infoplist (in Launch module): maybe it has already been added."
+            self.CallCMD_PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,error_msg_when_failed_legency)
+            self.CallCMD_PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,error_msg_when_failed_legency)
+
+
 
             ## For Morden Xcode Project Infoplist
             path_mac_infoplist_tmpl = UBSHelper.Get().GetPath_UEEngine() / Path("Engine/Build/Mac/Resources/Info.Template.plist")
             if path_mac_infoplist_tmpl.exists():
                 PrintLog(f"Mac Host Machine: Add [Camera] and [Microphone] permissions to UE Engine[{UBSHelper.Get().GetVer_UEEngine()}] 's (Build) info plists")
 
-                try:
-                    OneXcodeCommand.PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,False)
-                    OneXcodeCommand.PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,False)
-                except:
-                    PrintWarn("PlistBuddy Failed to add permission to infoplist (in Build): maybe it has already been added.")
+                error_msg_when_failed_modern = "PlistBuddy Failed to add permission to infoplist (in Build): maybe it has already been added."
+                self.CallCMD_PlistBuddy("Add :NSCameraUsageDescription string 'AgoraVideoCall'",path_mac_infoplist_tmpl,error_msg_when_failed_modern)
+                self.CallCMD_PlistBuddy("Add :NSMicrophoneUsageDescription string 'AgoraMicrophoneCall'",path_mac_infoplist_tmpl,error_msg_when_failed_modern)
+
+
+    
+    def SetEngineEntitlementsTmpl(self):
+        
+        ## For Morden Xcode Project Entitlements
+        ## Default：For [DebugGame] or [Development] 
+        bshould_modify_debug_development = True
+        filename_mac_entitlements_dev = "Sandbox.Server.entitlements"
+        if bshould_modify_debug_development:
+            self.SetEngineEntitlementsTmpl_Inner(filename_mac_entitlements_dev)
+        else:
+            PrintLog(f"Mac Host Machine: do nothing to [{filename_mac_entitlements_dev}], should modify [{bshould_modify_debug_development}] ")
+
+
+        ## For Morden Xcode Project Entitlements
+        ## Default：For [Shipping]
+        bshould_modify_shipping = True
+        filename_mac_entitlements_shipping = "Sandbox.NoNet.entitlements"
+        if bshould_modify_shipping:
+            self.SetEngineEntitlementsTmpl_Inner(filename_mac_entitlements_shipping)
+        else:
+            PrintLog(f"Mac Host Machine: do nothing to [{filename_mac_entitlements_shipping}], should modify [{bshould_modify_shipping}] ")
+
+
+
+    def SetEngineEntitlementsTmpl_Inner(self,filename_entitlements:str):
+        path_mac_entitlements_file = UBSHelper.Get().GetPath_UEEngine() / Path(f"Engine/Build/Mac/Resources/{filename_entitlements}")
+        if path_mac_entitlements_file.exists():
+            PrintLog(f"Mac Host Machine: add permissiones to [{filename_entitlements}]")
+
+            error_msg_when_failed =f"PlistBuddy Failed to add permission to [{filename_entitlements}]: maybe it has already been added."
+            if filename_entitlements == "Sandbox.Server.entitlements":
+                ## Default: For [DebugGame] or [Development]
+                self.CallCMD_PlistBuddy("Add :com.apple.security.app-sandbox bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.device.audio-input bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.device.bluetooth bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.device.camera bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.device.usb bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.network.client bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.network.server bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.personal-information.addressbook bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.personal-information.calendars bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.personal-information.location bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.print bool true",path_mac_entitlements_file,error_msg_when_failed)
+
+            elif filename_entitlements == "Sandbox.NoNet.entitlements":
+                ## Default: For [Shipping]
+                self.CallCMD_PlistBuddy("Add :com.apple.security.app-sandbox bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.device.audio-input bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.device.camera bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.network.client bool true",path_mac_entitlements_file,error_msg_when_failed)
+                self.CallCMD_PlistBuddy("Add :com.apple.security.network.server bool true",path_mac_entitlements_file,error_msg_when_failed)
+
+
+        else:
+            PrintLog(f"Mac Host Machine: do nothing to [{filename_entitlements}] file exists {path_mac_entitlements_file.exists()} path {path_mac_entitlements_file}")
+
 
     def GenerateProject(self,path_uproject_file):
         ## uproject file could be any uproject file, not only the target project
