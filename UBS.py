@@ -83,8 +83,10 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-androidpackagename", default="com.YourCompany.[PROJECT]")
         #ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
         
-        ## For Modern Xcode Project
-        ArgParser.add_argument("-moderniosbundleidprefix", default="io.agora")
+        # ## For Modern Xcode Project
+        # ArgParser.add_argument("-moderniosbundleidprefix", default="io.agora")
+        ## For now, use [iosbundlename].rsplit('.',1)[0]
+        
         ## For Legency Xcode Project
         ArgParser.add_argument("-iosbundlename", default="io.agora.AgoraExample")
 

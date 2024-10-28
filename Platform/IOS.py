@@ -34,7 +34,11 @@ class IOSPlatformBase(PlatformBase):
         bUseMordenXcodeSetting = UBSHelper.Get().DoesUseModernXcodeProject()
         key = "iosbundleval"
         if bUseMordenXcodeSetting:
-            val[key] = args.moderniosbundleidprefix
+            ## for now, it would set [moderniosbundleidprefix] to str_bundlename.rsplit('.',1)[0]
+            ## Example. [io.agora.AgoraExample], it would be [io.agora]
+            str_bundlename = str(args.iosbundlename)
+            # val[key] = args.moderniosbundleidprefix
+            val[key] = str_bundlename.rsplit('.',1)[0]
         else:
             val[key] = args.iosbundlename
 
