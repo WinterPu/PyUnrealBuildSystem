@@ -204,7 +204,8 @@ class UBSHelper():
     def Is_UE4_Or_Earlier(self):
         return VersionControlTool.Get().VerParse(self.__ver_engine) < VersionControlTool.Get().VerParse("5.0.0")
 
-    
+    def DoesUseModernXcodeProject(self):
+        return self.Is_UE53_Or_Later()
 
     def should_archive_product(self):
         return True if self.__Args.ArchiveProduct else False

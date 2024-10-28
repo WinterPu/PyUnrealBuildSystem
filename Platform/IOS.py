@@ -31,8 +31,12 @@ class IOSPlatformBase(PlatformBase):
         key = "ioscert"
         val[key] = args.ioscert
 
-        key = "iosbundleidentifier"
-        val[key] = args.iosbundlename
+        bUseMordenXcodeSetting = UBSHelper.Get().DoesUseModernXcodeProject()
+        key = "iosbundleval"
+        if bUseMordenXcodeSetting:
+            val[key] = args.moderniosbundleidprefix
+        else:
+            val[key] = args.iosbundlename
 
         return ret,val
     
@@ -49,15 +53,15 @@ class IOSTargetPlatform(BaseTargetPlatform):
         PrintLog("IOSTargetPlatform - SetupEnvironment: Copying Mobile Provisions To Environment")
         ConfigParser.Get().CopyAllMobileProvisionsToDstPath()
 
-        bUseMordenXcodeSetting = UBSHelper.Get().Is_UE53_Or_Later()
+        bUseMordenXcodeSetting = UBSHelper.Get().DoesUseModernXcodeProject()
         bRet = UnrealConfigIniManager.SetConfig_IOSCert(path_uproject_file,self.Params['ioscert'],bUseMordenXcodeSetting)
         if bRet:
             PrintLog("IOSTargetPlatform - SetupEnvironment Certificate %s Set Done!" % self.Params['ioscert'] )
         else:
             PrintErr("IOSTargetPlatform - SetupEnvironment Certificate Set Failed")
 
-        
-        UnrealConfigIniManager.SetConfig_BundleIdentifier(path_uproject_file,self.Params['iosbundleidentifier'])
+
+        UnrealConfigIniManager.SetConfig_BundleIdentifier(path_uproject_file,self.Params['iosbundleval'],bUseMordenXcodeSetting)
 
         ## Agora
         self.PrepareMannualOp_BCExtension()

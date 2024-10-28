@@ -16,12 +16,21 @@ class UnrealConfigIniManager:
             PrintErr("Config Ini File [%s] Not Found" %path_ini)
 
 
-    def SetConfig_BundleIdentifier(path_uproject,bundle_identifier):
+    def SetConfig_BundleIdentifier(path_uproject,bundle_val,buse_morden_xcode_project = False):
         path = Path(path_uproject)
         path_ini = path.parent / "Config" / "DefaultEngine.ini"
         if path_ini.exists():
-           ## MobileProvision needs to be specified with a file name
-           UnrealConfigIniManager.SetConfig(path_ini,"[/Script/IOSRuntimeSettings.IOSRuntimeSettings]","BundleIdentifier",bundle_identifier,True)
+
+            if buse_morden_xcode_project == True:
+                ## For Morden Xcode Project
+                bundle_identifier_prefix = bundle_val
+                UnrealConfigIniManager.SetConfig(path_ini,"[/Script/MacTargetPlatform.XcodeProjectSettings]","CodeSigningPrefix",bundle_identifier_prefix,True)
+                UnrealConfigIniManager.SetConfig(path_ini,"[/Script/MacTargetPlatform.XcodeProjectSettings]","BundleIdentifier","$(UE_SIGNING_PREFIX).$(UE_PRODUCT_NAME_STRIPPED)",True)
+            else:
+                ## MobileProvision needs to be specified with a file name
+                bundle_identifier = bundle_val
+                UnrealConfigIniManager.SetConfig(path_ini,"[/Script/IOSRuntimeSettings.IOSRuntimeSettings]","BundleIdentifier",bundle_identifier,True)
+
         else:
             PrintErr("Config Ini File [%s] Not Found" %path_ini)
 

@@ -82,7 +82,12 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-androidpackagename", default="com.YourCompany.[PROJECT]")
         #ArgParser.add_argument("-iosbundlename", default="com.YourCompany.AgoraExample")
+        
+        ## For Modern Xcode Project
+        ArgParser.add_argument("-moderniosbundleidprefix", default="io.agora")
+        ## For Legency Xcode Project
         ArgParser.add_argument("-iosbundlename", default="io.agora.AgoraExample")
+
         ArgParser.add_argument("-ioscert",default = "C")
         ## CreateTask handles it to be the base dir under the project dir
         ## otherwise it would be under the engine dir
