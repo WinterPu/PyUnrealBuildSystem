@@ -25,6 +25,6 @@ python ABS.py -uprojectpath='/Users/admin/Documents/Agora-Unreal-RTC-SDK/Agora-U
 python ABS.py -uprojectpath='/Users/admin/Documents/Agora-Unreal-RTC-SDK/Agora-Unreal-SDK-CPP-Example/AgoraExample.uproject'  -ioscert="D" -BuildUEProject -agorasdk="4.4.0" -targetplatform=IOS -AddPostXcodeBuild -SkipClean -SkipCopySDKToProject
 
 ### Test Plugin
-python ABS.py -TestAgoraPlugin -QuerySDK -agorasdk="4.5.0" -BuildPluginEngineList="5.5+5.4" 
+python ABS.py -TestAgoraPlugin -QuerySDK -agorasdk="4.5.0" -BuildPluginEngineList="5.5+5.4+5.3" 
 
 ```
