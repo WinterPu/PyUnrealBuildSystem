@@ -16,6 +16,11 @@ jobs:
           source-repo: git@github.com:WinterPu/PyUnrealBuildSystem.git
           destination-repo: ssh://git@git.agoralab.co/aduc/pyunrealbuildsystem.git
 
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.BITBUCKET_SSH_PRIVATE_KEY }}
+
       - name: Clone target repository
         run: |
           git clone ssh://git@git.agoralab.co/aduc/pyunrealbuildsystem.git target-repo
@@ -29,5 +34,5 @@ jobs:
           git submodule set-url Config ssh://git@git.agoralab.co/aduc/agoraunrealbuildconfigrepo.git
           git submodule update --remote Config
           git add .
-          git commit -m "Update Config submodule URL to agoralab repository" || echo "No changes to commit"
+          git commit -m "Update Config submodule URL to repository" || echo "No changes to commit"
           git push origin main
