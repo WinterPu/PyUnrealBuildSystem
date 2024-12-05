@@ -15,3 +15,19 @@ jobs:
         with:
           source-repo: git@github.com:WinterPu/PyUnrealBuildSystem.git
           destination-repo: ssh://git@git.agoralab.co/aduc/pyunrealbuildsystem.git
+
+      - name: Clone target repository
+        run: |
+          git clone ssh://git@git.agoralab.co/aduc/pyunrealbuildsystem.git target-repo
+          cd target-repo
+          git submodule init
+          git submodule update --recursive
+
+      - name: Update Submodule URL
+        run: |
+          cd target-repo
+          git submodule set-url Config ssh://git@git.agoralab.co/aduc/agoraunrealbuildconfigrepo.git
+          git submodule update --remote Config
+          git add .
+          git commit -m "Update Config submodule URL to agoralab repository" || echo "No changes to commit"
+          git push origin main
