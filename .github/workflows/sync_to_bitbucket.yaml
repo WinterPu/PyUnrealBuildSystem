@@ -1,0 +1,17 @@
+name: sync_to_bitbucket
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync_to_bitbucket:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync to Bitbucket
+        uses: wearerequired/git-mirror-action@master
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.BITBUCKET_SSH_PRIVATE_KEY }}
+        with:
+          source-repo: git@github.com:WinterPu/PyUnrealBuildSystem.git
+          destination-repo: ssh://git@git.agoralab.co/aduc/pyunrealbuildsystem.git
