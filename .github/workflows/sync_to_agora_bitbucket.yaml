@@ -1,0 +1,17 @@
+name: sync_to_agora_bitbucket
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync_to_agora_bitbucket:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync to Agora Bitbucket
+        uses: wearerequired/git-mirror-action@master
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.AGORA_BITBUCKET_SSH_PRIVATE_KEY }}
+        with:
+          source-repo: git@github.com:WinterPu/AgoraUnrealBuildConfigRepo.git
+          destination-repo: ssh://git@git.agoralab.co/aduc/agoraunrealbuildconfigrepo.git
