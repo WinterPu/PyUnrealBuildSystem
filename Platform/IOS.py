@@ -70,6 +70,8 @@ class IOSTargetPlatform(BaseTargetPlatform):
         ## Agora
         self.PrepareMannualOp_BCExtension()
 
+        self.CleanEmbdededFrameworks()
+
     def Package(self):
         self.SetupEnvironment()
         PrintStageLog("Package - %s Platform" % self.GetTargetPlatform())
@@ -271,6 +273,17 @@ class IOSTargetPlatform(BaseTargetPlatform):
             name_app =  uproject_name + ".app"
             path_app = path_project_root / "Binaries" / "IOS" / "Payload" / name_app
             UnrealProjectManager.ConvertMacAppToIPA(path_app)
+
+    def  CleanEmbdededFrameworks(self):
+        path_engine = UBSHelper.Get().GetPath_UEEngine()
+        path_unzipped_framework = path_engine / "Engine" / "Intermediate" / "UnzippedFrameworks"
+        if path_unzipped_framework.exists():
+            FileUtility.DeleteDir(path_unzipped_framework)
+            PrintLog(f"Cleaned Unzipped Frameworks, path {path_unzipped_framework}")
+        else:
+            PrintLog("No Unzipped Frameworks Found")
+
+        path_unzipped_framework.mkdir(parents=True,exist_ok=True)
 
             
             
