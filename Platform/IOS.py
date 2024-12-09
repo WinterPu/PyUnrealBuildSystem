@@ -137,12 +137,25 @@ class IOSTargetPlatform(BaseTargetPlatform):
         PrintStageLog("PostPackaged - IOS")
         
         path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries= False)
+
+
+        ## Convert App To IPA
+        bUseMordenXcodeProject = UBSHelper.Get().DoesUseModernXcodeProject()
+        if bUseMordenXcodeProject:
+            path_app = Path(path_final_product).with_suffix('.app')
+            UnrealProjectManager.ConvertMacAppToIPA(path_app)
+
+
         self.SetArchivePath_FinalProduct(path_final_product)
 
-        self.PostPackaged_DoXcodeBuild()
-        
-        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True)
-        self.SetArchivePath_FinalProduct(path_final_product)
+        bHasPostXcodeBuildAdded = ABSHelper.Get().HasPostXcodeBuildAdded()
+
+        if bHasPostXcodeBuildAdded:
+
+            self.PostPackaged_DoXcodeBuild()
+            
+            path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries=True)
+            self.SetArchivePath_FinalProduct(path_final_product)
 
 
         bshould_gen_with_all_ios_certs = UBSHelper.Get().ShouldPackageWithAllIOSCerts()
