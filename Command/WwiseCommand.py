@@ -1,6 +1,6 @@
 from Command.CommandBase import *
 from pathlib import Path
-
+import os
 
 class ParamsWwise:
     def __init__(self) -> None:
@@ -17,6 +17,14 @@ class ParamsWwise:
 class ParamsWwisePluginBuild:
     def __init__(self) -> None:
         self.__path_wp = ""
+
+    @property
+    def get_path_project(self):
+        return self.__path_project
+    
+    @get_path_project.setter
+    def path_project(self,val):
+        self.__path_project = Path(val)
 
     @property
     def get_path_wp(self):
@@ -79,19 +87,28 @@ class WwiseCommand:
         path_wp = params.get_path_wp
         default = "Authoring"
         command = (
-            '" python ' + str(path_wp) + '"' + " premake"
+            "python "+ '"' + str(path_wp) + '"' + " premake"
         )
         RUNCMD(command)
 
     def Build(self,params:ParamsWwisePluginBuild):
-        path_wp = params.get_path_wp
-        subcommand = params.get_subcommand
-        command = (
-            '" python ' + str(path_wp) + '"' + " build " + subcommand
-        )
-        RUNCMD(command)
+        path_wp_project = params.get_path_project
+        original_cwd = Path.cwd()
+        try:
+            os.chdir(path_wp_project)
+            PrintLog("WwiseCommand - change directory to " + str(path_wp_project))
+            path_wp = params.get_path_wp
+            subcommand = params.get_subcommand
+            command = (
+                "python " + '"' + f"{path_wp}" + '"' + " build " + subcommand
+            )
+            RUNCMD(command)
+        finally:
+            os.chdir(original_cwd)
+            PrintLog("WwiseCommand - change directory back to " + str(original_cwd))
 
-        pass
+
+    
     
 # ```
 # python "C:\Program Files (x86)\Audiokinetic\Wwise 2023.1.6.8555\Scripts\Build\Plugins\wp.py" build -c Profile -x x64 -t vc160 Windows_vc160

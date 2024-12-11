@@ -32,10 +32,6 @@ class WwisePluginManager():
         return Args
     
     def AddArgsToParser(self,ArgParser, bIncludeConflictArgs = True):
-        default_targetsystem = self.GetHostPlatform()
-        if default_targetsystem == SystemHelper.Win_HostName():
-            default_targetsystem = SystemHelper.Win64_TargetName()
-
         ArgParser.add_argument('-wwisever',default="2021.1.14.8108")
         ArgParser.add_argument('-pathwwisebase',default="")
         ArgParser.add_argument('-wpprojectpath',default="")
@@ -49,7 +45,7 @@ class WwisePluginManager():
         WwisePluginManager.Get().Init()
         args = self.ParseCMDArgs()
         WPMHelper.Get().Init(args)
-        self.CreateTask(args)
+        self.CreateTask()
 
     def CreateTask(self):
         self.BuildWwisePlugin()
@@ -63,7 +59,7 @@ class WwisePluginManager():
         for target_platform_type in target_platform_type_list:
             ret_target,target_platform = CreateTargetPlatform(host_platform,target_platform_type,Args)
             if ret_target == True:
-                target_platform.Package_Wwwise()
+                target_platform.Package_Wwise()
             else: 
                 PrintErr("Invalid TargetPlatform Creation")
 

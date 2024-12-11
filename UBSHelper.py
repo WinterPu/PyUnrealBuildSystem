@@ -75,7 +75,8 @@ class UBSHelper():
         return Path(self.__path_uproject_file).parent
 
     def GetPath_UEEngine(self):
-        return self.__path_engine
+        path_engine = self.__path_engine if self.__path_engine != None else ""
+        return Path(path_engine)
     
     def GetVer_UEEngine(self):
         return self.__ver_engine

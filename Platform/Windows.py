@@ -1,6 +1,7 @@
 from Platform.PlatformBase import *
 from Command.UBTCommand import *
 from Command.WwiseCommand import *
+from WPMHelper import * 
 from pathlib import Path
 
 from UBSHelper import *
@@ -95,17 +96,23 @@ class WinTargetPlatform(BaseTargetPlatform):
     def Package_Wwise(self):
         list_config = ["Debug","Profile","Release"]
         arch = "x64"
-        toolset = ["vc_160","vc170"]
+        toolset = ["vc160","vc170"]
+        platform = {
+            "vc160":"Windows_vc160",
+            "vc170":"Windows_vc170"
+        }
        
         OneWwiseCommand = WwiseCommand()
 
         for one_config in list_config:
             one_param = ParamsWwisePluginBuild()
-            one_param.configuration = one_config
-            one_param.architecture = arch
+            one_param.path_project = WPMHelper.Get().GetPath_WPProject()
+            one_param.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
+            one_param.config = one_config
+            one_param.arch = arch
 
             for one_toolset in toolset:
                 one_param.toolset = one_toolset
-                one_param.platform = "Windows_" + one_toolset
+                one_param.platform = platform[one_toolset]
                 OneWwiseCommand.Build(one_param)
         

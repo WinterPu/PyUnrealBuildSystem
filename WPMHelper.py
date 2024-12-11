@@ -30,23 +30,29 @@ class WPMHelper:
     def GetArgs(self):
         return self.__Args
 
+    def GetPath_WPProject(self):
+        return Path(self.__Args.wpprojectpath)
 
     def GetPath_WwiseBase(self):
         path_wwise_base = self.__Args.pathwwisebase
         if path_wwise_base == "":
-            if SystemHelper.GetHostPlatform() == SystemHelper.Mac_HostName():
+            if SystemHelper.Get().GetHostPlatform() == SystemHelper.Mac_HostName():
                 path_wwise_base = Path("/Applications/Audiokinetic")
 
-            elif SystemHelper.GetHostPlatform() == SystemHelper.Win_HostName():
+            elif SystemHelper.Get().GetHostPlatform() == SystemHelper.Win_HostName():
                 path_wwise_base = Path("C:\Program Files (x86)\Audiokinetic")
         
         ver_wwise = self.__Args.wwisever
 
         path_wwise_ver = str("Wwise") +  str(ver_wwise)
 
-        path_wwise_base = path_wwise_base / path_wwise_ver
+        path_final = path_wwise_base / path_wwise_ver
 
-        return path_wwise_base
+        if not path_final.exists():
+            path_wwise_ver =  str("Wwise ") + str(ver_wwise)
+            path_final = path_wwise_base / path_wwise_ver
+
+        return path_final
     
 
     def GetPath_WwiseWPScript(self):
