@@ -22,6 +22,13 @@ class SystemHelper():
         else:
             PrintErr("HostPlatform [%s] currently is not supported" %(str(ossystem)))
             return "NotSupportPlatform"
+        
+
+    def GetTargetPlatform_BasedOnHostPlatform(self):
+        platform = self.GetHostPlatform()
+        if platform == SystemHelper.Win_HostName():
+            platform = SystemHelper.Win64_TargetName()
+        return platform
 
     ## Host Platforms
     def Win_HostName():

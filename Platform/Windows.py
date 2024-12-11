@@ -1,5 +1,6 @@
 from Platform.PlatformBase import *
 from Command.UBTCommand import *
+from Command.WwiseCommand import *
 from pathlib import Path
 
 from UBSHelper import *
@@ -85,3 +86,26 @@ class WinTargetPlatform(BaseTargetPlatform):
         path_archive_dir = UBSHelper.Get().GetPath_ArchiveDir(self.GetTargetPlatform())
         self.SetArchivePath_FinalProductDir(path_archive_dir)
     
+
+
+
+
+#####################################################################################
+#################################### Wwise ##########################################
+    def Package_Wwise(self):
+        list_config = ["Debug","Profile","Release"]
+        arch = "x64"
+        toolset = ["vc_160","vc170"]
+       
+        OneWwiseCommand = WwiseCommand()
+
+        for one_config in list_config:
+            one_param = ParamsWwisePluginBuild()
+            one_param.configuration = one_config
+            one_param.architecture = arch
+
+            for one_toolset in toolset:
+                one_param.toolset = one_toolset
+                one_param.platform = "Windows_" + one_toolset
+                OneWwiseCommand.Build(one_param)
+        
