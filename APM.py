@@ -833,7 +833,7 @@ class AgoraPluginManager(BaseSystem):
             },
             "VoiceSDK":{
                 "enginelist":target_enginelist,
-                "issdkaudioonly":False,
+                "issdkaudioonly":True,
                 "filename":"Agora_RTC_VOICE_SDK_#_Unreal",
                 "pluginname":"AgoraVoicePlugin"
             }
@@ -863,6 +863,7 @@ class AgoraPluginManager(BaseSystem):
                 zip_filename = val_one_config['filename']
                 zip_filename = str(zip_filename).replace('#',sdkinfo.Get_SDKVer())
                 one_time_args.pluginfiledisplayname = zip_filename
+                one_time_args.sdkisaudioonly = sdkinfo.Get_SDKIsAudioOnly()
             
 
                 git_url = Args.giturl
