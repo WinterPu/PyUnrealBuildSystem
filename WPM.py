@@ -1,7 +1,6 @@
 from Utility.HeaderBase import *
 import argparse
 from WPMHelper import *
-
 class WwisePluginManager():
     __instance = None
     __initialized = False
@@ -34,9 +33,12 @@ class WwisePluginManager():
     def AddArgsToParser(self,ArgParser, bIncludeConflictArgs = True):
         ArgParser.add_argument('-wwisever',default="2021.1.14.8108")
         ArgParser.add_argument('-pathwwisebase',default="")
-        ArgParser.add_argument('-wpprojectpath',default="")
+        ArgParser.add_argument('-wpprojectpath',default="/Users/winterpu/Documents/Gitee/agora-wwise-plugin/AgoraWWiseRTCSDK")
+        ArgParser.add_argument('-wwisepluginname',default="AgoraWWiseRTCSDK")
+        ArgParser.add_argument('-wwise_xcode_generated_teamid',default="BCB4VLKTK5")
         if bIncludeConflictArgs:
             ArgParser.add_argument("-targetplatform", default=SystemHelper.Get().GetTargetPlatform_BasedOnHostPlatform())
+            ArgParser.add_argument("-ioscert", default="D")
     
     def Init(self):
         PrintStageLog("WwisePluginManager Init")
@@ -53,15 +55,14 @@ class WwisePluginManager():
     
     def BuildWwisePlugin(self):
         Args = WPMHelper.Get().GetArgs()
-        type_hostplatform = SystemHelper.Get().GetHostPlatform()
-        ret_host,host_platform = CreateHostPlatform(type_hostplatform,Args)
         target_platform_type_list = ParsePlatformArg(Args.targetplatform)
         for target_platform_type in target_platform_type_list:
-            ret_target,target_platform = CreateTargetPlatform(host_platform,target_platform_type,Args)
+            ret_target,target_platform = CreateTargetPlatform(None,target_platform_type,Args)
             if ret_target == True:
                 target_platform.Package_Wwise()
             else: 
                 PrintErr("Invalid TargetPlatform Creation")
+
 
 
 if __name__ == '__main__':

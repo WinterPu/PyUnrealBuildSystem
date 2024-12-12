@@ -103,11 +103,11 @@ class WinTargetPlatform(BaseTargetPlatform):
         }
        
         OneWwiseCommand = WwiseCommand()
-
+        OneWwiseCommand.path_project = WPMHelper.Get().GetPath_WPProject()
+        OneWwiseCommand.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
+        
         for one_config in list_config:
             one_param = ParamsWwisePluginBuild()
-            one_param.path_project = WPMHelper.Get().GetPath_WPProject()
-            one_param.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
             one_param.config = one_config
             one_param.arch = arch
 

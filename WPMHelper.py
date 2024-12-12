@@ -1,9 +1,12 @@
 from SystemHelper import *
 from pathlib import Path
+from FileIO.FileUtility import *
+from ConfigParser import *
 class WPMHelper:
     __instance = None
     __initialized = False
     __Args = None
+    __apple_team_id = ""
 
     def __new__(cls, *args, **kwargs):
         if not cls.__instance:
@@ -25,6 +28,14 @@ class WPMHelper:
     
     def Init(self,Args):
         self.__Args = Args
+        self.__apple_team_id = ""
+
+        if self.__Args.ioscert != "":
+            ConfigParser.Get().Init()
+            OneIOSCert = ConfigParser.Get().GetOneIOSCertificate(self.__Args.ioscert)
+            self.__apple_team_id = OneIOSCert.get_team_id
+
+
 
     
     def GetArgs(self):
@@ -61,6 +72,29 @@ class WPMHelper:
 
     def GetPath_WwiseSDKBase(self):
         return self.GetPath_WwiseBase() / Path("SDK")
+    
+    def GetName_WwisePluginName(self):
+        return self.__Args.wwisepluginname
 
+    def GetWwiseDefaultTeamID(self):
+        return self.__Args.wwise_xcode_generated_teamid
+
+    def GetAppleTeamID(self):
+        return self.__apple_team_id
+    
                 
-           
+    def CleanWwiseProject(self):
+        path_wp_project = self.GetPath_WPProject()
+        name_mac_xcodeworkspace = self.GetName_WwisePluginName() + "_Mac.xcworkspace"
+        FileUtility.DeleteDir(path_wp_project / name_mac_xcodeworkspace)
+        name_ios_xcodeworkspace = self.GetName_WwisePluginName() + "_iOS.xcworkspace"
+        FileUtility.DeleteDir(path_wp_project / name_ios_xcodeworkspace)
+
+        name_mac_shared_xcodeproj = self.GetName_WwisePluginName() + "_Mac_shared.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project / "SoundEngine" / name_mac_shared_xcodeproj)
+        name_mac_static_xcodeproj = self.GetName_WwisePluginName() + "_Mac_static.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project  / "SoundEngine" / name_mac_static_xcodeproj)
+        name_ios_shared_xcodeproj = self.GetName_WwisePluginName() + "_iOS_shared.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project / "SoundEngine" / name_ios_shared_xcodeproj)
+        name_ios_static_xcodeproj = self.GetName_WwisePluginName() + "_iOS_static.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project / "SoundEngine" / name_ios_static_xcodeproj)

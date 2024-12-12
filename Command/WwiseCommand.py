@@ -2,36 +2,28 @@ from Command.CommandBase import *
 from pathlib import Path
 import os
 
-class ParamsWwise:
+class ParamsWwisePluginPremake():
     def __init__(self) -> None:
-        self.__path_wp = ""
+        self.__platform = ""
 
     @property
-    def get_path_wp(self):
-        return self.__path_wp
-    @get_path_wp.setter
-    def path_wp(self,val):
-        self.__path_wp = val
-
-
-class ParamsWwisePluginBuild:
-    def __init__(self) -> None:
-        self.__path_wp = ""
-
-    @property
-    def get_path_project(self):
-        return self.__path_project
+    def get_platform(self):
+        return self.__platform
     
-    @get_path_project.setter
-    def path_project(self,val):
-        self.__path_project = Path(val)
+    @get_platform.setter
+    def platform(self,val):
+        self.__platform = val
 
     @property
-    def get_path_wp(self):
-        return self.__path_wp
-    @get_path_wp.setter
-    def path_wp(self,val):
-        self.__path_wp = val
+    def get_subcommand(self):
+        return " " + self.__platform 
+
+class ParamsWwisePluginBuild():
+    def __init__(self) -> None:
+        self.__configuration = ""
+        self.__platform = ""
+        self.__architecture = ""
+        self.__toolset = ""
 
     @property
     def get_configuration(self):
@@ -82,30 +74,51 @@ class ParamsWwisePluginBuild:
 
 
 class WwiseCommand:
-    
-    def Premake(self,params:ParamsWwise):
-        path_wp = params.get_path_wp
-        default = "Authoring"
-        command = (
-            "python "+ '"' + str(path_wp) + '"' + " premake"
-        )
-        RUNCMD(command)
+    def __init__(self) -> None:
+        self.__path_wp = ""
+        self.__path_project = ""
 
-    def Build(self,params:ParamsWwisePluginBuild):
-        path_wp_project = params.get_path_project
+    @property
+    def get_path_wp(self):
+        return self.__path_wp
+    @get_path_wp.setter
+    def path_wp(self,val):
+        self.__path_wp = val
+
+    @property
+    def get_path_project(self):
+        return self.__path_project
+    
+    @get_path_project.setter
+    def path_project(self,val):
+        self.__path_project = Path(val)
+
+    def RUNCMD_UnderWwiseProject(self,command):
+        path_wp_project = self.get_path_project
         original_cwd = Path.cwd()
         try:
             os.chdir(path_wp_project)
-            PrintLog("WwiseCommand - change directory to " + str(path_wp_project))
-            path_wp = params.get_path_wp
-            subcommand = params.get_subcommand
-            command = (
-                "python " + '"' + f"{path_wp}" + '"' + " build " + subcommand
-            )
+            PrintLog("WwiseCommand - change dir to project: " + str(path_wp_project))
             RUNCMD(command)
         finally:
             os.chdir(original_cwd)
-            PrintLog("WwiseCommand - change directory back to " + str(original_cwd))
+            PrintLog("WwiseCommand - change dir back to " + str(original_cwd))
+    
+    def Premake(self,params:ParamsWwisePluginPremake):
+        path_wp = self.get_path_wp
+        subcommand = params.get_subcommand
+        command = (
+            "python " + '"' + f"{path_wp}" + '"' + " premake " + subcommand
+        )
+        self.RUNCMD_UnderWwiseProject(command)
+
+    def Build(self,params:ParamsWwisePluginBuild):
+        path_wp = self.get_path_wp
+        subcommand = params.get_subcommand
+        command = (
+            "python " + '"' + f"{path_wp}" + '"' + " build " + subcommand
+        )
+        self.RUNCMD_UnderWwiseProject(command)
 
 
     

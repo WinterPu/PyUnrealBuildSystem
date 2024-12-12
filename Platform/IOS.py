@@ -13,6 +13,10 @@ from ABSHelper import *
 from Utility.UnrealProjectManager import *
 from Command.FastLaneCommand import * 
 
+## Wwise
+from Command.WwiseCommand import * 
+from WPMHelper import * 
+
 class IOSPlatformPathUtility:
     @staticmethod
     def GetBCExtensionFrameworkDir():
@@ -29,18 +33,19 @@ class IOSPlatformBase(PlatformBase):
         # val[key] = "IOS"
 
         key = "ioscert"
-        val[key] = args.ioscert
+        val[key] = args.ioscert if "ioscert" in args  else ""
 
-        bUseMordenXcodeSetting = UBSHelper.Get().DoesUseModernXcodeProject()
-        key = "iosbundleval"
-        if bUseMordenXcodeSetting:
-            ## for now, it would set [moderniosbundleidprefix] to str_bundlename.rsplit('.',1)[0]
-            ## Example. [io.agora.AgoraExample], it would be [io.agora]
-            str_bundlename = str(args.iosbundlename)
-            # val[key] = args.moderniosbundleidprefix
-            val[key] = str_bundlename.rsplit('.',1)[0]
-        else:
-            val[key] = args.iosbundlename
+        if "enginever" in args:
+            bUseMordenXcodeSetting = UBSHelper.Get().DoesUseModernXcodeProject()
+            key = "iosbundleval"
+            if bUseMordenXcodeSetting:
+                ## for now, it would set [moderniosbundleidprefix] to str_bundlename.rsplit('.',1)[0]
+                ## Example. [io.agora.AgoraExample], it would be [io.agora]
+                str_bundlename = str(args.iosbundlename)
+                # val[key] = args.moderniosbundleidprefix
+                val[key] = str_bundlename.rsplit('.',1)[0]
+            else:
+                val[key] = args.iosbundlename
 
         return ret,val
     
@@ -300,3 +305,38 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
             
             
+
+
+#####################################################################################
+#################################### Wwise ##########################################
+    def Package_Wwise(self):
+        WPMHelper.Get().CleanWwiseProject()
+
+        list_config = ["Debug","Profile","Release"]
+        arch = "iOS"
+        platform =  "iOS"
+
+        OneWwiseCommand = WwiseCommand()
+        OneWwiseCommand.path_project = WPMHelper.Get().GetPath_WPProject()
+        OneWwiseCommand.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
+
+        one_param_premake = ParamsWwisePluginPremake()
+        one_param_premake.platform = platform
+        OneWwiseCommand.Premake(one_param_premake)
+
+        path_xcode_workspace_static = WPMHelper.Get().GetPath_WPProject() / "SoundEnginePlugin/AgoraWwiseRTCSDK_iOS_static.xcodeproj/project.pbxproj"
+        default_generated_apple_team_id = WPMHelper.Get().GetWwiseDefaultTeamID()
+        apple_team_id = WPMHelper.Get().GetAppleTeamID()
+        FileUtility.ReplaceFileContent(path_xcode_workspace_static,default_generated_apple_team_id,apple_team_id)
+
+        path_xcode_workspace_shared = WPMHelper.Get().GetPath_WPProject() / "SoundEnginePlugin/AgoraWwiseRTCSDK_iOS_shared.xcodeproj/project.pbxproj"
+        FileUtility.ReplaceFileContent(path_xcode_workspace_shared,default_generated_apple_team_id,apple_team_id)
+
+        for one_config in list_config:
+            one_param_build = ParamsWwisePluginBuild()
+            one_param_build.config = one_config
+            one_param_build.arch = arch
+            one_param_build.platform = platform
+            OneWwiseCommand.Build(one_param_build)
+
+        PrintStageLog("iOS - Package_Wwise Complete")

@@ -22,7 +22,10 @@ class SystemHelper():
         else:
             PrintErr("HostPlatform [%s] currently is not supported" %(str(ossystem)))
             return "NotSupportPlatform"
-        
+    
+    def GetHostPlatformArchitechture(self):
+        ## arm64 x86_64
+        return platform.machine().lower()
 
     def GetTargetPlatform_BasedOnHostPlatform(self):
         platform = self.GetHostPlatform()

@@ -13,6 +13,10 @@ import shutil
 
 from Utility.UnrealProjectManager import *
 
+## Wwise
+from Command.WwiseCommand import * 
+from WPMHelper import * 
+
 class MacPlatformPathUtility:
     @staticmethod
     def GetDefaultEnginePath():
@@ -353,4 +357,58 @@ class MacTargetPlatform(BaseTargetPlatform):
         self.ArchiveProduct()
 
 
+
+
+
+
+
+
+
+
+#####################################################################################
+#################################### Wwise ##########################################
+    def Package_Wwise(self):
+        WPMHelper.Get().CleanWwiseProject()
+
+
+        list_config = ["Debug","Profile","Release"]
+        arch = SystemHelper.Get().GetHostPlatformArchitechture()
+        platform =  "Mac"
+
+        OneWwiseCommand = WwiseCommand()
+        OneWwiseCommand.path_project = WPMHelper.Get().GetPath_WPProject()
+        OneWwiseCommand.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
+
+        one_param_premake = ParamsWwisePluginPremake()
+        one_param_premake.platform = "Mac"
+        OneWwiseCommand.Premake(one_param_premake)
+
+        path_xcode_workspace_static = WPMHelper.Get().GetPath_WPProject() / "SoundEnginePlugin/AgoraWwiseRTCSDK_Mac_static.xcodeproj/project.pbxproj"
+        # default_generated_apple_team_id = WPMHelper.Get().GetWwiseDefaultTeamID()
+        # apple_team_id = WPMHelper.Get().GetAppleTeamID()
+        # FileUtility.ReplaceFileContent(path_xcode_workspace_static,default_generated_apple_team_id,apple_team_id)
+
+        # FileUtility.ReplaceFileLineContent(path_xcode_workspace_static,"CODE_SIGN_IDENTITY =",' "-";')
+        
+        ## CODE_SIGN_IDENTITY = "-": means: Sign to run locally
+        FileUtility.InsertLineToFileBeforePrefix(path_xcode_workspace_static,"CONFIGURATION_BUILD_DIR = /Applications/",'CODE_SIGN_IDENTITY = "-";')
+
+
+
+        path_xcode_workspace_shared = WPMHelper.Get().GetPath_WPProject() / "SoundEnginePlugin/AgoraWwiseRTCSDK_Mac_shared.xcodeproj/project.pbxproj"
+        # FileUtility.ReplaceFileContent(path_xcode_workspace_shared,default_generated_apple_team_id,apple_team_id)
+        # FileUtility.ReplaceFileLineContent(path_xcode_workspace_shared,"CODE_SIGN_IDENTITY =",' "-";')
+        
+        ## CODE_SIGN_IDENTITY = "-": means: Sign to run locally
+        FileUtility.InsertLineToFileBeforePrefix(path_xcode_workspace_shared,"CONFIGURATION_BUILD_DIR = /Applications/",'CODE_SIGN_IDENTITY = "-";')
+
+        for one_config in list_config:
+            one_param_build = ParamsWwisePluginBuild()
+            one_param_build.config = one_config
+            one_param_build.arch = arch
+            one_param_build.platform = platform
+            OneWwiseCommand.Build(one_param_build)
+
+        PrintStageLog("Mac - Package_Wwise Complete")
+      
 

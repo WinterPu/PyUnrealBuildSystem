@@ -5,6 +5,10 @@ import os
 from UBSHelper import *
 from Command.AndroidCommand import *
 
+## Wwise
+from Command.WwiseCommand import * 
+from WPMHelper import * 
+
 class AnndroidPlatformPathUtility:
     def GetPath_AndroidSDKConfigIniOnWindows():
         ## if you start with '/', it would be treated as starting from the root path
@@ -109,3 +113,14 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
         path_archive_dir = UBSHelper.Get().GetPath_ArchiveDir(self.GetTargetPlatform())
         self.SetArchivePath_FinalProductDir(path_archive_dir)
+
+
+
+
+
+
+
+#####################################################################################
+#################################### Wwise ##########################################
+    def Package_Wwise(self):
+        pass

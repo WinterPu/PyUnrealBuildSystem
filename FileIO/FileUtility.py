@@ -127,3 +127,80 @@ class FileUtility:
                 shutil.rmtree(str(path))
             else:
                 PrintLog("%s not exists" % path)
+
+    ## just replace all the [target_string] with [replacement_string] in the file
+    def ReplaceFileContent(file_path, target_string, replacement_string):
+        try:
+            # read file content
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+
+            # replace target string with replacement string
+            updated_content = content.replace(target_string, replacement_string)
+
+            # write updated content back to file
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(updated_content)
+
+            PrintLog(f"Successfully! '{target_string}' replace with '{replacement_string}'")
+        except Exception as e:
+            PrintErr(f"Replacement Err: {e}")
+
+
+    ##  replace all the line content which starts with [target_prefix] with [leading spaces][target_prefix][new_content]
+    def ReplaceFileLineContent(file_path, target_prefix, new_content):
+        try:
+            path = Path(file_path)
+
+            # read file content
+            with path.open('r', encoding='utf-8') as file:
+                lines = file.readlines()
+
+            # replace target prefix with new content
+            for i, line in enumerate(lines):
+                # use lstrip() to remove leading spaces
+                if line.lstrip().startswith(target_prefix):
+                    # get leading spaces
+                    leading_spaces = line[:len(line) - len(line.lstrip())]
+                    # replace target prefix with new content, also keep the leading spaces
+                    lines[i] = f"{leading_spaces}{target_prefix}{new_content}\n"  # keep the leading spaces
+
+            # write updated content back to file
+            with path.open('w', encoding='utf-8') as file:
+                file.writelines(lines)
+
+            print(f"FilePath {file_path} already replace '{target_prefix}' with '{target_prefix}{new_content}'。")
+        except Exception as e:
+            PrintErr(f"Replacement Err: {e}")
+
+
+
+    def InsertLineToFileBeforePrefix(file_path, target_prefix, new_line_content):
+        try:
+            path = Path(file_path)
+
+            # read file content
+            with path.open('r', encoding='utf-8') as file:
+                lines = file.readlines()
+
+            # insert new line before target prefix
+            i = 0
+            while i < len(lines):
+                line = lines[i]
+                if line.lstrip().startswith(target_prefix):
+                    # get leading spaces
+                    leading_spaces = line[:len(line) - len(line.lstrip())]
+                    inserted_content = f"{leading_spaces}{new_line_content}\n"
+                    # insert new line before target prefix
+                    lines.insert(i, inserted_content)
+                    i += 1  # skip the new line
+                i += 1  # next line
+
+            # write updated content back to file
+            with path.open('w', encoding='utf-8') as file:
+                file.writelines(lines)
+
+            PrintLog(f" FilePath {file_path} Add '{new_line_content}' before '{target_prefix}'")
+
+        except Exception as e:
+            PrintErr(f"Replacement Err: {e}")

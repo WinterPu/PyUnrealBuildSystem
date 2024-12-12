@@ -10,12 +10,13 @@ path_val = Path("/Users/admin/Documents/PyUnrealBuildSystem/Config/Config.json")
 
 
 class IOSCertInfo:
-    def __init__(self,signing_identity,provisioning_profile,name_mobileprovision,path_mobileprovision,provisioning_profile_specifier):
+    def __init__(self,signing_identity,provisioning_profile,name_mobileprovision,path_mobileprovision,provisioning_profile_specifier,team_id):
         self.__signing_identity = signing_identity
         self.__provisioning_profile = provisioning_profile
         self.__name_mobileprovision = name_mobileprovision
         self.__path_mobileprovision = Path(path_mobileprovision)
         self.__provisioning_profile_specifier = provisioning_profile_specifier
+        self.__team_id = team_id
 
     @property
     def get_signing_identity(self):
@@ -41,6 +42,10 @@ class IOSCertInfo:
     @property
     def get_provisioning_profile_specifier(self):
         return self.__provisioning_profile_specifier
+    
+    @property
+    def get_team_id(self):
+        return self.__team_id
 
 
 
@@ -190,7 +195,8 @@ class ConfigParser(BaseSystem):
             provisioning_profile = self.IOSCertData[tag_name]["provisioning_profile"],
             name_mobileprovision = self.IOSCertData[tag_name]["mobileprovision_filename"],
             path_mobileprovision = str(base_path / self.IOSCertData[tag_name]["mobileprovision_filename"]),
-            provisioning_profile_specifier = self.IOSCertData[tag_name]["provisioning_profile_specifier"]
+            provisioning_profile_specifier = self.IOSCertData[tag_name]["provisioning_profile_specifier"],
+            team_id = self.IOSCertData[tag_name]["team_id"]
         )
 
 
