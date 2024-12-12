@@ -94,25 +94,32 @@ class WinTargetPlatform(BaseTargetPlatform):
 #####################################################################################
 #################################### Wwise ##########################################
     def Package_Wwise(self):
+        WPMHelper.Get().CleanWwiseProject()
+
         list_config = ["Debug","Profile","Release"]
         arch = "x64"
-        toolset = ["vc160","vc170"]
-        platform = {
-            "vc160":"Windows_vc160",
-            "vc170":"Windows_vc170"
-        }
+        toolset = WPMHelper.Get().GetWindowsToolsetList()
+        not_build_black_list = WPMHelper.Get().GetWindowsToolsetBuildBlackList()
        
         OneWwiseCommand = WwiseCommand()
         OneWwiseCommand.path_project = WPMHelper.Get().GetPath_WPProject()
         OneWwiseCommand.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
         
+        one_param_premake = ParamsWwisePluginPremake()
+        ## Authoring would generate all platforms
+        one_param_premake.platform = "Authoring"
+        OneWwiseCommand.Premake(one_param_premake)
+
         for one_config in list_config:
             one_param = ParamsWwisePluginBuild()
             one_param.config = one_config
             one_param.arch = arch
 
             for one_toolset in toolset:
+                if one_toolset in not_build_black_list:
+                    PrintLog("Skip Build - %s" % one_toolset)
+                    continue
                 one_param.toolset = one_toolset
-                one_param.platform = platform[one_toolset]
+                one_param.platform = "Windows_" + one_toolset
                 OneWwiseCommand.Build(one_param)
         

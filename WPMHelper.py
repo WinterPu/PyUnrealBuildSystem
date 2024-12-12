@@ -76,6 +76,18 @@ class WPMHelper:
     def GetName_WwisePluginName(self):
         return self.__Args.wwisepluginname
 
+    ## Windows
+    def GetWindowsToolsetList(self):
+        ## Full List
+        str_toolset = self.__Args.wwise_windows_toolset
+        return str_toolset.split('+')
+    
+    def GetWindowsToolsetBuildBlackList(self):
+        ## Not Build List
+        str_toolset = self.__Args.wwise_windows_toolset_not_build
+        return str_toolset.split('+')
+
+    ## Mac / IOS
     def GetWwiseDefaultTeamID(self):
         return self.__Args.wwise_xcode_generated_teamid
 
@@ -85,16 +97,73 @@ class WPMHelper:
                 
     def CleanWwiseProject(self):
         path_wp_project = self.GetPath_WPProject()
-        name_mac_xcodeworkspace = self.GetName_WwisePluginName() + "_Mac.xcworkspace"
+        NAME_PLUGIN = self.GetName_WwisePluginName()
+
+        NAME_SOUND_ENGINE = "SoundEnginePlugin"
+        ## Windows
+        win_toolset_list = self.GetWindowsToolsetList()
+        for one_toolset in win_toolset_list:
+            name_sln_authoring = NAME_PLUGIN + "_Authoring_Windows_" + one_toolset + ".sln"
+            path_sln_authoring = path_wp_project / name_sln_authoring
+            FileUtility.DeleteFile(path_sln_authoring)
+        
+            name_sln_windows_shared = NAME_PLUGIN + "_Windows_" + one_toolset + "_shared.sln"
+            path_sln_windows_shared = path_wp_project / name_sln_windows_shared
+            FileUtility.DeleteFile(path_sln_windows_shared)
+            
+            name_vcxproj_windows_shared = NAME_PLUGIN + "_Windows_" + one_toolset + "_shared.vcxproj"
+            path_vcxproj_windows_shared = path_wp_project / NAME_SOUND_ENGINE / name_vcxproj_windows_shared
+            FileUtility.DeleteFile(path_vcxproj_windows_shared)
+            
+
+            name_vcxproj_filters_windows_shared = NAME_PLUGIN + "_Windows_" + one_toolset + "_shared.vcxproj.filters"
+            path_vcxproj_filters_windows_shared = path_wp_project / NAME_SOUND_ENGINE / name_vcxproj_filters_windows_shared
+            FileUtility.DeleteFile(path_vcxproj_filters_windows_shared)
+
+            name_sln_windows_static = NAME_PLUGIN + "_Windows_" + one_toolset + "_static.sln"
+            path_sln_windows_static = path_wp_project / name_sln_windows_static
+            FileUtility.DeleteFile(path_sln_windows_static)
+
+            name_vcxproj_windows_static = NAME_PLUGIN + "_Windows_" + one_toolset + "_static.vcxproj"
+            path_vcxproj_windows_static = path_wp_project / NAME_SOUND_ENGINE / name_vcxproj_windows_static
+            FileUtility.DeleteFile(path_vcxproj_windows_static)  
+
+            name_vcxproj_filters_windows_static = NAME_PLUGIN + "_Windows_" + one_toolset + "_static.vcxproj.filters"
+            path_vcxproj_filters_windows_static = path_wp_project / NAME_SOUND_ENGINE / name_vcxproj_filters_windows_static
+            FileUtility.DeleteFile(path_vcxproj_filters_windows_static)
+
+
+        #Android
+        name_android_mk = NAME_PLUGIN + "_Android.mk"
+        path_android_mk = path_wp_project/ name_android_mk
+        FileUtility.DeleteFile(path_android_mk)
+            
+
+        name_android_application_mk = NAME_PLUGIN + "_Android_application.mk"
+        path_android_application_mk = path_wp_project / name_android_application_mk
+        FileUtility.DeleteFile(path_android_application_mk)
+
+
+        name_android_shared_mk = NAME_PLUGIN + "_Android_shared.mk"
+        path_android_shared_mk = path_wp_project / NAME_SOUND_ENGINE  / name_android_shared_mk
+        FileUtility.DeleteFile(path_android_shared_mk)
+
+        name_android_static_mk = NAME_PLUGIN + "_Android_static.mk"
+        path_android_static_mk = path_wp_project  / NAME_SOUND_ENGINE / name_android_static_mk
+        FileUtility.DeleteFile(path_android_static_mk)
+
+
+        ## Mac / iOS
+        name_mac_xcodeworkspace = NAME_PLUGIN + "_Mac.xcworkspace"
         FileUtility.DeleteDir(path_wp_project / name_mac_xcodeworkspace)
-        name_ios_xcodeworkspace = self.GetName_WwisePluginName() + "_iOS.xcworkspace"
+        name_ios_xcodeworkspace = NAME_PLUGIN + "_iOS.xcworkspace"
         FileUtility.DeleteDir(path_wp_project / name_ios_xcodeworkspace)
 
-        name_mac_shared_xcodeproj = self.GetName_WwisePluginName() + "_Mac_shared.xcodeproj"
-        FileUtility.DeleteDir(path_wp_project / "SoundEngine" / name_mac_shared_xcodeproj)
-        name_mac_static_xcodeproj = self.GetName_WwisePluginName() + "_Mac_static.xcodeproj"
-        FileUtility.DeleteDir(path_wp_project  / "SoundEngine" / name_mac_static_xcodeproj)
-        name_ios_shared_xcodeproj = self.GetName_WwisePluginName() + "_iOS_shared.xcodeproj"
-        FileUtility.DeleteDir(path_wp_project / "SoundEngine" / name_ios_shared_xcodeproj)
-        name_ios_static_xcodeproj = self.GetName_WwisePluginName() + "_iOS_static.xcodeproj"
-        FileUtility.DeleteDir(path_wp_project / "SoundEngine" / name_ios_static_xcodeproj)
+        name_mac_shared_xcodeproj = NAME_PLUGIN + "_Mac_shared.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project / NAME_SOUND_ENGINE / name_mac_shared_xcodeproj)
+        name_mac_static_xcodeproj = NAME_PLUGIN + "_Mac_static.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project  / NAME_SOUND_ENGINE / name_mac_static_xcodeproj)
+        name_ios_shared_xcodeproj = NAME_PLUGIN + "_iOS_shared.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project / NAME_SOUND_ENGINE / name_ios_shared_xcodeproj)
+        name_ios_static_xcodeproj = NAME_PLUGIN + "_iOS_static.xcodeproj"
+        FileUtility.DeleteDir(path_wp_project / NAME_SOUND_ENGINE / name_ios_static_xcodeproj)

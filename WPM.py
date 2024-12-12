@@ -33,9 +33,11 @@ class WwisePluginManager():
     def AddArgsToParser(self,ArgParser, bIncludeConflictArgs = True):
         ArgParser.add_argument('-wwisever',default="2021.1.14.8108")
         ArgParser.add_argument('-pathwwisebase',default="")
-        ArgParser.add_argument('-wpprojectpath',default="/Users/winterpu/Documents/Gitee/agora-wwise-plugin/AgoraWWiseRTCSDK")
+        ArgParser.add_argument('-wpprojectpath',default="")
         ArgParser.add_argument('-wwisepluginname',default="AgoraWWiseRTCSDK")
         ArgParser.add_argument('-wwise_xcode_generated_teamid',default="BCB4VLKTK5")
+        ArgParser.add_argument('-wwise_windows_toolset',default="vc150+vc160+vc170")
+        ArgParser.add_argument('-wwise_windows_toolset_not_build',default="vc150")
         if bIncludeConflictArgs:
             ArgParser.add_argument("-targetplatform", default=SystemHelper.Get().GetTargetPlatform_BasedOnHostPlatform())
             ArgParser.add_argument("-ioscert", default="D")

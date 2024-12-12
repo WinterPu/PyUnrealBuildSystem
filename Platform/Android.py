@@ -20,7 +20,7 @@ class AndroidPlatformBase(PlatformBase):
         ret, val = PlatformBase.GenTargetPlatformParams(args)
 
         key = "androidpackagename"
-        val[key] = args.androidpackagename
+        val[key] = args.androidpackagename if "androidpackagename" in args else ""
         # key = "target_platform"
         # val[key] = "Android"
 
@@ -123,4 +123,70 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 #####################################################################################
 #################################### Wwise ##########################################
     def Package_Wwise(self):
-        pass
+        WPMHelper.Get().CleanWwiseProject()
+
+        self.SetupEnvironment_Wwise()
+
+        list_config = ["Debug","Profile","Release"]
+        list_arch = ["armeabi-v7a", "x86", "arm64-v8a", "x86_64"]
+        platform = "Android"
+
+        OneWwiseCommand = WwiseCommand()
+        OneWwiseCommand.path_project = WPMHelper.Get().GetPath_WPProject()
+        OneWwiseCommand.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
+
+        one_param_premake = ParamsWwisePluginPremake()
+        one_param_premake.platform = "Android"
+        OneWwiseCommand.Premake(one_param_premake)
+
+        for one_config in list_config:
+            for one_arch in list_arch:
+                one_param = ParamsWwisePluginBuild()
+                one_param.config = one_config
+                one_param.arch = one_arch
+                one_param.platform = platform
+
+                OneWwiseCommand.Build(one_param)
+
+    def SetupEnvironment_Wwise(self):
+        PrintStageLog("SetupEnvironment_Wwise - Android")
+        
+        PrintLog("Before Modification: NDKROOT:  %s" % os.environ["NDKROOT"])
+        PrintLog("Before Modification: NDK_ROOT:  %s" % os.environ["NDK_ROOT"])
+        
+        path_ndk = Path(os.environ["NDKROOT"])
+        
+        final_ndk_path = path_ndk.parent.joinpath("25.1.8937393")
+        # final_ndk_path = path_ndk.parent.joinpath("21.4.7075529")
+        
+        os.environ["NDKROOT"] = str(final_ndk_path)
+        os.environ["NDK_ROOT"] = str(final_ndk_path)
+
+        PrintLog("Cur NDKROOT:  %s" % os.environ["NDKROOT"])
+        PrintLog("Cur NDK_ROOT:  %s" % os.environ["NDK_ROOT"])
+
+
+        ## Modifiy In 
+        if SystemHelper.Get().GetHostPlatform() == SystemHelper.Win_HostName():
+            path_android_script_in_wwise_script = Path("C:\Program Files (x86)\Audiokinetic\Wwise 2021.1.14.8108\Scripts\Build\Plugins\common\command\android.py")
+            PrintWarn(f"Please check modification of android script in wwise build script {path_android_script_in_wwise_script}")
+
+            #### Change The Code Here ### 
+            # libs_out = " NDK_LIBS_OUT=" + '"' + os.path.join(out_dir_root, config, "libs").replace("\\", "/") + '"'
+            # ndk_out = " NDK_OUT=" + '"' +os.path.join(out_dir_root, config, "lib").replace("\\", "/") + '"' # the missing "s" at lib is on purpose
+            # ndk_app_out = " NDK_APP_OUT="+ '"' + out_dir_root.replace("\\", "/") + '"'
+            # target_out = " TARGET_OUT="+ '"' + os.path.join(out_dir_root, config, "lib").replace("\\", "/") + '"'
+
+            #### Change The Code To ###
+            # from pathlib import Path
+            # def wrap_str(val_str):
+            #     return '"' + val_str + '"'
+            #     # return str('"' + val_str + '"').replace('\\', '//')
+            
+            # # ......
+            # path_lib = Path("D://WwiseAndroidOutput") / config
+            # libs_out = " NDK_LIBS_OUT=" + wrap_str(str(path_lib))
+            # ndk_out = " NDK_OUT=" + wrap_str(str(path_lib)) 
+            # ndk_app_out = " NDK_APP_OUT=" + wrap_str(str(path_lib))
+            # target_out = " TARGET_OUT=" + wrap_str(str(path_lib))
+        

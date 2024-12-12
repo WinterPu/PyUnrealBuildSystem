@@ -99,7 +99,12 @@ class FileUtility:
     
 
     def DeleteFile(path,bForce = False):
-        PrintLog("DeleteFile " + str(path))
+        if not Path(path).exists():
+            PrintWarn("DeleteFile but %s not exists" % path)
+            return
+        else:
+            PrintLog("DeleteFile " + str(path))
+        
         path = str(path)
         if bForce:
             command = (
