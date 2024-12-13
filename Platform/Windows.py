@@ -129,24 +129,28 @@ class WinTargetPlatform(BaseTargetPlatform):
         ## Final Product 
         for one_config in list_config:
             for one_toolset in toolset:
+                if one_toolset in not_build_black_list:
+                    PrintLog("Skip Archive - %s" % one_toolset)
+                    continue
+
                 OneArchiveInfo = ArchiveInfo_WwisePlugin(
                     WPMHelper.Get().GetName_WwisePluginName(),
                     WPMHelper.Get().GetVer_Wwise(),
-                    SystemHelper.Mac_TargetName(),
+                    SystemHelper.Win64_TargetName(),
                     one_config,
                     arch,
                     one_toolset
                 )
                 extension = "dll"
                 name_final_product = OneArchiveInfo.GetArchiveName()   + "."  + extension
-                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / OneArchiveInfo.GetArchiveSubDirBasedOnInfo() / "bin" / name_final_product
+                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / ( arch + "_" + one_toolset) / one_config / "bin" / name_final_product
                 PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
                 bshould_clean_others_when_archving = False
                 ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
 
                 extension = "lib"
                 name_final_product = OneArchiveInfo.GetArchiveName()  + "."   + extension
-                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() /OneArchiveInfo.GetArchiveSubDirBasedOnInfo() / "bin" / name_final_product
+                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / ( arch + "_" + one_toolset) / one_config  / "bin" / name_final_product
                 PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
                 bshould_clean_others_when_archving = False
                 ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
