@@ -99,17 +99,27 @@ class ConfigParser(BaseSystem):
         self.UEConfigData = base_config_json_data
 
     def ParseSDKConfig(self):
-        SDKTYPELIST = self.SDKLOADTYPELIST.split('+')
+        # SDKTYPELIST = self.SDKLOADTYPELIST.split('+')
+
+        # base_config_json_data = None
+        # for SDKTYPE in SDKTYPELIST:
+        #     one_type_config_path=Path("Config/SDKConfig").joinpath(SDKTYPE,"Config.json")
+        #     one_type_config_file = open(one_type_config_path)
+        #     one_type_config_json_data = json.load(one_type_config_file)
+        #     if base_config_json_data == None:
+        #         base_config_json_data = one_type_config_json_data
+        #     else:
+        #         base_config_json_data.update(one_type_config_json_data)
 
         base_config_json_data = None
-        for SDKTYPE in SDKTYPELIST:
-            one_type_config_path=Path("Config/SDKConfig").joinpath(SDKTYPE,"Config.json")
-            one_type_config_file = open(one_type_config_path)
-            one_type_config_json_data = json.load(one_type_config_file)
-            if base_config_json_data == None:
-                base_config_json_data = one_type_config_json_data
-            else:
-                base_config_json_data.update(one_type_config_json_data)
+        SDKTYPE = self.SDKLOADTYPELIST
+        one_type_config_path=Path("Config/SDKConfig").joinpath(SDKTYPE,"Config.json")
+        one_type_config_file = open(one_type_config_path)
+        one_type_config_json_data = json.load(one_type_config_file)
+        if base_config_json_data == None:
+            base_config_json_data = one_type_config_json_data
+        else:
+            base_config_json_data.update(one_type_config_json_data)
 
 
         platform_config_path = Path("Config/SDKConfig").joinpath("Platforms",self.GetHostPlatform(),"Config.json")

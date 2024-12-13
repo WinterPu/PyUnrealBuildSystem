@@ -150,7 +150,12 @@ class AgoraPluginManager(BaseSystem):
     
     
     def GetPath_FinalPluginArchivePlacedDir(self,root_plugin_archive_path,sdkinfo:AgoraSDKInfo):
-        path_category01 = Path(root_plugin_archive_path) / Path(sdkinfo.Get_SDKVer())
+        path_category01 = Path(root_plugin_archive_path) 
+        if sdkinfo.Get_SDKType() != "RTC":
+            path_category01 = path_category01 / sdkinfo.Get_SDKType()
+
+        path_category01 = path_category01 / Path(sdkinfo.Get_SDKVer())
+
         if not path_category01.exists():
             path_category01.mkdir(parents=True)
         
@@ -163,11 +168,11 @@ class AgoraPluginManager(BaseSystem):
 
     def Init(self):
         PrintStageLog("AgoraPluginManager Init")
-        ConfigParser.Get().Init()
 
     def Start(self):
         AgoraPluginManager.Get().Init()
         args = self.ParseCMDArgs()
+        ConfigParser.Get().Init(args.agorasdktype)
         self.CreateTask(args)
 
     def CreateTask(self,Args):
@@ -191,7 +196,7 @@ class AgoraPluginManager(BaseSystem):
         final_dst_plugin_path = Args.pluginarchivedir
         plugin_source_code_path = Args.pluginsourcecodepath
 
-        sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly)
+        sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly,Args.agorasdktype)
         
         sdk_build_config = Args.agorasdkbuildconfig
         ## keep mac symbolic link
@@ -472,7 +477,7 @@ class AgoraPluginManager(BaseSystem):
             if path_archive_plugin_root != "":
                 ArchiveManager.Get().SetPath_ArchiveRootDir(path_archive_plugin_root)
 
-            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly(),sdkinfo.Get_SDKVer())
+            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly(),sdkinfo.Get_SDKVer(),sdkinfo.Get_SDKType())
             ArchiveManager.Get().ArchiveBuild(dst_zip_file_path, OneArchiveInfo)
         
 

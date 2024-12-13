@@ -75,12 +75,16 @@ class ArchiveInfo_AgoraExample(ArchiveInfoBase):
         return path_root / path
 
 class ArchiveInfo_AgoraPlugin(ArchiveInfoBase):
-    def __init__(self,bis_audioonly_sdk,sdk_ver) -> None:
+    def __init__(self,bis_audioonly_sdk,sdk_ver, val_sdk_type = "RTC") -> None:
         self.bis_audioonly_sdk = bis_audioonly_sdk
         self.sdk_ver = sdk_ver
+        self.sdk_type = val_sdk_type
 
     def GetPath_CurRootArchiveDirBase(self):
-        return Path("Archive_AgoraPlugin")
+        name_base = "Archive_AgoraPlugin"
+        if self.sdk_type != "RTC":
+            name_base = f"{name_base}_{self.sdk_type}"
+        return Path(name_base)
     
     def GetPath_CurRootArchiveDir(self):
         return self.GetPath_CurRootArchiveDirBase() / self.sdk_ver
