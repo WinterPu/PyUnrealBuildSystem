@@ -339,4 +339,22 @@ class IOSTargetPlatform(BaseTargetPlatform):
             one_param_build.platform = platform
             OneWwiseCommand.Build(one_param_build)
 
-        PrintStageLog("iOS - Package_Wwise Complete")
+        PrintStageLog("iOS - Package_Wwise Build Complete")
+
+        ## Archive
+        ## Final Product 
+        for one_config in list_config:
+            OneArchiveInfo = ArchiveInfo_WwisePlugin(
+                WPMHelper.Get().GetName_WwisePluginName(),
+                WPMHelper.Get().GetVer_Wwise(),
+                SystemHelper.IOS_TargetName(),
+                one_config
+            )
+            extension = "a"
+            name_final_product = OneArchiveInfo.GetArchiveName() + "." + extension
+            path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / "iOS" /(one_config +"-iphoneos") / "lib" / name_final_product
+            PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
+            bshould_clean_others_when_archving = False
+            ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
+
+        PrintStageLog("IOS - Package_Wwise Archive Complete")

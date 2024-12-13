@@ -123,3 +123,32 @@ class WinTargetPlatform(BaseTargetPlatform):
                 one_param.platform = "Windows_" + one_toolset
                 OneWwiseCommand.Build(one_param)
         
+        PrintStageLog("Win64 - Package_Wwise Build Complete")
+        
+        ## Archive
+        ## Final Product 
+        for one_config in list_config:
+            for one_toolset in toolset:
+                OneArchiveInfo = ArchiveInfo_WwisePlugin(
+                    WPMHelper.Get().GetName_WwisePluginName(),
+                    WPMHelper.Get().GetVer_Wwise(),
+                    SystemHelper.Mac_TargetName(),
+                    one_config,
+                    arch,
+                    one_toolset
+                )
+                extension = "dll"
+                name_final_product = OneArchiveInfo.GetArchiveName()   + "."  + extension
+                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / OneArchiveInfo.GetArchiveSubDirBasedOnInfo() / "bin" / name_final_product
+                PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
+                bshould_clean_others_when_archving = False
+                ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
+
+                extension = "lib"
+                name_final_product = OneArchiveInfo.GetArchiveName()  + "."   + extension
+                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() /OneArchiveInfo.GetArchiveSubDirBasedOnInfo() / "bin" / name_final_product
+                PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
+                bshould_clean_others_when_archving = False
+                ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
+
+        PrintStageLog("Win64 - Package_Wwise Archive Complete")

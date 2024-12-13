@@ -73,6 +73,9 @@ class WPMHelper:
     def GetPath_WwiseSDKBase(self):
         return self.GetPath_WwiseBase() / Path("SDK")
     
+    def GetVer_Wwise(self):
+        return self.__Args.wwisever
+    
     def GetName_WwisePluginName(self):
         return self.__Args.wwisepluginname
 

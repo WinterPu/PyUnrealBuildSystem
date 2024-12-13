@@ -409,6 +409,27 @@ class MacTargetPlatform(BaseTargetPlatform):
             one_param_build.platform = platform
             OneWwiseCommand.Build(one_param_build)
 
-        PrintStageLog("Mac - Package_Wwise Complete")
+        PrintStageLog("Mac - Package_Wwise Build Complete")
+        
+        ## Archive
+        ## Final Product 
+        for one_config in list_config:
+            OneArchiveInfo = ArchiveInfo_WwisePlugin(
+                WPMHelper.Get().GetName_WwisePluginName(),
+                WPMHelper.Get().GetVer_Wwise(),
+                SystemHelper.Mac_TargetName(),
+                one_config
+            )
+            extension = "a"
+            name_final_product = OneArchiveInfo.GetArchiveName()  + "."   + extension
+            path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / Path("Mac") / one_config / "lib" / name_final_product
+            PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
+            bshould_clean_others_when_archving = False
+            ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
+
+        PrintStageLog("Mac - Package_Wwise Archive Complete")
+
+
+
       
 

@@ -112,6 +112,51 @@ class ArchiveInfo_AgoraPluginMarketplace(ArchiveInfoBase):
     def GetArchivePath(self):
         return self.GetPath_CurRootArchiveDir()
 
+
+class ArchiveInfo_WwisePlugin(ArchiveInfoBase):
+    def __init__(self,PLUGIN_NAME, val_wwisever,val_platform, val_config,val_arch = "",val_toolset = "") -> None:
+        self.name_plugin = PLUGIN_NAME
+        self.wwisever = val_wwisever
+        self.platform = val_platform
+        self.config = val_config
+        self.arch = val_arch
+        self.toolset = val_toolset
+
+    def GetPath_CurRootArchiveDirBase(self):
+        return Path("Archive_WwisePlugin")
+    
+    def GetPath_CurRootArchiveDir(self):
+        return self.GetPath_CurRootArchiveDirBase()/ self.wwisever / "ThirdParty"
+    
+    def GetArchivePath(self):
+        return self.GetPath_CurRootArchiveDir() / self.GetArchiveSubDirBasedOnInfo()
+
+    def GetArchiveSubDirBasedOnInfo(self):
+        path = ""
+        if self.platform == SystemHelper.Win64_TargetName():
+            path = Path("Win64")
+            path = path / ( self.arch + "_" + self.toolset) / self.config
+        elif self.platform == SystemHelper.Mac_TargetName():
+            path = Path("Mac") / self.config
+        elif self.platform == SystemHelper.IOS_TargetName():
+            path = Path("IOS") / (self.config + "-iphoneos")
+        elif self.platform == SystemHelper.Android_TargetName():
+            path = Path("Android") / self.arch / self.config
+        return path
+    
+    def GetArchiveName(self):
+        name = ""
+        if self.platform == SystemHelper.Win64_TargetName():
+            name = self.name_plugin
+        elif self.platform == SystemHelper.Mac_TargetName():
+            name = "lib" + self.name_plugin + "Source"
+        elif self.platform == SystemHelper.IOS_TargetName():
+            name = "lib" + self.name_plugin + "Source"
+        elif self.platform == SystemHelper.Android_TargetName():
+            name = "lib" + self.name_plugin
+
+        return name
+
 class ArchiveManager:
     __instance = None
     

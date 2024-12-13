@@ -148,6 +148,30 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
                 OneWwiseCommand.Build(one_param)
 
+        PrintStageLog("Android - Package_Wwise Build Complete")
+
+        ## Archive
+        ## Final Product 
+        for one_config in list_config:
+            for one_arch in list_arch:
+                OneArchiveInfo = ArchiveInfo_WwisePlugin(
+                    WPMHelper.Get().GetName_WwisePluginName(),
+                    WPMHelper.Get().GetVer_Wwise(),
+                    SystemHelper.IOS_TargetName(),
+                    one_config,
+                    one_arch
+
+                )
+                extension = "so"
+                name_final_product = OneArchiveInfo.GetArchiveName()   + "." +  extension
+                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / "Android_" + one_arch / one_config / "lib" / name_final_product
+                PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
+                bshould_clean_others_when_archving = False
+                ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
+
+        PrintStageLog("Android - Package_Wwise Archive Complete")
+
+
     def SetupEnvironment_Wwise(self):
         PrintStageLog("SetupEnvironment_Wwise - Android")
         
