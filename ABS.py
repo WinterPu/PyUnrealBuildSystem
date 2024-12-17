@@ -7,6 +7,8 @@ from UBS import *
 from UBSHelper import *
 from ABSHelper import *
 
+from ConfigParser import *
+
 ## Combine UBS + APM
 class AgoraBuildSystem(BaseSystem):
 
@@ -35,6 +37,8 @@ class AgoraBuildSystem(BaseSystem):
     def Start(self):
         AgoraBuildSystem.Get().Init()
         args = self.ParseCMDArgs()
+        if args.agorasdktype != "RTC":
+            ConfigParser.Get().Init(args.agorasdktype)
         self.CreateTask(args)
     
     def ParseCMDArgs(self):
