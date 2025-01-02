@@ -131,6 +131,15 @@ class AndroidTargetPlatform(BaseTargetPlatform):
         list_arch = ["armeabi-v7a", "x86", "arm64-v8a", "x86_64"]
         platform = "Android"
 
+                
+        path_Android_output_root_path = ""
+
+        bneed_to_change_root_path = SystemHelper.Get().GetHostPlatform() == SystemHelper.Win_HostName()
+        if bneed_to_change_root_path:
+            ## this should be defined in wp.py scripts in Wwise base folder 
+            path_Android_output_root_path = Path("D:/WwiseAndroidOutput")
+
+
         OneWwiseCommand = WwiseCommand()
         OneWwiseCommand.path_project = WPMHelper.Get().GetPath_WPProject()
         OneWwiseCommand.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
@@ -141,6 +150,30 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
         for one_config in list_config:
             for one_arch in list_arch:
+                
+                ##### Clean First
+                PrintLog("Wwise - Clean - %s - %s" % (one_config,one_arch))
+                OneArchiveInfo = ArchiveInfo_WwisePlugin(
+                    WPMHelper.Get().GetName_WwisePluginName(),
+                    WPMHelper.Get().GetVer_Wwise(),
+                    SystemHelper.Android_TargetName(),
+                    one_config,
+                    one_arch
+
+                )
+                extension = "so"
+                name_final_product = OneArchiveInfo.GetArchiveName()   + "." +  extension
+                path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / ("Android_" + one_arch) / one_config / "lib" / name_final_product
+                FileUtility.DeleteFile(path_target_archive_file)
+
+                if bneed_to_change_root_path:
+                    ## It's important to clean the objs dir, otherwise, the final product would be the same arch
+                    path_output_objs = path_Android_output_root_path / one_config / Path("objs")
+                    FileUtility.DeleteDir(path_output_objs)
+
+
+                #### Build the project
+                PrintLog("Wwise - Build - %s - %s" % (one_config,one_arch))
                 one_param = ParamsWwisePluginBuild()
                 one_param.config = one_config
                 one_param.arch = one_arch
@@ -152,15 +185,6 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
         ## Archive
         ## Final Product
-
-        
-        path_Android_output_root_path = ""
-
-        bneed_to_change_root_path = SystemHelper.Get().GetHostPlatform() == SystemHelper.Win_HostName()
-        if bneed_to_change_root_path:
-            ## this should be defined in wp.py scripts in Wwise base folder 
-            path_Android_output_root_path = Path("D:/WwiseAndroidOutput")
-
 
         for one_config in list_config:
             for one_arch in list_arch:
