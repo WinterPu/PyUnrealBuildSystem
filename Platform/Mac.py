@@ -410,7 +410,8 @@ class MacTargetPlatform(BaseTargetPlatform):
 
         ## BuildTmpDir
         ## need to combine x86_64 and arm64 to be a universal lib
-        NAME_BUILD_TMP_DIR = "wwise_build_tmp"
+        ### Ex. AgoraWwiseRTCSDK_BuildTmp
+        NAME_BUILD_TMP_DIR = WPMHelper.Get().GetName_WwisePluginName()+ "_" + "BuildTmp"
 
 
 
