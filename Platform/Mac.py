@@ -3,6 +3,7 @@ from Platform.PlatformBase import *
 from Command.GenerateProjectFilesWithShellCommand import *
 from Command.IPhonePackagerCommand import *
 from Command.UBTCommand import * 
+from Command.MacUtilityCommand import *
 from pathlib import Path
 from FileIO.FileUtility import *
 
@@ -367,12 +368,15 @@ class MacTargetPlatform(BaseTargetPlatform):
 
 #####################################################################################
 #################################### Wwise ##########################################
+
+
     def Package_Wwise(self):
         WPMHelper.Get().CleanWwiseProject()
 
-
         list_config = ["Debug","Profile","Release"]
-        arch = SystemHelper.Get().GetHostPlatformArchitechture()
+
+        arch_list = ["x86_64","arm64"]
+        ## arch = SystemHelper.Get().GetHostPlatformArchitechture()
         platform =  "Mac"
 
         OneWwiseCommand = WwiseCommand()
@@ -402,18 +406,70 @@ class MacTargetPlatform(BaseTargetPlatform):
         ## CODE_SIGN_IDENTITY = "-": means: Sign to run locally
         FileUtility.InsertLineToFileBeforePrefix(path_xcode_workspace_shared,"CONFIGURATION_BUILD_DIR = /Applications/",'CODE_SIGN_IDENTITY = "-";')
 
+
+
+        ## BuildTmpDir
+        ## need to combine x86_64 and arm64 to be a universal lib
+        NAME_BUILD_TMP_DIR = "wwise_build_tmp"
+
+
+
         for one_config in list_config:
-            one_param_build = ParamsWwisePluginBuild()
-            one_param_build.config = one_config
-            one_param_build.arch = arch
-            one_param_build.platform = platform
-            OneWwiseCommand.Build(one_param_build)
+            ## Ex. /Applications/Audiokinetic/Wwise2021.1.14.8108/SDK/Mac/Debug/lib
+            ### Clean tmp build folder
+            path_build_arch_tmp_base = WPMHelper.Get().GetPath_WwiseSDKBase() / Path("Mac") / one_config / "lib" / NAME_BUILD_TMP_DIR
+            if path_build_arch_tmp_base.exists():
+                FileUtility.DeleteDir(path_build_arch_tmp_base)
+            path_build_arch_tmp_base.mkdir(parents=True,exist_ok=True)
+
+            for one_arch  in arch_list:
+                ## Clean
+                ### Clean the product in Ex. /Applications/Audiokinetic/Wwise2021.1.14.8108/SDK/Mac/Debug/lib
+                OneArchiveInfo = ArchiveInfo_WwisePlugin(
+                    WPMHelper.Get().GetName_WwisePluginName(),
+                    WPMHelper.Get().GetVer_Wwise(),
+                    SystemHelper.Mac_TargetName(),
+                    one_config
+                )
+                extension = "a"
+                name_final_product = OneArchiveInfo.GetArchiveName()  + "."   + extension
+                path_final_build_tmp = path_build_arch_tmp_base.parent / name_final_product
+                FileUtility.DeleteFile(path_final_build_tmp)
+
+                ## Build
+                ### Build the product in Ex. /Applications/Audiokinetic/Wwise2021.1.14.8108/SDK/Mac/Debug/lib
+                one_param_build = ParamsWwisePluginBuild()
+                one_param_build.config = one_config
+                one_param_build.arch = one_arch
+                one_param_build.platform = platform
+                OneWwiseCommand.Build(one_param_build)
+
+                ### Create Tmp Dir to save the build result
+                path_final_arch_tmp = path_build_arch_tmp_base / (WPMHelper.Get().GetName_WwisePluginName()+ "_"+ one_arch)
+                path_final_arch_tmp.mkdir(parents=True,exist_ok=True)
+
+                FileUtility.CopyFile(path_build_arch_tmp_base.parent / name_final_product,path_final_arch_tmp / name_final_product)
+            
+            ## Combine x86_64 and arm64 to be a universal lib
+            ## In /Applications/Audiokinetic/Wwise2021.1.14.8108/SDK/Mac/Debug/lib/[NAME_BUILD_TMP_DIR] there would be 3 libs
+            ## Ex. AgoraWwiseRTCSDK_x86_64
+            ## Ex. AgoraWwiseRTCSDK_arm64
+            ## Ex. AgoraWwiseRTCSDK_universal
+            OneLipoCommand = LipoCommand()
+            path_tmp_x86_64 = path_build_arch_tmp_base / (WPMHelper.Get().GetName_WwisePluginName()+ "_x86_64") / name_final_product
+            path_tmp_arm64 = path_build_arch_tmp_base / (WPMHelper.Get().GetName_WwisePluginName()+ "_arm64") / name_final_product
+            path_tmp_dir_universal = path_build_arch_tmp_base / (WPMHelper.Get().GetName_WwisePluginName()+ "_universal") 
+            path_tmp_dir_universal.mkdir(parents=True,exist_ok=True)
+            path_tmp_universal = path_tmp_dir_universal / name_final_product
+            OneLipoCommand.CreateUniversalArch(path_tmp_universal,path_tmp_x86_64,path_tmp_arm64)
+
 
         PrintStageLog("Mac - Package_Wwise Build Complete")
         
         ## Archive
         ## Final Product 
         for one_config in list_config:
+            path_build_arch_tmp_base = WPMHelper.Get().GetPath_WwiseSDKBase() / Path("Mac") / one_config / "lib" / NAME_BUILD_TMP_DIR
             OneArchiveInfo = ArchiveInfo_WwisePlugin(
                 WPMHelper.Get().GetName_WwisePluginName(),
                 WPMHelper.Get().GetVer_Wwise(),
@@ -422,10 +478,20 @@ class MacTargetPlatform(BaseTargetPlatform):
             )
             extension = "a"
             name_final_product = OneArchiveInfo.GetArchiveName()  + "."   + extension
-            path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / Path("Mac") / one_config / "lib" / name_final_product
+            
+            path_tmp_x86_64 = path_build_arch_tmp_base / (WPMHelper.Get().GetName_WwisePluginName()+ "_x86_64") / name_final_product
+            path_tmp_arm64 = path_build_arch_tmp_base / (WPMHelper.Get().GetName_WwisePluginName()+ "_arm64") / name_final_product
+            path_tmp_universal = path_build_arch_tmp_base / (WPMHelper.Get().GetName_WwisePluginName()+ "_universal") / name_final_product
+
+            ## For now, we only need the universal lib
+            ## [TBD] support to archive other arch libs
+            path_target_archive_file = path_tmp_universal
+
             PrintWarn("Src Wwise Final Product [%s]" % path_target_archive_file)
             bshould_clean_others_when_archving = False
             ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
+
+            FileUtility.DeleteDir(path_build_arch_tmp_base)
 
         PrintStageLog("Mac - Package_Wwise Archive Complete")
 

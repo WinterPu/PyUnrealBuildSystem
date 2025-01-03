@@ -36,6 +36,19 @@ class WPMHelper:
             self.__apple_team_id = OneIOSCert.get_team_id
 
 
+    ### About Authoring
+    def GetPath_WwiseAuthoringPluginPath(self):
+        ### For Mac
+        path = "Unknown"
+        if SystemHelper.Get().GetHostPlatform() == SystemHelper.Mac_HostName():
+
+            ## Ex. /Library/Application Support/Audiokinetic/Wwise 2021.1.14.8108/Authoring/Plugins
+            
+            path_base = Path("/Library/Application Support/Audiokinetic")
+            path_wwise_authoring_lib_base = self.GetCombinedPath_WwiseBase(path_base,self.GetVer_Wwise())
+            path =path_wwise_authoring_lib_base / Path("Authoring/Plugins")
+
+        return path
 
     
     def GetArgs(self):
@@ -43,6 +56,20 @@ class WPMHelper:
 
     def GetPath_WPProject(self):
         return Path(self.__Args.wpprojectpath)
+    
+    def GetCombinedPath_WwiseBase(self,path_base,wwise_ver):
+        ## Wwise Folder:
+        ### 1. Sometimes: Wwise2021.1.14.8108
+        ### 2. Sometimes: Wwise 2021.1.14.8108
+
+        path_wwise_ver = str("Wwise") +  str(wwise_ver)
+        path_final = path_base / path_wwise_ver
+
+        if not path_final.exists():
+            path_wwise_ver =  str("Wwise ") + str(wwise_ver)
+            path_final = path_base / path_wwise_ver
+
+        return path_final
 
     def GetPath_WwiseBase(self):
         path_wwise_base = self.__Args.pathwwisebase
@@ -55,13 +82,7 @@ class WPMHelper:
         
         ver_wwise = self.__Args.wwisever
 
-        path_wwise_ver = str("Wwise") +  str(ver_wwise)
-
-        path_final = path_wwise_base / path_wwise_ver
-
-        if not path_final.exists():
-            path_wwise_ver =  str("Wwise ") + str(ver_wwise)
-            path_final = path_wwise_base / path_wwise_ver
+        path_final = self.GetCombinedPath_WwiseBase(path_wwise_base,ver_wwise)
 
         return path_final
     
