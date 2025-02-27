@@ -15,6 +15,10 @@ class AnndroidPlatformPathUtility:
         path_local_user_appdata= Path(os.environ["LOCALAPPDATA"])
         return path_local_user_appdata / Path("Unreal Engine/Engine/Config/UserEngine.ini")
     
+    def GetPath_DefaultOpenJDK17Path():
+        path = Path(os.environ["PROGRAMFILES"]) / Path("Eclipse Adoptium/jdk-17.0.14.7-hotspot")
+        return path
+    
 class AndroidPlatformBase(PlatformBase):
     def GenTargetPlatformParams(args):
         ret, val = PlatformBase.GenTargetPlatformParams(args)
@@ -53,6 +57,12 @@ class AndroidTargetPlatform(BaseTargetPlatform):
                 os.environ["NDK_ROOT"] = str(final_ndk_path)
                 final_java_val = path_java.parent.joinpath("jdk-11")
                 final_ndk_apilevel = "android-21"
+            elif UBSHelper.Get().Is_UE55_Or_Later:
+                final_ndk_path = path_ndk.parent.joinpath("25.1.8937393")
+                os.environ["NDKROOT"] = str(final_ndk_path)
+                os.environ["NDK_ROOT"] = str(final_ndk_path)
+                final_java_val = str(AnndroidPlatformPathUtility.GetPath_DefaultOpenJDK17Path())
+                final_ndk_apilevel = "android-25"
             else:
                 final_ndk_path = path_ndk.parent.joinpath("25.1.8937393")
                 os.environ["NDKROOT"] = str(final_ndk_path)
