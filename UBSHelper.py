@@ -204,6 +204,10 @@ class UBSHelper():
 
     def Is_UE4_Or_Earlier(self):
         return VersionControlTool.Get().VerParse(self.__ver_engine) < VersionControlTool.Get().VerParse("5.0.0")
+    
+    def Is_UE55_Or_Later(self):
+        ## UE5.5 requires a newer msvc version
+        return VersionControlTool.Get().VerParse(self.__ver_engine) >= VersionControlTool.Get().VerParse("5.5.0")
 
     def DoesUseModernXcodeProject(self):
         return self.Is_UE53_Or_Later()

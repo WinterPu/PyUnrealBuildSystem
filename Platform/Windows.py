@@ -6,6 +6,10 @@ from pathlib import Path
 
 from UBSHelper import *
 
+import os
+from packaging import version
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 class WinPlatformPathUtility:
     def GetRunUATPath():
         ## if you start with '/', it would be treated as starting from the root path
@@ -20,6 +24,14 @@ class WinPlatformPathUtility:
         if UBSHelper.Get().Is_UE53_Or_Later():
             path = Path("Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe")
 
+        return path
+    
+    def GetUBTConfigPath():
+        path = Path(os.environ['APPDATA']) / "Unreal Engine" / "UnrealBuildTool" / "BuildConfiguration.xml"
+        return path
+    
+    def GetDefaultMSVCInstalledDir(vs_version):
+        path = Path(os.environ['PROGRAMFILES']) / "Microsoft Visual Studio" / vs_version / Path("Community/VC/Tools/MSVC")
         return path
 
 
@@ -62,7 +74,112 @@ class WinTargetPlatform(BaseTargetPlatform):
     
     def SetupEnvironment(self):
         print("SetupEnvironment - Win Platform")
+        PrintLog("[Win] UnrealBuildTool - SetupEnvironment: Engine Path [%s]" % UBSHelper.Get().GetVer_UEEngine())
+        if UBSHelper.Get().Is_UE55_Or_Later():
+            self.SetupEnvironment_UnrealBuildTools(False)
+        elif  UBSHelper.Get().Is_UE4_Or_Earlier():
+            pass
+        else:
+            ##  UE4 < Version < UE5.5
+            msvc_ver = self.FindHighestCompatibleMSVCVersion(max_version="14.38.33130")
+            self.SetupEnvironment_UnrealBuildTools(True,msvc_ver)
+    
+    ## TBD(WinterPu) Optimize the method 
+    def SetupEnvironment_UnrealBuildTools(self,enable : bool, msvc_ver: str = "14.43.34808", vs_version = "VisualStudio2022"):
+        ## Set MSVC Version UnrealBuildTool used
+        PrintLog(f"[Win] UnrealBuildTool - SetupEnvironment: Enable {enable} MSVC Version {msvc_ver}")
 
+        config_path = WinPlatformPathUtility.GetUBTConfigPath()
+
+        # read XML File
+        namespace = "https://www.unrealengine.com/BuildConfiguration"
+        ET.register_namespace('', namespace)
+        
+        if config_path.exists():
+            tree = ET.parse(config_path)
+            root = tree.getroot()
+        else:
+            PrintErr("Cannot find BuildConfiguration.xml")
+            return
+        
+
+        if enable:
+
+            windows_platform = root.find(f".//{{{namespace}}}WindowsPlatform")
+            
+            if windows_platform is None:
+                ## if not exists: create one
+                windows_platform = ET.SubElement(root, "WindowsPlatform")
+                compiler = ET.SubElement(windows_platform, "Compiler")
+                compiler.text = vs_version
+                version_elem = ET.SubElement(windows_platform, "CompilerVersion")
+                version_elem.text = msvc_ver
+            else:
+                ## if exists: update the version
+                ## TBD(WinterPu) Check XML Find Logic
+                version_elem = windows_platform.find(f"{{{namespace}}}CompilerVersion")
+                if version_elem is not None and version_elem.text != msvc_ver:
+                    version_elem.text = msvc_ver
+        else:
+            ## delete the WindowsPlatform node
+            windows_platform = root.find(f".//{{{namespace}}}WindowsPlatform")
+            PrintLog(f"Remove WindowsPlatform Node: {windows_platform}")
+            if windows_platform is not None:
+                root.remove(windows_platform)
+
+        # format xml and save the file
+        xmlstr = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf-8')).toprettyxml(indent="  ")
+        # remove whitespace
+        xmlstr = '\n'.join(line for line in xmlstr.split('\n') if line.strip())
+
+        config_path.write_text(xmlstr, encoding='utf-8')
+
+    def FindHighestCompatibleMSVCVersion(self,max_version="14.38.33130"):
+        ## find the [highest msvc version] which is < max_version limit:
+        try:
+            vs_ver = "2022"
+            msvc_base_path = WinPlatformPathUtility.GetDefaultMSVCInstalledDir(vs_ver)
+            
+            if not msvc_base_path.exists():
+                PrintWarn(f"Cannot Find msvc base path {msvc_base_path}")
+                return None
+                
+            # Get All MSVC Versions
+            versions = []
+            for dir_path in msvc_base_path.iterdir():
+                if dir_path.is_dir():
+                    try:
+                        ver = version.parse(dir_path.name)
+                        versions.append((ver, dir_path.name))
+                    except version.InvalidVersion:
+                        ## Skip the invalid folder name
+                        continue
+            
+            if not versions:
+                PrintWarn("Cannot find any installed MSVC Versions")
+                return None
+                
+            # ranking
+            versions.sort(reverse=True)
+            
+            # find the highest version which is < max_version
+            max_ver = version.parse(max_version)
+            compatible_version = None
+            
+            for ver, ver_str in versions:
+                if ver < max_ver:
+                    compatible_version = ver_str
+                    break
+            
+            if compatible_version:
+                return compatible_version
+            else:
+                PrintWarn(f"cannot find version < {max_version} version")
+                return None
+        except Exception as e:
+            PrintWarn(f"failed to find highest msvc version, error {e}")
+            return None
+        
     def Package(self):
         self.SetupEnvironment()
         PrintStageLog("Package - %s Platform" % self.GetTargetPlatform())
