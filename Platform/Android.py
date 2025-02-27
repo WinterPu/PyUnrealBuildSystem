@@ -72,6 +72,7 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
             PrintLog("Cur NDKROOT:  %s" % os.environ["NDKROOT"])
             PrintLog("Cur NDK_ROOT:  %s" % os.environ["NDK_ROOT"])
+            PrintLog(f"Cur Java Path: {final_java_val}")
 
             ## Modify Android SDK Config
             val_java = UnrealConfigIniManager.GenIniVal_Path(final_java_val)
