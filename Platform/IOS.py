@@ -311,13 +311,14 @@ class IOSTargetPlatform(BaseTargetPlatform):
         ## founded: when you packaging audio-only example app:
         ## it would use the previous full-app, so that audio-only example app has a full plugin framework
         ## Here, just use a simple way: delete the previous app
-        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries= False)
-        if path_final_product.exists():
-            FileUtility.DeleteFile(path_final_product)
 
-        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries= True)
-        if path_final_product.exists():
-            FileUtility.DeleteFile(path_final_product)
+        ## Delete Default ArchiveBuild
+        path_default_archive_build = UBSHelper.Get().GetPath_DefaultArchiveDir(self.GetTargetPlatform())
+        if path_default_archive_build.exists():
+            FileUtility.DeleteDir(path_default_archive_build)
+
+        ## Delete Binaries
+        ## did it in [Project Clean] Command
         
             
             

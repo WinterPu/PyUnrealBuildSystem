@@ -80,13 +80,9 @@ class UBSHelper():
     
     def GetVer_UEEngine(self):
         return self.__ver_engine
-
-    def GetPath_ArchiveDirBase(self):
-        return self.__path_archive_dir_base
     
-    def GetPath_ArchiveDir(self,target_platform):
+    def GetName_ArchiveDir(self,target_platform,ver_engine):
         folder_platform = target_platform
-        ver_engine = self.GetVer_UEEngine()
         if target_platform == SystemHelper.Mac_TargetName():
             if float(ver_engine) < 5:
                 folder_platform = "MacNoEditor"
@@ -97,9 +93,20 @@ class UBSHelper():
                 folder_platform = "WindowsNoEditor"
             else:
                 folder_platform = "Windows"
+        return folder_platform
 
+    def GetPath_ArchiveDirBase(self):
+        return self.__path_archive_dir_base
+    
+    def GetPath_ArchiveDir(self,target_platform):
+        ## Combine with the custom defined archive dir
+        folder_platform = self.GetName_ArchiveDir(target_platform,self.GetVer_UEEngine())
         return Path(self.__path_archive_dir_base) / folder_platform
     
+    def GetPath_DefaultArchiveDir(self,target_platform):
+        folder_platform = self.GetName_ArchiveDir(target_platform,self.GetVer_UEEngine())
+        return Path(self.__Args.uprojectpath).parent / "ArchivedBuilds" / folder_platform
+
     def GetPath_BinariesTargetDir(self,target_platform):
         if self.__Args == None:
             PrintErr(f"__Args None")
