@@ -77,6 +77,10 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
         self.CleanEmbdededFrameworks()
 
+        ## Clean Previous ArchiveBuild
+        self.CleanPreviousArchiveBuild()
+
+
     def Package(self):
         self.SetupEnvironment()
         PrintStageLog("Package - %s Platform" % self.GetTargetPlatform())
@@ -303,6 +307,18 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
         path_unzipped_framework.mkdir(parents=True,exist_ok=True)
 
+    def CleanPreviousArchiveBuild(self):
+        ## founded: when you packaging audio-only example app:
+        ## it would use the previous full-app, so that audio-only example app has a full plugin framework
+        ## Here, just use a simple way: delete the previous app
+        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries= False)
+        if path_final_product.exists():
+            FileUtility.DeleteFile(path_final_product)
+
+        path_final_product = UBSHelper.Get().GetPath_FinalProduct(self.GetTargetPlatform(),bInBinaries= True)
+        if path_final_product.exists():
+            FileUtility.DeleteFile(path_final_product)
+        
             
             
 
