@@ -13,7 +13,7 @@ class GitCommand:
 
     def GitClone(self,url,dst_path = "."):
         command = (
-             r"git"
+            r"git"
             r" clone  --progress " + url + ' "' + str(dst_path) + '"'
         )
 
