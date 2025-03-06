@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+@REM setlocal enabledelayedexpansion
 
 :: Check if a parameter is provided
 if "%~1"=="" (
@@ -17,13 +17,19 @@ if not exist "%~1" (
 :: Check if the provided path contains java.exe
 if not exist "%~1\bin\java.exe" (
     echo Warning: java.exe not found in "%~1\bin", please confirm this is the correct Java installation path
-    choice /c YN /m "Do you still want to set JAVA_HOME?"
-    if errorlevel 2 exit /b 1
+    exit /b 1
 )
 
 :: Set JAVA_HOME environment variable (permanent)
 echo Setting JAVA_HOME=%~1
-setx JAVA_HOME "%~1" /m
+
+:: [Doesn't Work]Set System JAVA_HOME environment 
+@REM setx JAVA_HOME "%~1" /m
+
+:: Therefore, set User JAVA_HOME environment
+setx JAVA_HOME "%~1"
+:: Set JAVA_HOME environment variable for the current session
+set "JAVA_HOME=%~1"
 
 @REM :: Add Java path to PATH for the current session
 @REM set "JAVA_HOME=%~1"
@@ -36,4 +42,4 @@ echo.
 echo You can verify the settings by running:
 echo java -version
 
-endlocal
+@REM endlocal

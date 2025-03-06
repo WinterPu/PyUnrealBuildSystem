@@ -9,6 +9,9 @@ from Command.AndroidCommand import *
 from Command.WwiseCommand import * 
 from WPMHelper import * 
 
+## Android JAVA
+from Command.JavaCommand import *
+
 class AnndroidPlatformPathUtility:
     def GetPath_AndroidSDKConfigIniOnWindows():
         ## if you start with '/', it would be treated as starting from the root path
@@ -73,6 +76,11 @@ class AndroidTargetPlatform(BaseTargetPlatform):
             PrintLog("Cur NDKROOT:  %s" % os.environ["NDKROOT"])
             PrintLog("Cur NDK_ROOT:  %s" % os.environ["NDK_ROOT"])
             PrintLog(f"Cur Java Path: {final_java_val}")
+
+            ## Set JAVA_HOME
+            ## Because: In [BuildCookRun Package step], it would still use JAVA_HOME
+            oneJavaCommand = JavaCommand()
+            oneJavaCommand.SetJavaHomePath(final_java_val)
 
             ## Modify Android SDK Config
             val_java = UnrealConfigIniManager.GenIniVal_Path(final_java_val)
