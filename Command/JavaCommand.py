@@ -6,7 +6,7 @@ from SystemHelper import *
 
 class JavaCommand:
     def SetJavaHomePath(self,path):
-        path_script = Path("./Resources/ScriptTools/SwitchJavaVersion.bat")
+        path_script = Path("./Tools/bat/SwitchJavaVersion.bat")
         command = (
             f'{path_script} "{str(Path(path))}"'
         )
