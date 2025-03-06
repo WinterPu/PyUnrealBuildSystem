@@ -79,8 +79,10 @@ class AndroidTargetPlatform(BaseTargetPlatform):
 
             ## Set JAVA_HOME
             ## Because: In [BuildCookRun Package step], it would still use JAVA_HOME
+            ## For Jenkins Environment: you could use  withEnv(["JAVA_HOME=${PAHT_JAVA_HOME}"]) in your groovy script
             oneJavaCommand = JavaCommand()
             oneJavaCommand.SetJavaHomePath(final_java_val)
+            
 
             ## Modify Android SDK Config
             val_java = UnrealConfigIniManager.GenIniVal_Path(final_java_val)
