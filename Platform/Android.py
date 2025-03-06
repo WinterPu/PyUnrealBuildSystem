@@ -60,7 +60,7 @@ class AndroidTargetPlatform(BaseTargetPlatform):
                 os.environ["NDK_ROOT"] = str(final_ndk_path)
                 final_java_val = path_java.parent.joinpath("jdk-11")
                 final_ndk_apilevel = "android-21"
-            elif UBSHelper.Get().Is_UE55_Or_Later:
+            elif UBSHelper.Get().Is_UE55_Or_Later():
                 final_ndk_path = path_ndk.parent.joinpath("25.1.8937393")
                 os.environ["NDKROOT"] = str(final_ndk_path)
                 os.environ["NDK_ROOT"] = str(final_ndk_path)
