@@ -109,7 +109,7 @@ class AndroidTargetPlatform(BaseTargetPlatform):
             PrintLog("SDKManager - UnInstall Android API")
             OneAndroidCommand = AndroidCommand()
             OneAndroidCommand.SDKManager_UnInstall("platforms;android-33")
-            OneAndroidCommand.SDKManager_UnInstall("platforms;android-34")
+            OneAndroidCommand.SDKManager_UnInstall("build-tools;34")
             
 
     def Package(self):
