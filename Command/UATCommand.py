@@ -249,6 +249,7 @@ class UATCommand:
                 r" -Stage"
                 r" -Archive"  + subcommand_archive_dir +
                 r" -package"
+                r" -prereqs"
                 r" -verbose"+
                 subcommand_extras
             )
