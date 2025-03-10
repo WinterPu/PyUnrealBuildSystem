@@ -109,8 +109,10 @@ class AndroidTargetPlatform(BaseTargetPlatform):
             PrintLog("SDKManager - UnInstall Android API")
             OneAndroidCommand = AndroidCommand()
             OneAndroidCommand.SDKManager_UnInstall("platforms;android-33")
+            OneAndroidCommand.SDKManager_UnInstall("platforms;android-34")
             # TBD(WinterPu) Remove all ver > 30.0.3
             OneAndroidCommand.SDKManager_UnInstall("build-tools;34.0.0")
+
             
 
     def Package(self):
