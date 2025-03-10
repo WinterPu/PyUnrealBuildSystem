@@ -113,7 +113,9 @@ class AndroidTargetPlatform(BaseTargetPlatform):
             # TBD(WinterPu) Remove all ver > 30.0.3
             OneAndroidCommand.SDKManager_UnInstall("build-tools;34.0.0")
 
-            
+
+        ## Clean Previous Build
+        self.CleanPreviousArchivedBuild()
 
     def Package(self):
         self.SetupEnvironment()
@@ -139,6 +141,14 @@ class AndroidTargetPlatform(BaseTargetPlatform):
         path_archive_dir = UBSHelper.Get().GetPath_ArchiveDir(self.GetTargetPlatform())
         self.SetArchivePath_FinalProductDir(path_archive_dir)
 
+    
+    
+    def CleanPreviousArchivedBuild(self):
+        ## Delete Default ArchiveBuild
+        PrintLog(f"CleanPreviousArchivedBuild - {self.GetTargetPlatform()}")
+        path_default_archive_build = UBSHelper.Get().GetPath_DefaultArchiveDir(self.GetTargetPlatform())
+        if path_default_archive_build.exists():
+            FileUtility.DeleteDir(path_default_archive_build)
 
 
 

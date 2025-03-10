@@ -83,6 +83,8 @@ class WinTargetPlatform(BaseTargetPlatform):
             ##  UE4 < Version < UE5.5
             msvc_ver = self.FindHighestCompatibleMSVCVersion(max_version="14.38.33130")
             self.SetupEnvironment_UnrealBuildTools(True,msvc_ver)
+
+        self.CleanPreviousArchivedBuild()
     
     ## TBD(WinterPu) Optimize the method 
     def SetupEnvironment_UnrealBuildTools(self,enable : bool, msvc_ver: str = "14.43.34808", vs_version = "VisualStudio2022"):
@@ -205,6 +207,19 @@ class WinTargetPlatform(BaseTargetPlatform):
         self.SetArchivePath_FinalProductDir(path_archive_dir)
     
 
+    def CleanPreviousArchivedBuild(self):
+        ## UE would not clean the previous archived build by default
+        ## if you don't clean them
+        ## Ex. it would archive the app built by 5.5 to the folder which contains the app built by 5.4
+
+        ## Ex. error example: 
+        ## Plugin 'OpenImageDenoise' failed to load because module 'OpenImageDenoise' could not be found.  Please ensure the plugin is properly installed, otherwise consider disabling the plugin for this project.
+
+        ## Delete Default ArchiveBuild
+        PrintLog(f"CleanPreviousArchivedBuild - {self.GetTargetPlatform()}")
+        path_default_archive_build = UBSHelper.Get().GetPath_DefaultArchiveDir(self.GetTargetPlatform())
+        if path_default_archive_build.exists():
+            FileUtility.DeleteDir(path_default_archive_build)
 
 
 

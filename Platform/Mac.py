@@ -242,6 +242,8 @@ class MacTargetPlatform(BaseTargetPlatform):
     
     def SetupEnvironment(self):
         print("SetupEnvironment - Mac Platform")
+        self.CleanPreviousArchivedBuild()
+        
 
     def PostPackaged(self):
         PrintStageLog("PostPackaged - Mac")
@@ -359,6 +361,12 @@ class MacTargetPlatform(BaseTargetPlatform):
 
 
 
+    def CleanPreviousArchivedBuild(self):
+        ## Delete Default ArchiveBuild
+        PrintLog(f"CleanPreviousArchivedBuild - {self.GetTargetPlatform()}")
+        path_default_archive_build = UBSHelper.Get().GetPath_DefaultArchiveDir(self.GetTargetPlatform())
+        if path_default_archive_build.exists():
+            FileUtility.DeleteDir(path_default_archive_build)
 
 
 

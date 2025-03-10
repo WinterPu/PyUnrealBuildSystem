@@ -313,6 +313,7 @@ class IOSTargetPlatform(BaseTargetPlatform):
         ## Here, just use a simple way: delete the previous app
 
         ## Delete Default ArchiveBuild
+        PrintLog(f"CleanPreviousArchivedBuild - {self.GetTargetPlatform()}")
         path_default_archive_build = UBSHelper.Get().GetPath_DefaultArchiveDir(self.GetTargetPlatform())
         if path_default_archive_build.exists():
             FileUtility.DeleteDir(path_default_archive_build)
