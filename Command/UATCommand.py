@@ -249,7 +249,9 @@ class UATCommand:
                 r" -Stage"
                 r" -Archive"  + subcommand_archive_dir +
                 r" -package"
-                r" -prereqs"
+                # r" -prereqs"
+                # r" -compressed"
+                # r" -pak"   Create PAK files (compressed asset packages)
                 r" -verbose"+
                 subcommand_extras
             )
