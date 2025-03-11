@@ -225,6 +225,14 @@ class UBSHelper():
 
     def should_clean_dir_before_archiving(self):
         return True if self.__Args.CleanOldArchives else False
+    
+
+    def GetTargetPlatform(self):
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return ""
+        
+        return self.__Args.targetplatform
 
 
 

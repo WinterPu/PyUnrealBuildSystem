@@ -9,6 +9,7 @@ from Command.ZipCommand import *
 from Command.FastLaneCommand import * 
 from Utility.Downloader import *
 from Command.AndroidCommand import *
+from Command.UEEditorCMDCommand import *
 
 from APM import *
 
@@ -135,6 +136,9 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-CleanOldArchives", action='store_true')
         ArgParser.add_argument("-ArchiveRootPath", default="")
 
+
+        ArgParser.add_argument("-RUNCMD", action="store_true")
+
         if bIncludeConflictArgs:
             ArgParser.add_argument("-TestPlugin", action='store_true')
             ArgParser.add_argument("-agorasdktype", default="RTC")
@@ -168,6 +172,10 @@ class PyUnrealBuildSystem(BaseSystem):
         if Args.SetupHostMachine:
             host_platform.SetupEnvironment()
         
+        if Args.RUNCMD == True:
+            OneUECommand = UEEditorCMDCommand()
+            OneUECommand.RUNUECMD_Cook()
+
 
         if Args.BuildPlugin == True:
             
