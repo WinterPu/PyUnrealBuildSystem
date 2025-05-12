@@ -1,0 +1,26 @@
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>fetch</string>
+		<string>location</string>
+		<string>voip</string>
+		<string>processing</string>
+	</array>
+
+
+
+	Required background modes
+	App processes data in the background
+	App registers for location updates
+	App downloads content from the network
+	App plays audio or streams audio/video using AirPlay
+
+
+	<key>NSCameraUsageDescription</key><string>AgoraVideoCall</string><key>NSMicrophoneUsageDescription</key><string>AgoraAudioCall</string><key>UIBackgroundModes</key><array><string>audio</string><string>fetch</string><string>location</string><string>processing</string></array>
+
+
+	"Add :UIBackgroundModes:0 string audio"
+	"Add :UIBackgroundModes:1 string fetch"
+	"Add :UIBackgroundModes:2 string location"
+	"Add :UIBackgroundModes:3 string voip"
+	"Add :UIBackgroundModes:4 string processing"
