@@ -247,10 +247,20 @@ class WinTargetPlatform(BaseTargetPlatform):
             one_param.config = one_config
             one_param.arch = arch
 
+
             for one_toolset in toolset:
                 if one_toolset in not_build_black_list:
                     PrintLog("Skip Build - %s" % one_toolset)
                     continue
+
+                ### Clean First
+                ## need to be cleaned first, otherwise, the final product may be incorrect:
+                ## Ex. lake some new exposed functions
+                path_wwise_objs = WPMHelper.Get().GetPath_WwiseSDKBase() / ( arch + "_" + one_toolset) / one_config / "obj"
+                FileUtility.DeleteDir(path_wwise_objs)
+                PrintLog("Clean Wwise Objs Dir [%s]" % path_wwise_objs)
+
+                ## Build
                 one_param.toolset = one_toolset
                 one_param.platform = "Windows_" + one_toolset
                 OneWwiseCommand.Build(one_param)

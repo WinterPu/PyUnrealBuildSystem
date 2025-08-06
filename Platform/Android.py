@@ -201,10 +201,10 @@ class AndroidTargetPlatform(BaseTargetPlatform):
                 path_target_archive_file = WPMHelper.Get().GetPath_WwiseSDKBase() / ("Android_" + one_arch) / one_config / "lib" / name_final_product
                 FileUtility.DeleteFile(path_target_archive_file)
 
-                if bneed_to_change_root_path:
-                    ## It's important to clean the objs dir, otherwise, the final product would be the same arch
-                    path_output_objs = path_Android_output_root_path / one_config / Path("objs")
-                    FileUtility.DeleteDir(path_output_objs)
+
+                ## It's important to clean the objs dir, otherwise, the final product would be the same arch
+                path_output_objs = path_Android_output_root_path / one_config / Path("objs")
+                FileUtility.DeleteDir(path_output_objs)
 
 
                 #### Build the project
