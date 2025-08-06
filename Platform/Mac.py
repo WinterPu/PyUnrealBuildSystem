@@ -445,6 +445,13 @@ class MacTargetPlatform(BaseTargetPlatform):
                 path_final_build_tmp = path_build_arch_tmp_base.parent / name_final_product
                 FileUtility.DeleteFile(path_final_build_tmp)
 
+                ### Clean First
+                ## need to be cleaned first, otherwise, the final product may be incorrect:
+                ## Ex. lake some new exposed functions
+                path_wwise_objs = WPMHelper.Get().GetPath_WwiseSDKBase() / "Mac" / one_config / "obj"
+                FileUtility.DeleteDir(path_wwise_objs)
+                PrintLog("Clean Wwise Objs Dir [%s]" % path_wwise_objs)
+
                 ## Build
                 ### Build the product in Ex. /Applications/Audiokinetic/Wwise2021.1.14.8108/SDK/Mac/Debug/lib
                 one_param_build = ParamsWwisePluginBuild()

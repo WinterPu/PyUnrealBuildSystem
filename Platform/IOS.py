@@ -351,6 +351,13 @@ class IOSTargetPlatform(BaseTargetPlatform):
         FileUtility.ReplaceFileContent(path_xcode_workspace_shared,default_generated_apple_team_id,apple_team_id)
 
         for one_config in list_config:
+            ### Clean First
+            ## need to be cleaned first, otherwise, the final product may be incorrect:
+            ## Ex. lake some new exposed functions
+            path_wwise_objs = WPMHelper.Get().GetPath_WwiseSDKBase() / "iOS" / (one_config + "-iphoneos") / "obj"
+            FileUtility.DeleteDir(path_wwise_objs)
+            PrintLog("Clean Wwise Objs Dir [%s]" % path_wwise_objs)
+
             one_param_build = ParamsWwisePluginBuild()
             one_param_build.config = one_config
             one_param_build.arch = arch
