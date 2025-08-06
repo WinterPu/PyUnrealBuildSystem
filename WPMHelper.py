@@ -37,18 +37,25 @@ class WPMHelper:
 
 
     ### About Authoring
-    def GetPath_WwiseAuthoringPluginPath(self):
+    def GetPath_WwiseAuthoringPathBase(self):
         ### For Mac
         path = "Unknown"
         if SystemHelper.Get().GetHostPlatform() == SystemHelper.Mac_HostName():
 
-            ## Ex. /Library/Application Support/Audiokinetic/Wwise 2021.1.14.8108/Authoring/Plugins
+            ## Ex. /Library/Application Support/Audiokinetic/Wwise 2021.1.14.8108/Authoring
             
             path_base = Path("/Library/Application Support/Audiokinetic")
             path_wwise_authoring_lib_base = self.GetCombinedPath_WwiseBase(path_base,self.GetVer_Wwise())
-            path =path_wwise_authoring_lib_base / Path("Authoring/Plugins")
+            path =path_wwise_authoring_lib_base / Path("Authoring")
+        elif SystemHelper.Get().GetHostPlatform() == SystemHelper.Win_HostName(): 
+            ## C:\Program Files (x86)\Audiokinetic\Wwise 2021.1.14.8108\Authoring
+            path_wwise_base = self.GetPath_WwiseBase()
+            path =path_wwise_base / Path("Authoring")
 
         return path
+    
+    def GetPath_DefaultWwiseAuthoringRelease(self):
+        return self.GetPath_WwiseAuthoringPathBase() / Path("x64") / Path("Release") / Path("bin") / Path("Plugins")
 
     
     def GetArgs(self):
@@ -118,6 +125,8 @@ class WPMHelper:
     def GetAppleTeamID(self):
         return self.__apple_team_id
     
+    def IsBuildWwiseAuthoring(self):
+        return self.__Args.authoring
                 
     def CleanWwiseProject(self):
         path_wp_project = self.GetPath_WPProject()
