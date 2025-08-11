@@ -44,6 +44,8 @@ class WwisePluginManager():
         ArgParser.add_argument('-authoring_toolset', default="vc170")
         ArgParser.add_argument('-authoring_build_config', default="Release")
         ArgParser.add_argument('-authoring_build_arch', default="x64")
+        ArgParser.add_argument('-android16kb_disable', action='store_true')
+        ArgParser.add_argument('-android16kb_search_line', default = "LOCAL_LDFLAGS := -Wl,--as-needed -Wl,--export-dynamic") ## add 16kb compile options under this line
 
         if bIncludeConflictArgs:
             ArgParser.add_argument("-targetplatform", default=SystemHelper.Get().GetTargetPlatform_BasedOnHostPlatform())

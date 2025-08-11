@@ -183,6 +183,34 @@ class AndroidTargetPlatform(BaseTargetPlatform):
         one_param_premake.platform = "Android"
         OneWwiseCommand.Premake(one_param_premake)
 
+        ## 16KB Support Begin
+        bnot_need_16kb_support = WPMHelper.Get().NoNeedCompileToAndroid16KB()
+        str_16kbsupport_find_line = WPMHelper.Get().GetStr_Android16KBSearchLine()
+
+        if not bnot_need_16kb_support:
+            PrintStageLog("Wwise - Android 16KB Support Enabled")
+
+
+            ndk_version = WPMHelper.Get().GetAndroidNDKVer_FromWwiseVersion()
+            if ndk_version == 21:
+                compile_op01 = "LOCAL_LDFLAGS += -Wl,-z,max-page-size=16384 # ​Enforce memory page alignment to 16K "
+                compile_op02 = "LOCAL_LDFLAGS += -Wl,-z,common-page-size=16384 # Standardize memory page size to 16K"
+                str = f"{str_16kbsupport_find_line}\n  {compile_op01}\n  {compile_op02}"
+
+                path_mk = Path(WPMHelper.Get().GetPath_AndroidSharedSoMK())
+                if path_mk.exists():
+                    PrintLog(f"Wwise - Android 16KB Support - {ndk_version} - {path_mk}")
+                    FileUtility.ReplaceFileContent(path_mk,str_16kbsupport_find_line ,str)
+                else:
+                    PrintErr(f"Wwise - Android 16KB Support - {ndk_version} - {path_mk} not found")
+
+            else:
+                PrintErr(f"Wwise - Android 16KB Support for {ndk_version} is not support yet")
+        else:
+            PrintStageLog("Wwise - Android 16KB Support Disabled")
+
+        ## 16KB Support End
+
         for one_config in list_config:
             for one_arch in list_arch:
                 

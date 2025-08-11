@@ -127,7 +127,28 @@ class WPMHelper:
     
     def IsBuildWwiseAuthoring(self):
         return self.__Args.authoring
-                
+
+    def NoNeedCompileToAndroid16KB(self):
+        return self.__Args.android16kb_disable
+    
+    def GetStr_Android16KBSearchLine(self):
+        ## add compile options under this line
+        return self.__Args.android16kb_search_line
+    
+    def GetAndroidNDKVer_FromWwiseVersion(self):
+        wwise_ver = self.GetVer_Wwise()
+        result = 21
+        if wwise_ver.startswith("2021"):
+            result = 21
+        return result
+
+
+    def GetName_AndroidSharedSoMK(self):
+        return f"{self.GetName_WwisePluginName()}_Android_shared.mk"
+
+    def GetPath_AndroidSharedSoMK(self):
+        return self.GetPath_WPProject() / "SoundEnginePlugin" / self.GetName_AndroidSharedSoMK()
+
     def CleanWwiseProject(self):
         path_wp_project = self.GetPath_WPProject()
         NAME_PLUGIN = self.GetName_WwisePluginName()
