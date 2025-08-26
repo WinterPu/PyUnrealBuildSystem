@@ -306,5 +306,5 @@ class WinTargetPlatform(BaseTargetPlatform):
         subcommand_extras =UBSHelper.Get().GetSubCommand()
         OneParamsUAT = ParamsUAT()
         OneParamsUAT.path_buildgraph_file = path_buildgraph_file
-        OneParamsUAT.subcommand_extras = subcommand_extras
+        OneParamsUAT.extra_commands = subcommand_extras
         self.RunUAT().BuildGraph(OneParamsUAT)

@@ -512,6 +512,10 @@ class MacTargetPlatform(BaseTargetPlatform):
         PrintStageLog("Mac - Package_Wwise Archive Complete")
 
 
-
-      
-
+    def BuildGraph(self):
+        path_buildgraph_file = Path(UBSHelper.Get().GetPath_BuildGraph())
+        subcommand_extras =UBSHelper.Get().GetSubCommand()
+        OneParamsUAT = ParamsUAT()
+        OneParamsUAT.path_buildgraph_file = path_buildgraph_file
+        OneParamsUAT.extra_commands = subcommand_extras
+        self.RunUAT().BuildGraph(OneParamsUAT)
