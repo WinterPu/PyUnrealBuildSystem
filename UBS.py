@@ -141,7 +141,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-RUNCMD", action="store_true")
 
         ## BuildGraph
-        ArgParser.add_argument("-buildgraphpath", default="D:\Github\PyUnrealBuildSystem\Config\BuildGraph\BuildExample.xml")
+        ArgParser.add_argument("-buildgraphpath", default="D:\Github\PyUnrealBuildSystem\Config\BuildGraph\PackageAgoraExample.xml")
 
         ArgParser.add_argument("-args", default="")
 
