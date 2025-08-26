@@ -152,8 +152,25 @@ class UBSHelper():
             return False
         
         return True if self.__Args.WithAllIOSCerts else False
+
+    def GetSubCommand(self):
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return None
+
+        return self.__Args.args if self.__Args.args != None else ""
+
+## Build Graph
+
+    def GetPath_BuildGraph(self):
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return None
+
+        return Path(self.__Args.buildgraphpath)
     
-  
+### 
+
 ### Archive Product Path
 
     def GetPath_FinalProduct(self,target_platform,bInBinaries = False):

@@ -2,7 +2,8 @@ import subprocess
 import threading
 import sys
 from Logger.Logger import *
-
+from pathlib import Path
+import os
 
 def ExportCMDLog(readline):
     for line in iter(readline, ""):
@@ -65,3 +66,16 @@ def RUNCMD(command, val_encoding="UTF-8", bignore_error_for_no_termination = Fal
     #     print("[Error] -Code: %d RunCommand: " % (ret.returncode), ret.args)
     # print(ret.stdout)
     # print(ret.stderr)
+
+def RUNCMD_BUILDSYSTEM_CWD(command, logtitle = ""):
+    original_cwd = Path.cwd()
+    target_cwd = Path(__file__).parent.parent
+    if logtitle == "":
+        logtitle = "RUNCMD_BUILDSYSTEM_CWD"
+    try:
+        os.chdir(target_cwd)
+        PrintLog(f"{logtitle} - change dir to project: {target_cwd}")
+        RUNCMD(command)
+    finally:
+        os.chdir(original_cwd)
+        PrintLog(f"{logtitle} - change dir back to {original_cwd}")

@@ -298,3 +298,13 @@ class WinTargetPlatform(BaseTargetPlatform):
                 ArchiveManager.Get().ArchiveBuild(path_target_archive_file,OneArchiveInfo,bshould_clean_others_when_archving,extension)
 
         PrintStageLog("Win64 - Package_Wwise Archive Complete")
+
+
+    
+    def BuildGraph(self):
+        path_buildgraph_file = Path(UBSHelper.Get().GetPath_BuildGraph())
+        subcommand_extras =UBSHelper.Get().GetSubCommand()
+        OneParamsUAT = ParamsUAT()
+        OneParamsUAT.path_buildgraph_file = path_buildgraph_file
+        OneParamsUAT.subcommand_extras = subcommand_extras
+        self.RunUAT().BuildGraph(OneParamsUAT)

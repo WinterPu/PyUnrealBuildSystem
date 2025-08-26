@@ -113,6 +113,7 @@ class PyUnrealBuildSystem(BaseSystem):
         ArgParser.add_argument("-BuildPlugin", action='store_true')
         ArgParser.add_argument("-BuildPluginEngineList", default="all")
         ArgParser.add_argument("-SkipBuildEditor", action='store_true')
+        ArgParser.add_argument("-BuildGraph", action='store_true')
         
         ## IOS Resign
         ## Use -ioscert specify the certificate
@@ -138,6 +139,11 @@ class PyUnrealBuildSystem(BaseSystem):
 
 
         ArgParser.add_argument("-RUNCMD", action="store_true")
+
+        ## BuildGraph
+        ArgParser.add_argument("-buildgraphpath", default="D:\Github\PyUnrealBuildSystem\Config\BuildGraph\BuildExample.xml")
+
+        ArgParser.add_argument("-args", default="")
 
         if bIncludeConflictArgs:
             ArgParser.add_argument("-TestPlugin", action='store_true')
@@ -199,6 +205,17 @@ class PyUnrealBuildSystem(BaseSystem):
                     target_platform.Package()
                 else: 
                     PrintErr("Invalid TargetPlatform Creation")
+
+        if Args.BuildGraph == True:
+            target_platform_type_list = ParsePlatformArg(Args.targetplatform)
+            for target_platform_type in target_platform_type_list:
+                ret_target,target_platform = CreateTargetPlatform(host_platform,target_platform_type,Args)
+                if ret_target == True:
+                    ## target_platform.SetupEnvironment() did it in [Package]
+                    target_platform.BuildGraph()
+                else: 
+                    PrintErr("Invalid TargetPlatform Creation")
+
 
         if Args.Clean == True:
             path_project = Path(Args.uprojectpath).parent

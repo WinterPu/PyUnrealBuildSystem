@@ -19,6 +19,9 @@ class ParamsUAT:
         self.__path_uplugin_file = ""
         self.__path_plugin_output_dir = ""
 
+        ## BuildGraph
+        self.__path_buildgraph_file = ""
+
     @property
     def get_path_uproject_file(self):
         return self.__path_uproject_file
@@ -86,6 +89,16 @@ class ParamsUAT:
     @get_path_plugin_output_dir.setter
     def path_plugin_output_dir(self,val):
         self.__path_plugin_output_dir = val
+
+
+    ## BuildGraph
+    @property
+    def get_path_buildgraph_file(self):
+        return self.__path_buildgraph_file
+
+    @get_path_buildgraph_file.setter
+    def path_buildgraph_file(self,val):
+        self.__path_buildgraph_file = val
 
 
 class UATCommand:
@@ -274,4 +287,19 @@ class UATCommand:
             r" -rocket"+ # means precompiled & installed engine version
             subcommand_extras
         )
+        RUNCMD(command)
+
+
+
+    def BuildGraph(self, params: ParamsUAT):
+        ## Command
+        path_buildgraph_file = params.get_path_buildgraph_file
+        subcommand_extras = params.get_subcommand_extras
+        
+        command = (
+            "\"" + str(self.__uatpath) + "\"" +
+            r" BuildGraph  -Script="+ '"' + str(path_buildgraph_file) + '"'+
+            subcommand_extras
+        )
+
         RUNCMD(command)
