@@ -11,7 +11,14 @@ def PrintLog(content,errorcode = 0):
     errorinfo = ""
     if errorcode != 0:
         errorinfo = "[Error] - ErrorCode: "+ str(errorcode) + " "
-    print(formated_time_stamp + " " + errorinfo + str(str(content).encode(encoding='utf-8',errors = "replace")))
+    
+    # 直接打印，依赖 sys.stdout 的编码设置
+    try:
+        print(formated_time_stamp + " " + errorinfo + str(content), flush=True)
+    except UnicodeEncodeError:
+        # 如果编码失败，替换无法编码的字符
+        content_str = str(content).encode(sys.stdout.encoding or 'gbk', errors='replace').decode(sys.stdout.encoding or 'gbk')
+        print(formated_time_stamp + " " + errorinfo + content_str, flush=True)
 
 def PrintStageLog(content):
     cur_time = time.time()

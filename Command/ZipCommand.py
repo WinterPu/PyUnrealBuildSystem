@@ -20,7 +20,8 @@ class ZipCommand:
                 r"7z x  " + '"'+str(src_zip_path) + '"  -o"' + str(dst_dir_path) + '"' 
             )
             ### ignore erroring for unzipping a zip file with symbolic links
-            RUNCMD(command,"UTF-8",True)
+            ### 不指定编码，让 RUNCMD 使用全局配置的编码
+            RUNCMD(command, bignore_error_for_no_termination=True)
         elif self.__host_platform == SystemHelper.Mac_HostName():
             command = (
                 r"unzip  " + '"'+str(src_zip_path) + '"  -d "' + str(dst_dir_path) + '"' 
@@ -42,7 +43,8 @@ class ZipCommand:
                 r"7z a -tzip " + '"'+str(dst_zip_file_path) + '" "' + str(src_path) + '"' 
             )
             ### ignore erroring for zipping a zip file with symbolic links
-            RUNCMD(command,"UTF-8",True)
+            ### 不指定编码，让 RUNCMD 使用全局配置的编码
+            RUNCMD(command, bignore_error_for_no_termination=True)
 
         elif self.__host_platform == SystemHelper.Mac_HostName():
             ## [TBD] Check if it is needed 

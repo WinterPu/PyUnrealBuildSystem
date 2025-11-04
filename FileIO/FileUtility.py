@@ -78,7 +78,11 @@ class FileUtility:
         
         else:
             ## src_path cannot have wildcard char [*] in the path on windows
-            shutil.copytree(str(src_path),str(dst_path),dirs_exist_ok= True, symlinks = bkeep_symlink)
+            try:
+                shutil.copytree(str(src_path),str(dst_path),dirs_exist_ok= True, symlinks = bkeep_symlink)
+            except Exception as e:
+                # 直接使用异常信息，Python 会自动处理编码
+                PrintErr(f"CopyDir failed: {e}\n  From: {src_path}\n  To: {dst_path}", terminate_program_when_erroring=True)
 
     
     ### Because windows doesn't support wildcard char in the path, 
@@ -110,7 +114,7 @@ class FileUtility:
             command = (
                 r"rm -f " + '"' + path + '"'
             )
-            RUNCMD(command, "gbk")
+            RUNCMD(command)
 
         else:
             Path(path).unlink()
@@ -124,7 +128,7 @@ class FileUtility:
                 r"rmdir /s /q " + '"' + str(path) + '"'
             )
 
-            RUNCMD(command, "gbk", True)
+            RUNCMD(command, bignore_error_for_no_termination=True)
 
         else:
             if os.path.exists(str(path)):

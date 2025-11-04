@@ -191,7 +191,7 @@ class UATCommand:
             
             )
             
-            RUNCMD(command,"UTF-8",True)
+            RUNCMD(command, bignore_error_for_no_termination=True)
         
         else:
             PrintWarn("Skip Building Editor ....")
