@@ -59,6 +59,7 @@ class ConfigParser(BaseSystem):
     UEConfigData = None
     SDKConfigData = None
     IOSCertData = None
+    RepoJsonData = None
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls, *args, **kwargs)
@@ -234,3 +235,33 @@ class ConfigParser(BaseSystem):
     
 
 
+    def LoadRepoJsonData(self,repo_json_path:Path):
+        repo_json_file = open(repo_json_path)
+        repo_json_data = json.load(repo_json_file)
+        PrintLog("Repo Json Data: " + str(repo_json_data))
+        self.RepoJsonData = repo_json_data
+
+    def GetSDKTypeFromRepo(self,sdkinfo:AgoraSDKInfo):
+        if sdkinfo.Get_SDKIsAudioOnly():
+            return "audio"
+        else:
+            return "video"
+
+    def GetRTCSDKNativeURL_FromRepo_Win(self,sdkinfo:AgoraSDKInfo):
+        key_type = "native_win"
+        return self.RepoJsonData[self.GetSDKTypeFromRepo(sdkinfo)][key_type]
+    
+    def GetRTCSDKNativeURL_FromRepo_Mac(self,sdkinfo:AgoraSDKInfo):
+        key_type = "native_mac"
+        return self.RepoJsonData[self.GetSDKTypeFromRepo(sdkinfo)][key_type]
+    
+    def GetRTCSDKNativeURL_FromRepo_IOS(self,sdkinfo:AgoraSDKInfo):
+        key_type = "native_ios"
+        return self.RepoJsonData[self.GetSDKTypeFromRepo(sdkinfo)][key_type]
+    
+    def GetRTCSDKNativeURL_FromRepo_Android(self,sdkinfo:AgoraSDKInfo):
+        key_type = "native_android"
+        return self.RepoJsonData[self.GetSDKTypeFromRepo(sdkinfo)][key_type]
+    
+    def GetRTCSDKBuildNo_FromRepo(self,sdkinfo:AgoraSDKInfo):
+        return self.RepoJsonData[self.GetSDKTypeFromRepo(sdkinfo)]["build"]

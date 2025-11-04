@@ -77,6 +77,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-pluginname", default="AgoraPlugin")
         ArgParser.add_argument("-giturl", default= "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git")
         ArgParser.add_argument("-gitbranch", default="") 
+        ArgParser.add_argument("-urlconfigfromrepo",action = "store_true")
 
         ArgParser.add_argument("-setenginever",action = "store_true")
 
@@ -224,18 +225,8 @@ class AgoraPluginManager(BaseSystem):
         
 
         bskip_download_native_sdk = Args.skipnativedownload
-        
-
-        
-        url_ios = ConfigParser.Get().GetRTCSDKNativeURL_IOS(sdkinfo) if Args.nurlios == "" else Args.nurlios  
-        url_android = ConfigParser.Get().GetRTCSDKNativeURL_Android(sdkinfo) if Args.nurlandroid == "" else Args.nurlandroid
-        url_windows = ConfigParser.Get().GetRTCSDKNativeURL_Win(sdkinfo) if Args.nurlwin == "" else Args.nurlwin
-        url_mac = ConfigParser.Get().GetRTCSDKNativeURL_Mac(sdkinfo) if Args.nurlmac == "" else Args.nurlmac
-        
-        
+    
         root_path_plugin_working_dir = self.GetPath_PluginWorkingDir()
-      
-
         ## >>> Update Git Repo <<< 
         ### [TBD] these are 2 Async Jobs (git & download ), they need to be synced.
         repo_path = root_path_plugin_working_dir
@@ -243,9 +234,35 @@ class AgoraPluginManager(BaseSystem):
         if Args.skipgit == False:
             VersionControlTool.Get().CGit_CheckOutOneRepo(git_url,repo_path,git_branch)
 
-
         repo_name = git_url.split('/')[-1].split('.')[0]
         repo_path = repo_path / repo_name
+
+
+        url_ios = ""
+        url_android = ""
+        url_windows = ""
+        url_mac = ""
+
+        ## after updating git repo, if we read config from repo, update urls
+        burl_config_from_repo = Args.urlconfigfromrepo
+        final_product_suffix_build_no = ""
+        if burl_config_from_repo:
+            repo_json_path = repo_path / "Agora-Unreal-SDK-CPP"/ "AgoraPlugin" / "Resources"/ "url.json"
+            ConfigParser.Get().LoadRepoJsonData(repo_json_path)
+            url_ios = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_IOS(sdkinfo) if Args.nurlios == "" else Args.nurlios
+            url_android = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_Android(sdkinfo) if Args.nurlandroid == "" else Args.nurlandroid
+            url_windows = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_Win(sdkinfo) if Args.nurlwin == "" else Args.nurlwin
+            url_mac = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_Mac(sdkinfo) if Args.nurlmac == "" else Args.nurlmac
+            val_cur_build_no = ConfigParser.Get().GetRTCSDKBuildNo_FromRepo(sdkinfo)
+            final_product_suffix_build_no = "Build." + str(val_cur_build_no)
+
+        else:
+            
+            url_ios = ConfigParser.Get().GetRTCSDKNativeURL_IOS(sdkinfo) if Args.nurlios == "" else Args.nurlios  
+            url_android = ConfigParser.Get().GetRTCSDKNativeURL_Android(sdkinfo) if Args.nurlandroid == "" else Args.nurlandroid
+            url_windows = ConfigParser.Get().GetRTCSDKNativeURL_Win(sdkinfo) if Args.nurlwin == "" else Args.nurlwin
+            url_mac = ConfigParser.Get().GetRTCSDKNativeURL_Mac(sdkinfo) if Args.nurlmac == "" else Args.nurlmac
+            
 
         ## >>> Download Native SDK <<<
         plugin_tmp_path = root_path_plugin_working_dir / plugin_tmp_file_dir
@@ -477,7 +494,7 @@ class AgoraPluginManager(BaseSystem):
             if path_archive_plugin_root != "":
                 ArchiveManager.Get().SetPath_ArchiveRootDir(path_archive_plugin_root)
 
-            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly(),sdkinfo.Get_SDKVer(),sdkinfo.Get_SDKType())
+            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly(),sdkinfo.Get_SDKVer(),sdkinfo.Get_SDKType(),final_product_suffix_build_no)
             ArchiveManager.Get().ArchiveBuild(dst_zip_file_path, OneArchiveInfo)
         
 
