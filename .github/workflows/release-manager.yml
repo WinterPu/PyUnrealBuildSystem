@@ -35,15 +35,11 @@ on:
         required: false
         type: number
         default: 15
-      enable_tag_comparison:
-        description: 'Enable tag comparison for changelog generation'
-        required: false
-        type: boolean
-        default: true
       compare_with_tag:
-        description: 'Compare with specific tag for changelog (leave empty for auto-detect previous tag)'
+        description: 'Compare with tag for changelog (empty=auto-detect, "none"=disable comparison, or specify tag name)'
         required: false
         type: string
+        default: 'auto'
       custom_changelog:
         description: 'Custom changelog text (prepended to auto-generated)'
         required: false
@@ -126,31 +122,30 @@ jobs:
           echo "📝 Generating changelog..."
           
           PREV_TAG=""
+          COMPARE_MODE="${{ inputs.compare_with_tag }}"
           
-          # Check if tag comparison is enabled
-          if [ "${{ inputs.enable_tag_comparison }}" = "true" ]; then
-            # Determine which tag to compare with
-            if [ -n "${{ inputs.compare_with_tag }}" ]; then
-              # User specified a tag
-              PREV_TAG="${{ inputs.compare_with_tag }}"
-              echo "🔍 Using specified tag for comparison: $PREV_TAG"
-              
-              # Verify the tag exists
-              if ! git rev-parse "$PREV_TAG" >/dev/null 2>&1; then
-                echo "❌ Error: Tag '$PREV_TAG' does not exist"
-                exit 1
-              fi
+          # Determine comparison mode
+          if [ "$COMPARE_MODE" = "none" ] || [ "$COMPARE_MODE" = "NONE" ] || [ "$COMPARE_MODE" = "disable" ]; then
+            echo "ℹ️ Tag comparison disabled, will show recent commits only"
+            PREV_TAG=""
+          elif [ "$COMPARE_MODE" = "auto" ] || [ "$COMPARE_MODE" = "AUTO" ] || [ -z "$COMPARE_MODE" ]; then
+            # Auto-detect previous tag
+            PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$PREV_TAG" ]; then
+              echo "🔍 Auto-detected previous tag: $PREV_TAG"
             else
-              # Auto-detect previous tag
-              PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-              if [ -n "$PREV_TAG" ]; then
-                echo "🔍 Auto-detected previous tag: $PREV_TAG"
-              else
-                echo "ℹ️ No previous tag found, will show recent commits"
-              fi
+              echo "ℹ️ No previous tag found, will show recent commits"
             fi
           else
-            echo "ℹ️ Tag comparison disabled, will show recent commits only"
+            # User specified a tag
+            PREV_TAG="$COMPARE_MODE"
+            echo "🔍 Using specified tag for comparison: $PREV_TAG"
+            
+            # Verify the tag exists
+            if ! git rev-parse "$PREV_TAG" >/dev/null 2>&1; then
+              echo "❌ Error: Tag '$PREV_TAG' does not exist"
+              exit 1
+            fi
           fi
           
           # Start changelog
