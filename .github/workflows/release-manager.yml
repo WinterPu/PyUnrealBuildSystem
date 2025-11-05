@@ -1,0 +1,321 @@
+name: Advanced Release Manager
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g., v1.0.0, v2.0.0-beta)'
+        required: true
+        type: string
+      release_name:
+        description: 'Release display name (leave empty to use tag name)'
+        required: false
+        type: string
+      file_urls:
+        description: 'File download URLs (one per line or comma-separated)'
+        required: false
+        type: string
+      target_branch:
+        description: 'Target branch for the tag'
+        required: false
+        type: string
+        default: 'main'
+      prerelease:
+        description: 'Mark as pre-release (beta, alpha, rc)'
+        required: false
+        type: boolean
+        default: false
+      draft:
+        description: 'Save as draft (not published immediately)'
+        required: false
+        type: boolean
+        default: false
+      commit_count:
+        description: 'Commits to include in changelog'
+        required: false
+        type: number
+        default: 15
+      custom_changelog:
+        description: 'Custom changelog text (prepended to auto-generated)'
+        required: false
+        type: string
+      delete_existing:
+        description: 'Delete existing release/tag if exists'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Validate inputs
+        run: |
+          echo "🔍 Validating inputs..."
+          
+          # Validate tag name format
+          if [[ ! "${{ inputs.tag_name }}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "⚠️ Warning: Tag name doesn't follow semantic versioning (e.g., v1.0.0)"
+          fi
+          
+          echo "✓ Inputs validated"
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+      
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git rev-parse "${{ inputs.tag_name }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Tag ${{ inputs.tag_name }} already exists"
+            
+            if [ "${{ inputs.delete_existing }}" = "true" ]; then
+              echo "🗑️ Will delete existing tag and release"
+            else
+              echo "❌ Tag exists and delete_existing is false"
+              exit 1
+            fi
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✓ Tag ${{ inputs.tag_name }} does not exist"
+          fi
+      
+      - name: Delete existing release and tag
+        if: steps.check_tag.outputs.exists == 'true' && inputs.delete_existing == true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🗑️ Deleting existing release and tag..."
+          
+          # Get release ID if exists
+          RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ inputs.tag_name }}" \
+            | jq -r '.id // empty')
+          
+          if [ -n "$RELEASE_ID" ]; then
+            echo "Deleting release ID: $RELEASE_ID"
+            curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
+          fi
+          
+          # Delete tag
+          git push origin --delete "${{ inputs.tag_name }}" || true
+          git tag -d "${{ inputs.tag_name }}" || true
+          
+          echo "✓ Cleanup completed"
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "📝 Generating changelog..."
+          
+          # Get previous tag for comparison
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          # Start changelog
+          {
+            echo "CHANGELOG<<EOF"
+            
+            # Add custom changelog if provided
+            if [ -n "${{ inputs.custom_changelog }}" ]; then
+              echo "${{ inputs.custom_changelog }}"
+              echo ""
+              echo "---"
+              echo ""
+            fi
+            
+            echo "## 🚀 What's Changed"
+            echo ""
+            
+            # Generate commit log
+            if [ -n "$PREV_TAG" ]; then
+              echo "### Commits since $PREV_TAG"
+              echo ""
+              git log $PREV_TAG..HEAD --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n ${{ inputs.commit_count }}
+            else
+              echo "### Recent Commits"
+              echo ""
+              git log -${{ inputs.commit_count }} --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
+            fi
+            
+            echo ""
+            echo ""
+            echo "## 📊 Statistics"
+            echo ""
+            
+            if [ -n "$PREV_TAG" ]; then
+              FILES_CHANGED=$(git diff --name-only $PREV_TAG..HEAD | wc -l)
+              INSERTIONS=$(git diff --shortstat $PREV_TAG..HEAD | grep -oP '\d+(?= insertion)' || echo "0")
+              DELETIONS=$(git diff --shortstat $PREV_TAG..HEAD | grep -oP '\d+(?= deletion)' || echo "0")
+              COMMITS=$(git rev-list --count $PREV_TAG..HEAD)
+              
+              echo "- **Commits**: $COMMITS"
+              echo "- **Files Changed**: $FILES_CHANGED"
+              echo "- **Insertions**: +$INSERTIONS"
+              echo "- **Deletions**: -$DELETIONS"
+            fi
+            
+            echo ""
+            echo "## 📝 Full Changelog"
+            echo ""
+            
+            if [ -n "$PREV_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ inputs.tag_name }}"
+            else
+              echo "**Repository**: https://github.com/${{ github.repository }}"
+            fi
+            
+            echo ""
+            echo "---"
+            echo ""
+            echo "*Released on $(date '+%Y-%m-%d %H:%M:%S UTC')*"
+            
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          
+          echo "✓ Changelog generated"
+      
+      - name: Create downloads directory
+        if: inputs.file_urls != ''
+        run: |
+          mkdir -p downloads
+          echo "✓ Downloads directory created"
+      
+      - name: Download and verify files
+        if: inputs.file_urls != ''
+        run: |
+          echo "📥 Downloading files..."
+          
+          # Parse URLs (support both comma and newline separated)
+          URLS="${{ inputs.file_urls }}"
+          URLS=$(echo "$URLS" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          
+          SUCCESS_COUNT=0
+          FAIL_COUNT=0
+          
+          while IFS= read -r url; do
+            if [ -z "$url" ]; then
+              continue
+            fi
+            
+            echo ""
+            echo "📦 Processing: $url"
+            
+            # Extract filename
+            filename=$(basename "$url" | sed 's/[?#].*//')
+            
+            # If filename is empty or generic, generate one
+            if [ -z "$filename" ] || [ "$filename" = "download" ]; then
+              filename="asset_$(date +%s)_$(( RANDOM % 1000 ))"
+            fi
+            
+            echo "  → Saving as: $filename"
+            
+            # Download with progress
+            if curl -L -f --progress-bar -o "downloads/$filename" "$url"; then
+              file_size=$(du -h "downloads/$filename" | cut -f1)
+              echo "  ✓ Downloaded successfully ($file_size)"
+              SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+              
+              # Calculate checksum
+              sha256sum "downloads/$filename" | awk '{print "  SHA256: " $1}'
+            else
+              echo "  ✗ Download failed"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+            fi
+          done <<< "$URLS"
+          
+          echo ""
+          echo "📊 Download Summary:"
+          echo "  ✓ Successful: $SUCCESS_COUNT"
+          echo "  ✗ Failed: $FAIL_COUNT"
+          
+          if [ $FAIL_COUNT -gt 0 ]; then
+            echo "❌ Some downloads failed"
+            exit 1
+          fi
+          
+          if [ $SUCCESS_COUNT -eq 0 ]; then
+            echo "⚠️ No files were downloaded"
+          fi
+          
+          echo ""
+          echo "📋 Downloaded files:"
+          ls -lh downloads/ 2>/dev/null || echo "  (none)"
+      
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: ${{ inputs.release_name || inputs.tag_name }}
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
+          target_commitish: ${{ inputs.target_branch }}
+          files: downloads/*
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_unmatched_files: false
+          generate_release_notes: false
+      
+      - name: Create release summary
+        run: |
+          echo "# 🎉 Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## 📋 Release Information" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | \`${{ inputs.tag_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Name** | ${{ inputs.release_name || inputs.tag_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ inputs.target_branch }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Type** | ${{ inputs.prerelease && '🔶 Pre-release' || '✅ Stable' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ inputs.draft && '📝 Draft' || '🚀 Published' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d downloads ] && [ "$(ls -A downloads 2>/dev/null)" ]; then
+            echo "## 📦 Uploaded Assets" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| File | Size | SHA256 |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|------|--------|" >> $GITHUB_STEP_SUMMARY
+            
+            for file in downloads/*; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                filesize=$(du -h "$file" | cut -f1)
+                checksum=$(sha256sum "$file" | awk '{print substr($1,1,16) "..."}')
+                echo "| \`$filename\` | $filesize | \`$checksum\` |" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## 📦 Assets" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "*No files were uploaded*" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "## 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [📖 View Release](https://github.com/${{ github.repository }}/releases/tag/${{ inputs.tag_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [🏷️ All Releases](https://github.com/${{ github.repository }}/releases)" >> $GITHUB_STEP_SUMMARY
+          echo "- [📝 Compare Changes](https://github.com/${{ github.repository }}/compare/${{ inputs.tag_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Created by GitHub Actions on $(date '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up..."
+          rm -rf downloads
+          echo "✓ Cleanup completed"
