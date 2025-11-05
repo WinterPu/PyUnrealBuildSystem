@@ -95,8 +95,8 @@ class ArchiveInfo_AgoraPlugin(ArchiveInfoBase):
         str_sdktype = "RTC"
         str_sdkaudioonly = "FULL" if not self.bis_audioonly_sdk else "VOICE"
         str_sdkver = self.sdk_ver
-        str_buildno = f"{self.build_no}" if self.build_no != "" else ""
-        return f"Agora_{str_sdktype}_{str_sdkaudioonly}_SDK_{str_sdkver}_Unreal.{str_buildno}"
+        str_buildno = f".{self.build_no}" if self.build_no != "" else ""
+        return f"Agora_{str_sdktype}_{str_sdkaudioonly}_SDK_{str_sdkver}_Unreal{str_buildno}"
 
     # Override
     def GetArchivePath(self):
