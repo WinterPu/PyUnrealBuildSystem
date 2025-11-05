@@ -29,17 +29,17 @@ on:
         description: 'Save as draft (not published immediately)'
         required: false
         type: boolean
-        default: false
+        default: true
       commit_count:
         description: 'Commits to include in changelog'
         required: false
         type: number
-        default: 15
+        default: 0
       compare_with_tag:
         description: 'Compare with tag for changelog (empty=auto-detect, "none"=disable comparison, or specify tag name)'
         required: false
         type: string
-        default: 'auto'
+        default: ''
       custom_changelog:
         description: 'Custom changelog text (prepended to auto-generated)'
         required: false
