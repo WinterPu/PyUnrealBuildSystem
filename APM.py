@@ -294,6 +294,11 @@ class AgoraPluginManager(BaseSystem):
             tmp_copy_dst_path = plugin_tmp_path / plugin_cfg["platform"]
             tmp_copy_dst_path.mkdir(parents=True,exist_ok= True)
             OneZipCommand.UnZipFile(path_plugin_zipfile,tmp_copy_dst_path)
+            
+            # Wait a moment for file system to release handles after unzip
+            import time
+            time.sleep(0.5)
+            
             tmp_copy_file_list = list(tmp_copy_dst_path.glob('*'))
             ### Ex. make [/Users/admin/Documents/PluginWorkDir/PluginTemp/Android/AgoraNativeAndroidXXX/[native files]
             ###  ---> to [/Users/admin/Documents/PluginWorkDir/PluginTemp/Android/[native files]
@@ -301,10 +306,25 @@ class AgoraPluginManager(BaseSystem):
                 if Path(tmp_copy_file_list[0]).is_dir() == True:
                     tmp_name = plugin_cfg["platform"] + plugin_tmp_sort_dir_suffix_name
                     tmp_dir_for_sort = tmp_copy_dst_path.parent / tmp_name
-                    for path in tmp_copy_dst_path.iterdir():
-                        path.rename(str(tmp_dir_for_sort))
-                    for path in tmp_dir_for_sort.iterdir():
-                        path.rename(tmp_copy_dst_path/path.name)
+                    
+                    # Retry rename operations on Windows to avoid permission errors
+                    max_retries = 3
+                    retry_delay = 1.0
+                    for attempt in range(max_retries):
+                        try:
+                            for path in tmp_copy_dst_path.iterdir():
+                                path.rename(str(tmp_dir_for_sort))
+                            for path in tmp_dir_for_sort.iterdir():
+                                path.rename(tmp_copy_dst_path/path.name)
+                            break  # Success, exit retry loop
+                        except PermissionError as e:
+                            if attempt < max_retries - 1:
+                                PrintLog(f"Permission error on rename (attempt {attempt+1}/{max_retries}), retrying in {retry_delay}s: {e}")
+                                time.sleep(retry_delay)
+                            else:
+                                PrintErr(f"Failed to rename after {max_retries} attempts: {e}")
+                                raise
+                    
                     if tmp_dir_for_sort.exists():
                         FileUtility.DeleteDir(tmp_dir_for_sort)
                     
