@@ -35,6 +35,10 @@ on:
         required: false
         type: number
         default: 15
+      compare_with_tag:
+        description: 'Compare with specific tag for changelog (leave empty for auto-detect previous tag)'
+        required: false
+        type: string
       custom_changelog:
         description: 'Custom changelog text (prepended to auto-generated)'
         required: false
@@ -116,8 +120,26 @@ jobs:
         run: |
           echo "📝 Generating changelog..."
           
-          # Get previous tag for comparison
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          # Determine which tag to compare with
+          if [ -n "${{ inputs.compare_with_tag }}" ]; then
+            # User specified a tag
+            PREV_TAG="${{ inputs.compare_with_tag }}"
+            echo "🔍 Using specified tag for comparison: $PREV_TAG"
+            
+            # Verify the tag exists
+            if ! git rev-parse "$PREV_TAG" >/dev/null 2>&1; then
+              echo "❌ Error: Tag '$PREV_TAG' does not exist"
+              exit 1
+            fi
+          else
+            # Auto-detect previous tag
+            PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$PREV_TAG" ]; then
+              echo "🔍 Auto-detected previous tag: $PREV_TAG"
+            else
+              echo "ℹ️ No previous tag found, will show recent commits"
+            fi
+          fi
           
           # Start changelog
           {
@@ -138,7 +160,27 @@ jobs:
             if [ -n "$PREV_TAG" ]; then
               echo "### Commits since $PREV_TAG"
               echo ""
-              git log $PREV_TAG..HEAD --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n ${{ inputs.commit_count }}
+              
+              # Get all commits between tags
+              COMMIT_RANGE="$PREV_TAG..HEAD"
+              TOTAL_COMMITS=$(git rev-list --count $COMMIT_RANGE)
+              
+              echo "*Total commits: $TOTAL_COMMITS*"
+              echo ""
+              
+              # Show commits (limited by commit_count if there are too many)
+              if [ $TOTAL_COMMITS -le ${{ inputs.commit_count }} ]; then
+                # Show all commits
+                git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
+              else
+                # Show limited commits with note
+                echo "*Showing most recent ${{ inputs.commit_count }} of $TOTAL_COMMITS commits:*"
+                echo ""
+                git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n ${{ inputs.commit_count }}
+                echo ""
+                echo ""
+                echo "*... and $((TOTAL_COMMITS - ${{ inputs.commit_count }})) more commits. [View all commits](https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ inputs.tag_name }})*"
+              fi
             else
               echo "### Recent Commits"
               echo ""
@@ -160,6 +202,7 @@ jobs:
               echo "- **Files Changed**: $FILES_CHANGED"
               echo "- **Insertions**: +$INSERTIONS"
               echo "- **Deletions**: -$DELETIONS"
+              echo "- **Comparison Base**: \`$PREV_TAG\`"
             fi
             
             echo ""
@@ -249,6 +292,25 @@ jobs:
           echo ""
           echo "📋 Downloaded files:"
           ls -lh downloads/ 2>/dev/null || echo "  (none)"
+      
+      - name: Create and push tag
+        run: |
+          echo "🏷️ Creating tag ${{ inputs.tag_name }}..."
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create tag at current HEAD
+          git tag -a "${{ inputs.tag_name }}" -m "Release ${{ inputs.tag_name }}"
+          
+          echo "✓ Tag created locally"
+          
+          # Push tag to remote
+          git push origin "${{ inputs.tag_name }}"
+          
+          echo "✓ Tag pushed to remote"
+          echo "🎯 Tag ${{ inputs.tag_name }} created at commit $(git rev-parse HEAD)"
       
       - name: Create GitHub Release
         id: create_release
