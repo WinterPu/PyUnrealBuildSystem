@@ -36,7 +36,7 @@ on:
         type: number
         default: 0
       compare_with_tag:
-        description: 'Compare with tag for changelog (empty=auto-detect, "none"=disable comparison, or specify tag name)'
+        description: 'Compare with tag for changelog (empty or "auto"=auto-detect, "none"=disable comparison, or specify tag name)'
         required: false
         type: string
         default: ''
@@ -129,7 +129,7 @@ jobs:
             echo "ℹ️ Tag comparison disabled, will show recent commits only"
             PREV_TAG=""
           elif [ "$COMPARE_MODE" = "auto" ] || [ "$COMPARE_MODE" = "AUTO" ] || [ -z "$COMPARE_MODE" ]; then
-            # Auto-detect previous tag
+            # Auto-detect previous tag (empty or "auto")
             PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
             if [ -n "$PREV_TAG" ]; then
               echo "🔍 Auto-detected previous tag: $PREV_TAG"
@@ -152,8 +152,12 @@ jobs:
           {
             echo "CHANGELOG<<EOF"
             
-            # Add custom changelog if provided
+            # Add custom changelog if provided (highlighted at the top)
             if [ -n "${{ inputs.custom_changelog }}" ]; then
+              echo "# 📢 Release Highlights"
+              echo ""
+              echo "> **Important Release Information**"
+              echo ""
               echo "${{ inputs.custom_changelog }}"
               echo ""
               echo "---"
@@ -163,35 +167,64 @@ jobs:
             echo "## 🚀 What's Changed"
             echo ""
             
-            # Generate commit log
+            # Determine commit range and count
             if [ -n "$PREV_TAG" ]; then
-              echo "### Commits since $PREV_TAG"
-              echo ""
-              
-              # Get all commits between tags
               COMMIT_RANGE="$PREV_TAG..HEAD"
               TOTAL_COMMITS=$(git rev-list --count $COMMIT_RANGE)
-              
-              echo "*Total commits: $TOTAL_COMMITS*"
-              echo ""
-              
-              # Show commits (limited by commit_count if there are too many)
-              if [ $TOTAL_COMMITS -le ${{ inputs.commit_count }} ]; then
+              BASE_INFO="since $PREV_TAG"
+            else
+              COMMIT_RANGE="HEAD"
+              TOTAL_COMMITS=$(git rev-list --count HEAD)
+              BASE_INFO="(all commits)"
+            fi
+            
+            # Determine how many commits to show
+            if [ "${{ inputs.commit_count }}" -eq 0 ]; then
+              # Show all commits (no limit)
+              SHOW_COUNT=$TOTAL_COMMITS
+              MAX_DISPLAY=50  # But cap display at 50 for very large repos
+            else
+              SHOW_COUNT=${{ inputs.commit_count }}
+              MAX_DISPLAY=$SHOW_COUNT
+            fi
+            
+            echo "### 📋 Commits $BASE_INFO"
+            echo ""
+            echo "*Total commits: $TOTAL_COMMITS*"
+            echo ""
+            
+            # Generate commit list
+            if [ -n "$PREV_TAG" ]; then
+              if [ $TOTAL_COMMITS -le $MAX_DISPLAY ]; then
                 # Show all commits
                 git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
               else
-                # Show limited commits with note
-                echo "*Showing most recent ${{ inputs.commit_count }} of $TOTAL_COMMITS commits:*"
+                # Show limited commits
+                if [ "${{ inputs.commit_count }}" -eq 0 ]; then
+                  echo "*Showing first 50 of $TOTAL_COMMITS commits:*"
+                  echo ""
+                  git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n 50
+                else
+                  echo "*Showing $MAX_DISPLAY of $TOTAL_COMMITS commits:*"
+                  echo ""
+                  git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n $MAX_DISPLAY
+                fi
                 echo ""
-                git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n ${{ inputs.commit_count }}
                 echo ""
-                echo ""
-                echo "*... and $((TOTAL_COMMITS - ${{ inputs.commit_count }})) more commits. [View all commits](https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ inputs.tag_name }})*"
+                echo "*... and $((TOTAL_COMMITS - MAX_DISPLAY)) more commits. [View all commits](https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ inputs.tag_name }})*"
               fi
             else
-              echo "### Recent Commits"
-              echo ""
-              git log -${{ inputs.commit_count }} --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
+              # No previous tag, show all commits up to max
+              if [ $TOTAL_COMMITS -le $MAX_DISPLAY ]; then
+                git log -$TOTAL_COMMITS --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
+              else
+                echo "*Showing first 50 of $TOTAL_COMMITS commits:*"
+                echo ""
+                git log -50 --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
+                echo ""
+                echo ""
+                echo "*... and $((TOTAL_COMMITS - 50)) more commits*"
+              fi
             fi
             
             echo ""
