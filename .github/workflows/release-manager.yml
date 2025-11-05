@@ -182,7 +182,7 @@ jobs:
             if [ "${{ inputs.commit_count }}" -eq 0 ]; then
               # Show all commits (no limit)
               SHOW_COUNT=$TOTAL_COMMITS
-              MAX_DISPLAY=50  # But cap display at 50 for very large repos
+              MAX_DISPLAY=20  # But cap display at 20 for very large repos
             else
               SHOW_COUNT=${{ inputs.commit_count }}
               MAX_DISPLAY=$SHOW_COUNT
@@ -201,9 +201,9 @@ jobs:
               else
                 # Show limited commits
                 if [ "${{ inputs.commit_count }}" -eq 0 ]; then
-                  echo "*Showing first 50 of $TOTAL_COMMITS commits:*"
+                  echo "*Showing first 20 of $TOTAL_COMMITS commits:*"
                   echo ""
-                  git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n 50
+                  git log $COMMIT_RANGE --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short | head -n 20
                 else
                   echo "*Showing $MAX_DISPLAY of $TOTAL_COMMITS commits:*"
                   echo ""
@@ -218,12 +218,12 @@ jobs:
               if [ $TOTAL_COMMITS -le $MAX_DISPLAY ]; then
                 git log -$TOTAL_COMMITS --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
               else
-                echo "*Showing first 50 of $TOTAL_COMMITS commits:*"
+                echo "*Showing first 20 of $TOTAL_COMMITS commits:*"
                 echo ""
-                git log -50 --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
+                git log -20 --pretty=format:"- **%ad** [\`%h\`](https://github.com/${{ github.repository }}/commit/%H) %s - *%an*" --date=short
                 echo ""
                 echo ""
-                echo "*... and $((TOTAL_COMMITS - 50)) more commits*"
+                echo "*... and $((TOTAL_COMMITS - 20)) more commits*"
               fi
             fi
             
