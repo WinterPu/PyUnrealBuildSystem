@@ -303,3 +303,56 @@ class UATCommand:
         )
 
         RUNCMD(command)
+
+    def Cook(self, params: ParamsUAT):
+        ## Command
+        target_platform = params.get_target_platform
+        path_uproject_file = params.get_path_uproject_file
+        subcommand_archive_dir = params.get_subcommand_archive_dir
+        subcommand_extras = params.get_subcommand_extras
+
+        # Get project name from uproject file path
+        project_name = Path(path_uproject_file).stem
+        
+        # Get Unreal Editor path based on UAT path
+        uat_path_obj = Path(self.__uatpath)
+        engine_root = uat_path_obj.parent.parent.parent  # Go up from BatchFiles/RunUAT.sh to Engine root
+        
+        if self.__host_platform == SystemHelper.Mac_HostName():
+            unreal_editor_path = engine_root / "Binaries" / "Mac" / "UnrealEditor.app" / "Contents" / "MacOS" / "UnrealEditor"
+        elif self.__host_platform == SystemHelper.Win_HostName():
+            unreal_editor_path = engine_root / "Binaries" / "Win64" / "UnrealEditor.exe"
+        else:
+            unreal_editor_path = ""
+
+        command = (
+            '"' + str(self.__uatpath) + '"' +
+            # 为项目指定脚本路径，告诉UAT从哪个项目获取自动化脚本
+            r' -ScriptsForProject="' + str(path_uproject_file) + '"' +
+            
+            # ===== Turnkey 命令部分：用于验证和管理SDK =====
+            r' Turnkey' +
+            r' -command=VerifySdk' +  # 验证SDK是否正确安装和配置
+            r' -platform=' + target_platform +  # 指定目标平台（Mac/Win64/IOS/Android等）
+            r' -UpdateIfNeeded' +  # 如果SDK不是最新版本或缺失，自动更新
+            r' -project="' + str(path_uproject_file) + '"' +  # 指定项目文件路径
+            
+            # ===== BuildCookRun 命令部分：执行构建、烘焙和打包 =====
+            r' BuildCookRun' +
+            r' -nop4' +  # 不使用 Perforce 版本控制系统
+            r' -utf8output' +  # 使用 UTF-8 编码输出日志，支持多语言字符
+            r' -nocompileeditor' +  # 不编译编辑器代码
+            r' -skipbuildeditor' +  # 跳过构建编辑器步骤
+            r' -cook' +  # 执行内容烘焙（Cook），将资源转换为平台特定格式
+            r' -project="' + str(path_uproject_file) + '"' +  # 指定要烘焙的项目文件
+            r' -target=' + project_name +  # 指定构建目标名称（通常是项目名）
+            # 指定 UnrealEditor 可执行文件的完整路径，用于烘焙过程
+            (r' -unrealexe="' + str(unreal_editor_path) + '"' if unreal_editor_path else '') +
+            r' -platform=' + target_platform +  # 指定目标平台
+            r' -installed' +  # 使用已安装的引擎版本（预编译版本），而不是源码版本
+            r' -skipstage' +  # 跳过打包阶段（Stage），只执行烘焙不生成最终包
+            r' -nocompile' +  # 不编译项目代码
+            r' -nocompileuat' +  # 不编译 UAT（Unreal Automation Tool）本身
+            subcommand_extras  # 额外的自定义命令参数
+        )
+        RUNCMD(command)
