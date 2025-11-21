@@ -97,42 +97,42 @@ class JsonParser:
         try:
             data = eval(data_str)
             if isinstance(data, dict):
-                self._log("✅ 使用 eval() 解析成功")
+                self._log("[OK] 使用 eval() 解析成功")
                 return data
         except SyntaxError:
-            self._log("⚠️ eval() 解析失败（语法错误）")
+            self._log("[WARN] eval() 解析失败（语法错误）")
         except Exception as e:
-            self._log(f"⚠️ eval() 解析失败: {e}")
+            self._log(f"[WARN] eval() 解析失败: {e}")
         
         # 方法2: json.loads() - 标准JSON
         try:
             data = json.loads(data_str)
-            self._log("✅ 使用 json.loads() 解析成功")
+            self._log("[OK] 使用 json.loads() 解析成功")
             return data
         except json.JSONDecodeError as e:
-            self._log(f"⚠️ json.loads() 解析失败: {e}")
+            self._log(f"[WARN] json.loads() 解析失败: {e}")
         
         # 方法3: ast.literal_eval() - 安全解析
         try:
             import ast
             data = ast.literal_eval(data_str)
             if isinstance(data, dict):
-                self._log("✅ 使用 ast.literal_eval() 解析成功")
+                self._log("[OK] 使用 ast.literal_eval() 解析成功")
                 return data
         except (SyntaxError, ValueError) as e:
-            self._log(f"⚠️ ast.literal_eval() 解析失败: {e}")
+            self._log(f"[WARN] ast.literal_eval() 解析失败: {e}")
         
         # 方法4: 单引号替换
         try:
             json_str = data_str.replace("'", '"')
             data = json.loads(json_str)
-            self._log("✅ 使用单引号替换后解析成功")
+            self._log("[OK] 使用单引号替换后解析成功")
             return data
         except Exception as e:
-            self._log(f"⚠️ 单引号替换解析失败: {e}")
+            self._log(f"[WARN] 单引号替换解析失败: {e}")
         
         # 所有方法失败
-        self._log("❌ 所有解析方法都失败")
+        self._log("[ERROR] 所有解析方法都失败")
         return {}
     
     def get(self, field_path: str, default: Any = None) -> Any:
@@ -402,28 +402,10 @@ def main():
     # 读取数据
     if args.file:
         try:
-            # 尝试多种编码方式读取文件
-            encodings = ['utf-8', 'utf-8-sig', 'gbk', 'gb2312', 'cp936', 'latin1']
-            data_str = None
-            last_error = None
-            
-            for encoding in encodings:
-                try:
-                    with open(args.file, 'r', encoding=encoding) as f:
-                        data_str = f.read().strip()
-                    if args.verbose:
-                        print(f"✓ 使用 {encoding} 编码读取文件成功", file=sys.stderr)
-                    break
-                except (UnicodeDecodeError, UnicodeError) as e:
-                    last_error = e
-                    continue
-            
-            if data_str is None:
-                print(f"❌ 读取文件失败，尝试了所有编码方式: {last_error}", file=sys.stderr)
-                return 1
-                
+            with open(args.file, 'r', encoding='utf-8') as f:
+                data_str = f.read().strip()
         except Exception as e:
-            print(f"❌ 读取文件失败: {e}", file=sys.stderr)
+            print(f"[ERROR] 读取文件失败: {e}", file=sys.stderr)
             return 1
     elif args.base64:
         # Base64解码
@@ -431,9 +413,9 @@ def main():
             import base64
             data_str = base64.b64decode(args.base64).decode('utf-8')
             if args.verbose:
-                print("✓ Base64解码成功", file=sys.stderr)
+                print("[OK] Base64解码成功", file=sys.stderr)
         except Exception as e:
-            print(f"❌ Base64解码失败: {e}", file=sys.stderr)
+            print(f"[ERROR] Base64解码失败: {e}", file=sys.stderr)
             return 1
     else:
         data_str = args.data
@@ -447,7 +429,7 @@ def main():
         # 提取字段
         value = json_parser.get(args.get)
         if value is None:
-            print(f"⚠️ 字段 '{args.get}' 不存在或为None", file=sys.stderr)
+            print(f"[WARN] 字段 '{args.get}' 不存在或为None", file=sys.stderr)
             return 1
         if isinstance(value, (dict, list)):
             print(json.dumps(value, indent=2 if args.pretty else None, ensure_ascii=False))
@@ -464,14 +446,14 @@ def main():
         
         url_type = "Artifactory" if args.artifactory else "所有"
         source_info = f"从 {args.source}" if args.source else "从整个数据"
-        print(f"📦 {source_info} 提取到 {len(urls)} 个 {url_type} URL:")
+        print(f"[URL] {source_info} 提取到 {len(urls)} 个 {url_type} URL:")
         for url in urls:
             print(url)
     
     elif args.search:
         # 搜索关键字
         results = json_parser.search(args.search)
-        print(f"🔍 搜索 '{args.search}' 找到 {len(results)} 个匹配:")
+        print(f"[SEARCH] 搜索 '{args.search}' 找到 {len(results)} 个匹配:")
         for field_path, value in results.items():
             value_preview = str(value)[:100]
             if len(str(value)) > 100:
@@ -481,7 +463,7 @@ def main():
     elif args.keys:
         # 显示所有字段
         keys = json_parser.keys()
-        print(f"📋 顶级字段 ({len(keys)} 个):")
+        print(f"[KEYS] 顶级字段 ({len(keys)} 个):")
         for key in keys:
             print(f"  - {key}")
     
@@ -499,16 +481,16 @@ def main():
     else:
         # 默认：显示基本信息
         print("=" * 60)
-        print("📊 JSON解析结果")
+        print("[INFO] JSON解析结果")
         print("=" * 60)
         keys = json_parser.keys()
-        print(f"✅ 解析成功")
-        print(f"📋 顶级字段数: {len(keys)}")
-        print(f"📝 字段列表: {', '.join(keys[:5])}")
+        print(f"[OK] 解析成功")
+        print(f"[KEYS] 顶级字段数: {len(keys)}")
+        print(f"[LIST] 字段列表: {', '.join(keys[:5])}")
         if len(keys) > 5:
             print(f"           ...还有 {len(keys) - 5} 个字段")
         print()
-        print("💡 提示: 使用 --help 查看更多操作")
+        print("[TIP] 提示: 使用 --help 查看更多操作")
         print("   - 提取字段: --get field_name")
         print("   - 提取URL: --extract-urls --artifactory")
         print("   - 查看结构: --structure")
