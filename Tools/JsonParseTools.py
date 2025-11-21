@@ -22,6 +22,21 @@ import sys
 import argparse
 from typing import Dict, List, Any, Optional, Union
 
+# 安全打印函数，处理编码问题
+def safe_print(content, file=None):
+    """
+    安全打印，自动处理编码问题
+    类似 Logger.PrintLog 的实现
+    """
+    target = file or sys.stdout
+    try:
+        print(content, file=target, flush=True)
+    except UnicodeEncodeError:
+        # 如果编码失败，替换无法编码的字符
+        encoding = target.encoding or 'utf-8'
+        content_str = str(content).encode(encoding, errors='replace').decode(encoding)
+        print(content_str, file=target, flush=True)
+
 
 class JsonParser:
     """通用JSON/字典解析器"""
@@ -49,7 +64,7 @@ class JsonParser:
     def _log(self, message: str):
         """输出日志（如果verbose=True）"""
         if self.verbose:
-            print(f"[JsonParser] {message}", file=sys.stderr)
+            safe_print(f"[JsonParser] {message}", file=sys.stderr)
     
     def _normalize(self, data_str: str) -> str:
         """
@@ -297,32 +312,32 @@ class JsonParser:
         """
         def print_recursive(data, depth=0, prefix=''):
             if depth > max_depth:
-                print(f"{prefix}...")
+                safe_print(f"{prefix}...")
                 return
             
             if isinstance(data, dict):
                 for key, value in data.items():
                     if isinstance(value, (dict, list)):
-                        print(f"{prefix}{key}: {type(value).__name__}")
+                        safe_print(f"{prefix}{key}: {type(value).__name__}")
                         print_recursive(value, depth + 1, prefix + '  ')
                     else:
                         value_preview = str(value)[:50]
                         if len(str(value)) > 50:
                             value_preview += '...'
-                        print(f"{prefix}{key}: {value_preview}")
+                        safe_print(f"{prefix}{key}: {value_preview}")
             
             elif isinstance(data, list):
-                print(f"{prefix}[列表，{len(data)} 个元素]")
+                safe_print(f"{prefix}[列表，{len(data)} 个元素]")
                 if data and depth < max_depth:
-                    print(f"{prefix}  [0]: {type(data[0]).__name__}")
+                    safe_print(f"{prefix}  [0]: {type(data[0]).__name__}")
                     if isinstance(data[0], (dict, list)):
                         print_recursive(data[0], depth + 1, prefix + '    ')
         
-        print("=" * 60)
-        print("数据结构:")
-        print("=" * 60)
+        safe_print("=" * 60)
+        safe_print("数据结构:")
+        safe_print("=" * 60)
         print_recursive(self.parsed_data)
-        print("=" * 60)
+        safe_print("=" * 60)
 
 
 def parse(data_str: str, normalize: bool = True, verbose: bool = False) -> JsonParser:
@@ -405,7 +420,7 @@ def main():
             with open(args.file, 'r', encoding='utf-8') as f:
                 data_str = f.read().strip()
         except Exception as e:
-            print(f"[ERROR] 读取文件失败: {e}", file=sys.stderr)
+            safe_print(f"[ERROR] 读取文件失败: {e}", file=sys.stderr)
             return 1
     elif args.base64:
         # Base64解码
@@ -413,9 +428,9 @@ def main():
             import base64
             data_str = base64.b64decode(args.base64).decode('utf-8')
             if args.verbose:
-                print("[OK] Base64解码成功", file=sys.stderr)
+                safe_print("[OK] Base64解码成功", file=sys.stderr)
         except Exception as e:
-            print(f"[ERROR] Base64解码失败: {e}", file=sys.stderr)
+            safe_print(f"[ERROR] Base64解码失败: {e}", file=sys.stderr)
             return 1
     else:
         data_str = args.data
@@ -429,12 +444,12 @@ def main():
         # 提取字段
         value = json_parser.get(args.get)
         if value is None:
-            print(f"[WARN] 字段 '{args.get}' 不存在或为None", file=sys.stderr)
+            safe_print(f"[WARN] 字段 '{args.get}' 不存在或为None", file=sys.stderr)
             return 1
         if isinstance(value, (dict, list)):
-            print(json.dumps(value, indent=2 if args.pretty else None, ensure_ascii=False))
+            safe_print(json.dumps(value, indent=2 if args.pretty else None, ensure_ascii=False))
         else:
-            print(value)
+            safe_print(value)
     
     elif args.extract_urls:
         # 提取URL
@@ -446,26 +461,26 @@ def main():
         
         url_type = "Artifactory" if args.artifactory else "所有"
         source_info = f"从 {args.source}" if args.source else "从整个数据"
-        print(f"[URL] {source_info} 提取到 {len(urls)} 个 {url_type} URL:")
+        safe_print(f"[URL] {source_info} 提取到 {len(urls)} 个 {url_type} URL:")
         for url in urls:
-            print(url)
+            safe_print(url)
     
     elif args.search:
         # 搜索关键字
         results = json_parser.search(args.search)
-        print(f"[SEARCH] 搜索 '{args.search}' 找到 {len(results)} 个匹配:")
+        safe_print(f"[SEARCH] 搜索 '{args.search}' 找到 {len(results)} 个匹配:")
         for field_path, value in results.items():
             value_preview = str(value)[:100]
             if len(str(value)) > 100:
                 value_preview += '...'
-            print(f"  {field_path}: {value_preview}")
+            safe_print(f"  {field_path}: {value_preview}")
     
     elif args.keys:
         # 显示所有字段
         keys = json_parser.keys()
-        print(f"[KEYS] 顶级字段 ({len(keys)} 个):")
+        safe_print(f"[KEYS] 顶级字段 ({len(keys)} 个):")
         for key in keys:
-            print(f"  - {key}")
+            safe_print(f"  - {key}")
     
     elif args.structure:
         # 显示结构
@@ -474,26 +489,26 @@ def main():
     elif args.output:
         # 输出数据
         if args.output == 'json':
-            print(json_parser.to_json(indent=2 if args.pretty else None))
+            safe_print(json_parser.to_json(indent=2 if args.pretty else None))
         else:
-            print(json_parser.to_dict())
+            safe_print(json_parser.to_dict())
     
     else:
         # 默认：显示基本信息
-        print("=" * 60)
-        print("[INFO] JSON解析结果")
-        print("=" * 60)
+        safe_print("=" * 60)
+        safe_print("[INFO] JSON解析结果")
+        safe_print("=" * 60)
         keys = json_parser.keys()
-        print(f"[OK] 解析成功")
-        print(f"[KEYS] 顶级字段数: {len(keys)}")
-        print(f"[LIST] 字段列表: {', '.join(keys[:5])}")
+        safe_print(f"[OK] 解析成功")
+        safe_print(f"[KEYS] 顶级字段数: {len(keys)}")
+        safe_print(f"[LIST] 字段列表: {', '.join(keys[:5])}")
         if len(keys) > 5:
-            print(f"           ...还有 {len(keys) - 5} 个字段")
-        print()
-        print("[TIP] 提示: 使用 --help 查看更多操作")
-        print("   - 提取字段: --get field_name")
-        print("   - 提取URL: --extract-urls --artifactory")
-        print("   - 查看结构: --structure")
+            safe_print(f"           ...还有 {len(keys) - 5} 个字段")
+        safe_print()
+        safe_print("[TIP] 提示: 使用 --help 查看更多操作")
+        safe_print("   - 提取字段: --get field_name")
+        safe_print("   - 提取URL: --extract-urls --artifactory")
+        safe_print("   - 查看结构: --structure")
     
     return 0
 
