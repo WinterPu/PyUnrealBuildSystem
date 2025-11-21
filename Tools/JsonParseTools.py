@@ -402,8 +402,26 @@ def main():
     # 读取数据
     if args.file:
         try:
-            with open(args.file, 'r', encoding='utf-8') as f:
-                data_str = f.read().strip()
+            # 尝试多种编码方式读取文件
+            encodings = ['utf-8', 'utf-8-sig', 'gbk', 'gb2312', 'cp936', 'latin1']
+            data_str = None
+            last_error = None
+            
+            for encoding in encodings:
+                try:
+                    with open(args.file, 'r', encoding=encoding) as f:
+                        data_str = f.read().strip()
+                    if args.verbose:
+                        print(f"✓ 使用 {encoding} 编码读取文件成功", file=sys.stderr)
+                    break
+                except (UnicodeDecodeError, UnicodeError) as e:
+                    last_error = e
+                    continue
+            
+            if data_str is None:
+                print(f"❌ 读取文件失败，尝试了所有编码方式: {last_error}", file=sys.stderr)
+                return 1
+                
         except Exception as e:
             print(f"❌ 读取文件失败: {e}", file=sys.stderr)
             return 1
