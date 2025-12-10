@@ -1,6 +1,7 @@
 from Utility.HeaderBase import *
 from FileIO.FileUtility import *
 from Command.ZipCommand import *
+from Base.AgoraSDKInfo import *
 
 class ArchiveInfoBase:
     __path_root = ""
@@ -75,28 +76,31 @@ class ArchiveInfo_AgoraExample(ArchiveInfoBase):
         return path_root / path
 
 class ArchiveInfo_AgoraPlugin(ArchiveInfoBase):
-    def __init__(self,bis_audioonly_sdk,sdk_ver, val_sdk_type = "RTC",build_no = "") -> None:
-        self.bis_audioonly_sdk = bis_audioonly_sdk
-        self.sdk_ver = sdk_ver
-        self.sdk_type = val_sdk_type
-        self.build_no = build_no
+    def __init__(self, sdkinfo:AgoraSDKInfo) -> None:
+        self.sdkinfo = sdkinfo
+        self.bis_audioonly_sdk = sdkinfo.Get_SDKIsAudioOnly()
+        self.native_sdk_ver = sdkinfo.Get_NativeSDKVer()
+        self.sdk_type = sdkinfo.Get_SDKType()
+        self.plugin_ver = sdkinfo.Get_PluginVer()
 
     def GetPath_CurRootArchiveDirBase(self):
-        name_base = "Archive_AgoraPlugin"
+        company_name = self.sdkinfo.Get_AtlasName()
+        name_base = f"Archive_{company_name}Plugin"
         if self.sdk_type != "RTC":
             name_base = f"{name_base}_{self.sdk_type}"
         return Path(name_base)
     
     def GetPath_CurRootArchiveDir(self):
-        return self.GetPath_CurRootArchiveDirBase() / self.sdk_ver
+        return self.GetPath_CurRootArchiveDirBase() / self.plugin_ver
     
     def GetArchiveName(self):
         ## Agora_RTC_FULL_SDK_#_Unreal
         str_sdktype = "RTC"
         str_sdkaudioonly = "FULL" if not self.bis_audioonly_sdk else "VOICE"
-        str_sdkver = self.sdk_ver
-        str_buildno = f".{self.build_no}" if self.build_no != "" else ""
-        return f"Agora_{str_sdktype}_{str_sdkaudioonly}_SDK_{str_sdkver}_Unreal{str_buildno}"
+        str_sdkver = self.native_sdk_ver
+        str_pluginver = self.plugin_ver
+        str_companyname = self.sdkinfo.Get_AtlasName()
+        return f"{str_companyname}_{str_sdktype}_{str_sdkaudioonly}_SDK_Unreal_{str_pluginver}"
 
     # Override
     def GetArchivePath(self):

@@ -1,10 +1,13 @@
 from pathlib import Path
 import shutil
 from FileIO.FileUtility import *
+from Base.AgoraSDKInfo import *
 
 class APMHelper:
     __instance = None
     __initialized = False
+    __Args = None
+    __sdkinfo = None
 
     def __new__(cls, *args, **kwargs):
         if not cls.__instance:
@@ -21,8 +24,21 @@ class APMHelper:
             self.__initialized = True
 
     
+    def Init(self,Args):
+        self.__Args = Args
+        self.__sdkinfo = AgoraSDKInfo(Args.agorasdk,
+            Args.sdkisaudioonly,
+            Args.agorasdktype,
+            Args.agorapluginver,
+            Args.pluginname,
+            Args.agorasdkbuildconfig,
+            Args.pluginatlasname)
+
     def Get():
         return APMHelper()
+
+    def GetSDKInfo(self):
+        return self.__sdkinfo
     
     def replace_in_file(self,file_path, content_replacements):
         content = file_path.read_text(encoding='utf-8')

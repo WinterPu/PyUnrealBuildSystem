@@ -156,24 +156,24 @@ class ConfigParser(BaseSystem):
         key_type = "url_full"
         if sdkinfo.Get_SDKIsAudioOnly() == True:
             key_type = "url_audioonly"
-        return self.SDKConfigData[sdkinfo.Get_SDKVer()][key_type]
+        return self.SDKConfigData[sdkinfo.Get_NativeSDKVer()][key_type]
     
     def GetRTCSDKNativeURL_IOS(self,sdkinfo:AgoraSDKInfo):
         key_type = "url_native_ios"
         if sdkinfo.Get_SDKIsAudioOnly():
             key_type = "url_native_ios_audioonly"
-        return self.SDKConfigData[sdkinfo.Get_SDKVer()][key_type]
+        return self.SDKConfigData[sdkinfo.Get_NativeSDKVer()][key_type]
     def GetRTCSDKNativeURL_Android(self,sdkinfo:AgoraSDKInfo):
         key_type = "url_native_android"
         if sdkinfo.Get_SDKIsAudioOnly():
             key_type = "url_native_android_audioonly"
-        return self.SDKConfigData[sdkinfo.Get_SDKVer()][key_type]
+        return self.SDKConfigData[sdkinfo.Get_NativeSDKVer()][key_type]
     def GetRTCSDKNativeURL_Win(self,sdkinfo:AgoraSDKInfo):
         key_type = "url_native_win"
-        return self.SDKConfigData[sdkinfo.Get_SDKVer()][key_type]
+        return self.SDKConfigData[sdkinfo.Get_NativeSDKVer()][key_type]
     def GetRTCSDKNativeURL_Mac(self,sdkinfo:AgoraSDKInfo):
         key_type = "url_native_mac"
-        return self.SDKConfigData[sdkinfo.Get_SDKVer()][key_type]
+        return self.SDKConfigData[sdkinfo.Get_NativeSDKVer()][key_type]
     
 
     ## IOS Certificate

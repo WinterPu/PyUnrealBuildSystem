@@ -68,13 +68,15 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-nurlios", default="")
 
         ArgParser.add_argument("-agorasdktype", default="RTC")
-        ArgParser.add_argument("-agorasdk", default="4.2.1")
+        ArgParser.add_argument("-agorasdk", default="4.2.1") # Deprecated, keep for compatibility
+        ArgParser.add_argument("-agorapluginver", default="4.2.1-build.1") # Use this instead of -agorasdk
         ArgParser.add_argument("-sdkisaudioonly",action = "store_true")
         ArgParser.add_argument("-skipnativedownload",action='store_true')
         ArgParser.add_argument("-skipgit",action='store_true')
         ArgParser.add_argument("-rmmacslink",action='store_true') # remove mac symbolic link
         ArgParser.add_argument("-agorasdkbuildconfig", default="Release")
         ArgParser.add_argument("-pluginname", default="AgoraPlugin")
+        ArgParser.add_argument("-pluginatlasname", default="Agora")
         ArgParser.add_argument("-giturl", default= "git@github.com:AgoraIO-Extensions/Agora-Unreal-RTC-SDK.git")
         ArgParser.add_argument("-gitbranch", default="") 
         ArgParser.add_argument("-urlconfigfromrepo",action = "store_true")
@@ -155,7 +157,7 @@ class AgoraPluginManager(BaseSystem):
         if sdkinfo.Get_SDKType() != "RTC":
             path_category01 = path_category01 / sdkinfo.Get_SDKType()
 
-        path_category01 = path_category01 / Path(sdkinfo.Get_SDKVer())
+        path_category01 = path_category01 / Path(sdkinfo.Get_PluginVer())
 
         if not path_category01.exists():
             path_category01.mkdir(parents=True)
@@ -184,12 +186,18 @@ class AgoraPluginManager(BaseSystem):
             self.GenUEMarketplacePlugins(Args)
 
     def StartGenPlugin(self,Args):
+
+        APMHelper.Get().Init(Args)
         
         ## >>> Clean Plugin <<<
         AgoraPluginManager.Get().CleanPlugin(Args)
+
         
+        sdkinfo = APMHelper.Get().GetSDKInfo()
         ## >>> Data Preparation <<<
-        PLUGIN_NAME = Args.pluginname
+        PLUGIN_NAME = sdkinfo.Get_UEPluginName()
+        AGORA_BUILD_CONFIG = sdkinfo.Get_AgoraBuildConfig()
+        sdk_build_config = sdkinfo.Get_AgoraBuildConfig()
 
         git_url = Args.giturl
         git_branch = Args.gitbranch
@@ -197,9 +205,6 @@ class AgoraPluginManager(BaseSystem):
         final_dst_plugin_path = Args.pluginarchivedir
         plugin_source_code_path = Args.pluginsourcecodepath
 
-        sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly,Args.agorasdktype)
-        
-        sdk_build_config = Args.agorasdkbuildconfig
         ## keep mac symbolic link
         bkeep_symlink =True if not Args.rmmacslink else False
 
@@ -348,7 +353,7 @@ class AgoraPluginManager(BaseSystem):
         path_android_tmpl_src = target_plugin_dst_lib_path / "Android" / sdk_build_config
         
 
-        if VersionControlTool.Get().VerParse(sdkinfo.Get_SDKVer()) != VersionControlTool.Get().VerParse("4.2.1"):
+        if VersionControlTool.Get().VerParse(sdkinfo.Get_NativeSDKVer()) != VersionControlTool.Get().VerParse("4.2.1"):
             filename_full_tmpl = "APL_TemplateSourceFull.xml"
             filename_voice_tmpl = "APL_TemplateSourceVoice.xml"
             filename_src_tmpl = filename_full_tmpl if sdkinfo.Get_SDKIsAudioOnly() == False else filename_voice_tmpl
@@ -514,7 +519,7 @@ class AgoraPluginManager(BaseSystem):
             if path_archive_plugin_root != "":
                 ArchiveManager.Get().SetPath_ArchiveRootDir(path_archive_plugin_root)
 
-            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo.Get_SDKIsAudioOnly(),sdkinfo.Get_SDKVer(),sdkinfo.Get_SDKType(),final_product_suffix_build_no)
+            OneArchiveInfo = ArchiveInfo_AgoraPlugin(sdkinfo)
             ArchiveManager.Get().ArchiveBuild(dst_zip_file_path, OneArchiveInfo)
         
 
@@ -523,7 +528,7 @@ class AgoraPluginManager(BaseSystem):
         path_plugin_archive_dir = Path(self.GetPath_PluginArchiveDir())
         path_plugin_tmp_dir = Path(self.GetPath_PluginTmpDir())
 
-        sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly)
+        sdkinfo = APMHelper.Get().GetSDKInfo()
 
         ## git repo
         git_url = Args.giturl
@@ -590,13 +595,16 @@ class AgoraPluginManager(BaseSystem):
         # file_path = Path("/Users/admin/Documents/PluginTemp/Agora-Unreal-RTC-SDK/PluginTmp/tmp_plugin_files/AgoraPlugin/AgoraPlugin.uplugin")
         # UPLUGIN_FILE = "AgoraPlugin.uplugin"
 
-        sdk_version = Args.agorasdk
+        sdkinfo = APMHelper.Get().GetSDKInfo()
+        sdk_version = sdkinfo.Get_NativeSDKVer()
         min_engine_version = Args.mminenginever
         support_platforms = Args.msupportplatforms
         marketplace_url = Args.mmarketplaceurl
         msupporturl = Args.msupporturl
-        sdkinfo  = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly,Args.agorasdktype)
-        val_description = "Agora UE Plugin: %s " %(sdkinfo.ToString())
+      
+        val_companyname = sdkinfo.Get_AtlasName()
+        val_uepluginname = sdkinfo.Get_UEPluginName()
+        val_description = f"{val_companyname} UE Plugin: {sdkinfo.ToString()}"
 
         support_platforms = support_platforms.split("+")
 
@@ -646,7 +654,9 @@ class AgoraPluginManager(BaseSystem):
 
         ### Modification
 
-        template_arr['VersionName'] = sdk_version
+        template_arr['VersionName'] = sdkinfo.Get_PluginVer()
+        template_arr['FriendlyName'] = val_uepluginname
+        template_arr['CreatedBy'] = val_companyname
 
         bNeedSetEngineVersion = Args.setenginever
         if bNeedSetEngineVersion:
@@ -903,7 +913,7 @@ class AgoraPluginManager(BaseSystem):
                 one_time_args.mminenginever = one_engine_ver
                 one_time_args.pluginarchivedir = str(path_one_gen_plugin)
                 zip_filename = val_one_config['filename']
-                zip_filename = str(zip_filename).replace('#',sdkinfo.Get_SDKVer())
+                zip_filename = str(zip_filename).replace('#',sdkinfo.Get_NativeSDKVer())
                 one_time_args.pluginfiledisplayname = zip_filename
                 one_time_args.sdkisaudioonly = sdkinfo.Get_SDKIsAudioOnly()
             
