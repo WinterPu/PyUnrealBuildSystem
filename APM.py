@@ -110,6 +110,10 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-archiveplugin",action='store_true')
         ArgParser.add_argument("-archivepluginrootpath",default="")
 
+        ArgParser.add_argument("-cleanplugintemp",action='store_true')
+        ArgParser.add_argument("-cleanpluginarchive",action='store_true')
+        ArgParser.add_argument("-cleanarchivebuildsunreal",action='store_true')
+
         if bIncludeConflictArgs:
             pass
 
@@ -176,7 +180,35 @@ class AgoraPluginManager(BaseSystem):
         AgoraPluginManager.Get().Init()
         args = self.ParseCMDArgs()
         ConfigParser.Get().Init(args.agorasdktype)
+
+        self.CleanDirs(args)
+
         self.CreateTask(args)
+
+    def CleanDirs(self, Args):
+        if Args.cleanplugintemp:
+            path = self.GetPath_PluginTmpDir()
+            if path.exists():
+                PrintLog(f"Cleaning PluginTemp: {path}")
+                FileUtility.DeleteDir(path)
+            else:
+                PrintLog(f"PluginTemp not found: {path}")
+
+        if Args.cleanpluginarchive:
+            path = self.GetPath_PluginArchiveDir()
+            if path.exists():
+                PrintLog(f"Cleaning PluginArchive: {path}")
+                FileUtility.DeleteDir(path)
+            else:
+                PrintLog(f"PluginArchive not found: {path}")
+
+        if Args.cleanarchivebuildsunreal:
+            path = ArchiveManager.Get().GetPath_ArchiveRootDir()
+            if path.exists():
+                PrintLog(f"Cleaning ArchiveBuildsUnreal: {path}")
+                FileUtility.DeleteDir(path)
+            else:
+                PrintLog(f"ArchiveBuildsUnreal not found: {path}")
 
     def CreateTask(self,Args):
         if not Args.SkipGenPlugin:
