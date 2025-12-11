@@ -113,6 +113,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-cleanplugintemp",action='store_true')
         ArgParser.add_argument("-cleanpluginarchive",action='store_true')
         ArgParser.add_argument("-cleanarchivebuildsunreal",action='store_true')
+        ArgParser.add_argument("-skipgenplugin",action='store_true')
 
         if bIncludeConflictArgs:
             pass
@@ -183,6 +184,9 @@ class AgoraPluginManager(BaseSystem):
 
         self.CleanDirs(args)
 
+        if args.skipgenplugin:
+            return
+        
         self.CreateTask(args)
 
     def CleanDirs(self, Args):
@@ -282,7 +286,7 @@ class AgoraPluginManager(BaseSystem):
 
         ## after updating git repo, if we read config from repo, update urls
         burl_config_from_repo = Args.urlconfigfromrepo
-        final_product_suffix_build_no = ""
+        # final_product_suffix_build_no = ""
         if burl_config_from_repo:
             repo_json_path = repo_path / "Agora-Unreal-SDK-CPP"/ "AgoraPlugin" / "Resources"/ "url.json"
             ConfigParser.Get().LoadRepoJsonData(repo_json_path)
@@ -290,8 +294,8 @@ class AgoraPluginManager(BaseSystem):
             url_android = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_Android(sdkinfo) if Args.nurlandroid == "" else Args.nurlandroid
             url_windows = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_Win(sdkinfo) if Args.nurlwin == "" else Args.nurlwin
             url_mac = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_Mac(sdkinfo) if Args.nurlmac == "" else Args.nurlmac
-            val_cur_build_no = ConfigParser.Get().GetRTCSDKBuildNo_FromRepo(sdkinfo)
-            final_product_suffix_build_no = "Build." + str(val_cur_build_no)
+            # val_cur_build_no = ConfigParser.Get().GetRTCSDKBuildNo_FromRepo(sdkinfo)
+            # final_product_suffix_build_no = "Build." + str(val_cur_build_no)
 
         else:
             
