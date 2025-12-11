@@ -113,7 +113,6 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-cleanplugintemp",action='store_true')
         ArgParser.add_argument("-cleanpluginarchive",action='store_true')
         ArgParser.add_argument("-cleanarchivebuildsunreal",action='store_true')
-        ArgParser.add_argument("-skipgenplugin",action='store_true')
 
         if bIncludeConflictArgs:
             pass
@@ -183,9 +182,6 @@ class AgoraPluginManager(BaseSystem):
         ConfigParser.Get().Init(args.agorasdktype)
 
         self.CleanDirs(args)
-
-        if args.skipgenplugin:
-            return
         
         self.CreateTask(args)
 
