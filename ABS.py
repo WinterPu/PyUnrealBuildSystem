@@ -126,7 +126,7 @@ class AgoraBuildSystem(BaseSystem):
             
             btest_use_agora_sdk_info = Args.QuerySDK
             if btest_use_agora_sdk_info:
-                sdkinfo = AgoraSDKInfo(Args.agorasdk,Args.sdkisaudioonly)
+                sdkinfo = APMHelper.Get().GetSDKInfo()
                 path_plugin_zipfile = AgoraPluginManager.Get().GetPath_QueryPluginZipFile(sdkinfo,False,True)
                 if path_plugin_zipfile.exists():
                     self.TestAgoraPlugin(Args,path_plugin_zipfile)
