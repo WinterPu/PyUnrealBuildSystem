@@ -2,6 +2,7 @@ from pathlib import Path
 from Logger.Logger import *
 from ConfigParser import *
 from SystemHelper import *
+from APMHelper import *
 
 class ABSHelper():
     __instance = None
@@ -24,11 +25,6 @@ class ABSHelper():
         ## it means this is an ue project with agora sdk
         return True
     
-
-    def IsAgoraSDKAudioOnly(self):
-        return self.__Args.sdkisaudioonly if self.__Args else None
-    
-
     def HasPostXcodeBuildAdded(self):
         return self.__Args.AddPostXcodeBuild if self.__Args else None
     
@@ -36,8 +32,8 @@ class ABSHelper():
     def GetResourceTagName(self):
         return self.__Args.ResourceTagName if self.__Args else None
     
-    def GetAgoraSDKVer(self):
-        return self.__Args.agorasdk if self.__Args else None
+    def GetAgoraSDKInfo(self):
+        return APMHelper.Get().GetSDKInfo()
     
     def GetIOSCert(self):
         return self.__Args.ioscert if self.__Args else None

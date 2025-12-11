@@ -36,12 +36,11 @@ class ArchiveInfoBase:
 
 
 class ArchiveInfo_AgoraExample(ArchiveInfoBase):
-    def __init__(self,build_platform,bis_audioonly_sdk,bis_cpp,ue_ver,sdk_ver,buse_all_ioscerts,ioscert = "",extra_info = "") -> None:
+    def __init__(self,build_platform,sdkinfo:AgoraSDKInfo,bis_cpp,ue_ver,buse_all_ioscerts,ioscert = "",extra_info = "") -> None:
         self.build_platform = build_platform
-        self.bis_audioonly_sdk = bis_audioonly_sdk
+        self.sdkinfo = sdkinfo
         self.bis_cpp = bis_cpp
         self.ue_ver = ue_ver
-        self.sdk_ver = sdk_ver
         self.buse_all_ios_certs = buse_all_ioscerts
         self.ioscert = ioscert
         self.extra_info = extra_info
@@ -50,16 +49,16 @@ class ArchiveInfo_AgoraExample(ArchiveInfoBase):
         return Path("Archive_Example")
     
     def GetPath_CurRootArchiveDir(self):
-        return self.GetPath_CurRootArchiveDirBase() / Path(f"{self.sdk_ver}")
+        return self.GetPath_CurRootArchiveDirBase() / Path(f"{self.sdkinfo.Get_PluginVer()}")
     
     def GetArchiveName(self):
         ## UnrealAPIExample_Full_Cpp_UE5.4_SDK_IOSCert_D_Extra
         str_sdktype = "RTC"
         str_platform = self.build_platform
-        str_sdkaudioonly = "Full" if not self.bis_audioonly_sdk else "AudioOnly"
+        str_sdkaudioonly = "Full" if not self.sdkinfo.Get_SDKIsAudioOnly() else "AudioOnly"
         str_ueprojecttype = "Cpp" if self.bis_cpp else "Blueprint"
         str_ue_ver = f"UE{self.ue_ver}"
-        str_sdk_ver = f"SDK{self.sdk_ver}"
+        str_sdk_ver = f"SDK{self.sdkinfo.Get_PluginVer()}"
         str_ioscert = f"_IOSCert{self.ioscert}" if self.ioscert != "" else ""
         if self.buse_all_ios_certs:
             str_ioscert = f"_AllIOSCerts"
