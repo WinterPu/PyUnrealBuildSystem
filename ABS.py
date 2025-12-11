@@ -98,7 +98,7 @@ class AgoraBuildSystem(BaseSystem):
 
     def CreateTask(self,Args):
         ABSHelper.Get().Init(Args)
-
+        APMHelper.Get().Init(Args)
         if Args.GenPlugin == True:
             AgoraPluginManager.Get().StartGenPlugin(Args)
 
