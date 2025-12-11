@@ -186,9 +186,6 @@ class AgoraBuildSystem(BaseSystem):
     def GenUEMarketplacePlugin(self,Args):
         AgoraPluginManager.Get().GenUEMarketplacePlugins(Args)
 
-    def IsAgoraSDKAudioOnly(self):
-        return APMHelper.Get().GetSDKInfo().Get_SDKIsAudioOnly()
-
 
 if __name__ == '__main__':
     AgoraBuildSystem.Get().Start()

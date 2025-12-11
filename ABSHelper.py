@@ -34,6 +34,9 @@ class ABSHelper():
     
     def GetAgoraSDKInfo(self):
         return APMHelper.Get().GetSDKInfo()
+
+    def IsAgoraSDKAudioOnly(self):
+        return self.GetAgoraSDKInfo().Get_SDKIsAudioOnly()
     
     def GetIOSCert(self):
         return self.__Args.ioscert if self.__Args else None
