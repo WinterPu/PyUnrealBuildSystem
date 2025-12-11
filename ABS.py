@@ -145,7 +145,7 @@ class AgoraBuildSystem(BaseSystem):
     def CopySDKToUEProject(self,Args):
         
         bdo_macratrust = Args.MacTrust
-        sdkinfo = AgoraSDKInfo(Args.agorasdk, Args.sdkisaudioonly, Args.agorasdktype)
+        sdkinfo = APMHelper.Get().GetSDKInfo()
         
         dst_project_path = Path(Args.uprojectpath).parent
         dst_plugin_path = dst_project_path.joinpath("Plugins")
