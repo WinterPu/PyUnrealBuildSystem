@@ -69,7 +69,7 @@ class ArchiveInfo_AgoraExample(ArchiveInfoBase):
     # Override
     def GetArchivePath(self):
         path_root = self.GetPath_CurRootArchiveDir()
-        path = (Path("Full") if not self.bis_audioonly_sdk else Path("AudioOnly"))
+        path = (Path("Full") if not self.sdkinfo.Get_SDKIsAudioOnly() else Path("AudioOnly"))
         path = path / ("Cpp" if self.bis_cpp else "Blueprint")
         path = path / (f"UE_{self.ue_ver}")
         return path_root / path
