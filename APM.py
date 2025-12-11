@@ -68,7 +68,7 @@ class AgoraPluginManager(BaseSystem):
         ArgParser.add_argument("-nurlios", default="")
 
         ArgParser.add_argument("-agorasdktype", default="RTC")
-        ArgParser.add_argument("-agorasdk", default="4.2.1") # Deprecated, keep for compatibility
+        ArgParser.add_argument("-agorasdk", default="") # Deprecated, keep for compatibility
         ArgParser.add_argument("-agorapluginver", default="4.2.1-build.1") # Use this instead of -agorasdk
         ArgParser.add_argument("-sdkisaudioonly",action = "store_true")
         ArgParser.add_argument("-skipnativedownload",action='store_true')
@@ -280,11 +280,15 @@ class AgoraPluginManager(BaseSystem):
         url_windows = ""
         url_mac = ""
 
+
         ## after updating git repo, if we read config from repo, update urls
         burl_config_from_repo = Args.urlconfigfromrepo
+        repo_json_path = repo_path / "Agora-Unreal-SDK-CPP"/ "AgoraPlugin" / "Resources"/ "url.json"
+        
+        bcond01_force_enable = burl_config_from_repo
+        bcond02_default_enable = repo_json_path.exists() and Args.agorasdk == ""
         # final_product_suffix_build_no = ""
-        if burl_config_from_repo:
-            repo_json_path = repo_path / "Agora-Unreal-SDK-CPP"/ "AgoraPlugin" / "Resources"/ "url.json"
+        if bcond01_force_enable or bcond02_default_enable:
             ConfigParser.Get().LoadRepoJsonData(repo_json_path)
             url_ios = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_IOS(sdkinfo) if Args.nurlios == "" else Args.nurlios
             url_android = ConfigParser.Get().GetRTCSDKNativeURL_FromRepo_Android(sdkinfo) if Args.nurlandroid == "" else Args.nurlandroid
