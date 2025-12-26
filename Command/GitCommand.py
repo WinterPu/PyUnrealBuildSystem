@@ -27,6 +27,14 @@ class GitCommand:
 
         RUNCMD(command)
 
+    def GitFetch(self,dst_path = ".",command = ""):
+        command = (
+            r"git" + " -C " + '"' + str(dst_path) + '"' + 
+            r" fetch --progress " + command
+        )
+
+        RUNCMD(command)
+
     def GitPull(self,dst_path = ".",command = ""):
         command = (
             r"git" + " -C " + '"' + str(dst_path) + '"' + 

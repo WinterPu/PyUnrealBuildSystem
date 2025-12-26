@@ -50,8 +50,11 @@ class VersionControlTool:
         PrintLog(f"{repo_name}: Status[{dst_repo_path.exists()}] - dst_repo_path[{str(dst_repo_path)}]")
         if(dst_repo_path.exists()):
             self.__GitCommand.GitReset(dst_repo_path)
-            self.__GitCommand.GitPull(dst_repo_path)
-            self.__GitCommand.GitCheckout(dst_repo_path,branch_name)
+            self.__GitCommand.GitFetch(dst_repo_path)
+            if branch_name != "":
+                self.__GitCommand.GitCheckout(dst_repo_path,branch_name)
+            else:
+                self.__GitCommand.GitPull(dst_repo_path)
         else:
             self.__GitCommand.GitClone(url,dst_repo_path)
             self.__GitCommand.GitCheckout(dst_repo_path,branch_name)
