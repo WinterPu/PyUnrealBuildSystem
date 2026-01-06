@@ -72,6 +72,88 @@ class ParamsWwisePluginBuild():
 
         return subcommand
 
+class ParamsWwiseConsoleGenerateSoundBank():
+    def __init__(self) -> None:
+        self.__project_path = ""
+        self.__use_stable_guid = False
+        self.__import_definition_file = ""
+        self.__platforms = [] # list of {'platform': str, 'path': str}
+        self.__banks = [] # list of str
+        self.__languages = [] # list of str
+        self.__custom_args = ""
+    
+    @property
+    def project_path(self):
+        return self.__project_path
+    @project_path.setter
+    def project_path(self, val):
+        self.__project_path = val
+
+    @property
+    def use_stable_guid(self):
+        return self.__use_stable_guid
+    @use_stable_guid.setter
+    def use_stable_guid(self, val:bool):
+        self.__use_stable_guid = val
+
+    @property
+    def import_definition_file(self):
+        return self.__import_definition_file
+    @import_definition_file.setter
+    def import_definition_file(self, val):
+        self.__import_definition_file = val
+    
+    @property
+    def platforms(self):
+        return self.__platforms
+    
+    ## Android, Mac, Windows, iOS
+    def add_platform(self, platform_name, soundbank_path):
+        self.__platforms.append({'platform': platform_name, 'path': soundbank_path})
+
+    def add_bank(self, bank_path):
+        self.__banks.append(bank_path)
+
+    @property
+    def languages(self):
+        return self.__languages
+    
+    def add_language(self, language):
+        self.__languages.append(language)
+        
+    @property 
+    def custom_args(self):
+        return self.__custom_args
+    @custom_args.setter
+    def custom_args(self, val):
+        self.__custom_args = val
+
+    @property
+    def get_arguments(self):
+        args = ""
+        if self.__project_path:
+            args += f' "{self.__project_path}"'
+        
+        if self.__use_stable_guid:
+            args += " --use-stable-guid"
+        
+        if self.__import_definition_file:
+            args += f' --import-definition-file "{self.__import_definition_file}"'
+            
+        for p in self.__platforms:
+            args += f' --platform "{p["platform"]}" --soundbank-path {p["platform"]} "{p["path"]}"'
+
+        for b in self.__banks:
+             args += f' --bank "{b}"'
+        
+        for l in self.__languages:
+            args += f' --language "{l}"'
+            
+        if self.__custom_args:
+            args += " " + self.__custom_args
+
+        return args
+
 
 class WwiseCommand:
     def __init__(self) -> None:
@@ -119,6 +201,10 @@ class WwiseCommand:
             "python " + '"' + f"{path_wp}" + '"' + " build " + subcommand
         )
         self.RUNCMD_UnderWwiseProject(command)
+
+    def GenerateSoundBank(self, wwise_console_path, params:ParamsWwiseConsoleGenerateSoundBank):
+        command = f'"{wwise_console_path}" generate-soundbank{params.get_arguments}'
+        RUNCMD(command)
 
 
     
