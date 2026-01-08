@@ -112,6 +112,8 @@ class AgoraBuildSystem(BaseSystem):
                 PyUnrealBuildSystem.Get().CreateTask(Args)
                 Args.Clean = False
             
+            Args.Clean = True
+            Args.GenProject = True
             Args.BuildCookRun = True
             PyUnrealBuildSystem.Get().CreateTask(Args)
             Args.BuildCookRun = False
