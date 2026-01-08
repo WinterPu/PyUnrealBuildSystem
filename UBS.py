@@ -183,6 +183,24 @@ class PyUnrealBuildSystem(BaseSystem):
             OneUECommand.RUNUECMD_Cook()
 
 
+        if Args.Clean == True:
+            path_project = Path(Args.uprojectpath).parent
+            ## Path \ or not
+
+            ## [TBD] clean xcproject
+            UnrealProjectManager.CleanProject(path_project)
+
+        if Args.GenProject == True:
+            path_uproject_file = Path(Args.uprojectpath)
+            ## [TBD] some needs \ and some doesn't need \
+            UnrealProjectManager.GenerateProject(host_platform,path_uproject_file)
+
+        if Args.GenIOSProject == True:
+            path_uproject_file = Path(Args.uprojectpath)
+            ## [TBD] some needs \ and some doesn't need \
+            UnrealProjectManager.GenerateIOSProject(host_platform,path_uproject_file)
+            
+
         if Args.BuildPlugin == True:
             
             # [TBD] Modify
@@ -216,23 +234,6 @@ class PyUnrealBuildSystem(BaseSystem):
                 else: 
                     PrintErr("Invalid TargetPlatform Creation")
 
-
-        if Args.Clean == True:
-            path_project = Path(Args.uprojectpath).parent
-            ## Path \ or not
-
-            ## [TBD] clean xcproject
-            UnrealProjectManager.CleanProject(path_project)
-
-        if Args.GenProject == True:
-            path_uproject_file = Path(Args.uprojectpath)
-            ## [TBD] some needs \ and some doesn't need \
-            UnrealProjectManager.GenerateProject(host_platform,path_uproject_file)
-
-        if Args.GenIOSProject == True:
-            path_uproject_file = Path(Args.uprojectpath)
-            ## [TBD] some needs \ and some doesn't need \
-            UnrealProjectManager.GenerateIOSProject(host_platform,path_uproject_file)
 
         bTestCommand = False
         if bTestCommand:
