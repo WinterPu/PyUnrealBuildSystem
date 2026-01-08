@@ -42,7 +42,10 @@ end
 # Assumes files are in [ProjectRoot]/[ExtensionName]
 extension_group_path = File.join(project_root, extension_target_name)
 extension_rel_path = extension_target_name # Relative to project root
-extension_group = project.main_group.find_sub_group(extension_target_name)
+
+# Xcodeproj has group[] access via [name], but find_sub_group isn't standard in older versions or some forks?
+# Standard Xcodeproj::Project::Object::PBXGroup usage:
+extension_group = project.main_group.find_subpath(extension_target_name) || project.main_group[extension_target_name]
 
 unless extension_group
   # If the folder exists on disk, we can add it
@@ -85,7 +88,8 @@ framework_name = "AgoraReplayKitExtension.framework"
 framework_path = File.join(framework_root, framework_name)
 
 if File.exist?(framework_path)
-    framework_group = project.main_group.find_sub_group("IOSFramework")
+    # framework_group = project.main_group.find_sub_group("IOSFramework")
+    framework_group = project.main_group.find_subpath("IOSFramework") || project.main_group["IOSFramework"]
     unless framework_group
         framework_group = project.main_group.new_group("IOSFramework", "IOSFramework") # path relative to project root usually
     end
