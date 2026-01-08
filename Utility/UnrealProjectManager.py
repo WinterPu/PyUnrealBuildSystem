@@ -140,7 +140,19 @@ class UnrealProjectManager:
 
     def AddMacSandboxPermissions(path_project_root):
         path_project = Path(path_project_root)
-        files_entitlements = list(path_project.rglob("*.entitlements"))
+        
+        # Filter for Mac specific entitlements to avoid touching iOS ones (which might be present)
+        # 1. Path contains "Mac" (e.g. Beuild/Mac/Resources)
+        # 2. Filename starts with "Sandbox." (UE standard for Mac entitlements: Sandbox.Server.entitlements, Sandbox.NoNet.entitlements)
+        
+        all_entitlements = list(path_project.rglob("*.entitlements"))
+        files_entitlements = []
+        
+        for p in all_entitlements:
+            if "Mac" in p.parts or p.name.startswith("Sandbox."):
+                files_entitlements.append(p)
+            else:
+                PrintLog(f"[AddMacSandboxPermissions] Ignored (Not Mac): {p.name}")
         
         if len(files_entitlements) == 0:
              PrintLog(f"[AddMacSandboxPermissions] No Entitlements found in {path_project_root} ")
@@ -158,8 +170,13 @@ class UnrealProjectManager:
 
             for permission in permissions:
                  # Try adding first (fails if exists)
+                 # Ignore errors for Add command - it will fail if key exists, which is fine
                  cmd_add = f"Add :{permission} bool true"
-                 OneXcodeCommand.PlistBuddy(cmd_add, file_entitlements)
+                 try:
+                     OneXcodeCommand.PlistBuddy(cmd_add, file_entitlements)
+                 except:
+                     pass
+                 
                  # Then set to ensure correct value (fails if doesn't exist)
                  cmd_set = f"Set :{permission} true"
                  OneXcodeCommand.PlistBuddy(cmd_set, file_entitlements)
