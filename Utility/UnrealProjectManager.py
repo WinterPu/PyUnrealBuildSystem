@@ -138,6 +138,32 @@ class UnrealProjectManager:
         PrintLog(f"Copy: {src_path_projectfiles} -> {dst_path_projectfiles}")
         FileUtility.CopyDir(src_path_projectfiles,dst_path_projectfiles)
 
+    def AddMacSandboxPermissions(path_project_root):
+        path_project = Path(path_project_root)
+        files_entitlements = list(path_project.rglob("*.entitlements"))
+        
+        if len(files_entitlements) == 0:
+             PrintLog(f"[AddMacSandboxPermissions] No Entitlements found in {path_project_root} ")
+
+        OneXcodeCommand = XcodeCommand()
+        for file_entitlements in files_entitlements:
+            PrintLog(f"[AddMacSandboxPermissions] Add Permissions to {file_entitlements}")
+            
+            permissions = [
+                "com.apple.security.device.camera",
+                "com.apple.security.device.microphone",
+                "com.apple.security.network.server",
+                "com.apple.security.network.client"
+            ]
+
+            for permission in permissions:
+                 # Try adding first (fails if exists)
+                 cmd_add = f"Add :{permission} bool true"
+                 OneXcodeCommand.PlistBuddy(cmd_add, file_entitlements)
+                 # Then set to ensure correct value (fails if doesn't exist)
+                 cmd_set = f"Set :{permission} true"
+                 OneXcodeCommand.PlistBuddy(cmd_set, file_entitlements)
+
 
 
 

@@ -309,7 +309,9 @@ class MacTargetPlatform(BaseTargetPlatform):
                 PrintErr(f"Cannot find resource root path {src_root_path_resource}")
                 return 
 
-            UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource)
+            # UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource)
+            UnrealProjectManager.AddMacSandboxPermissions(path_project_root)
+
             OneXcodeCommand = XcodeCommand()
             params = ParamsXcodebuild()
 
@@ -318,6 +320,8 @@ class MacTargetPlatform(BaseTargetPlatform):
             params.workspace =  path_project_root / name_workspace
             params.destination = "generic/platform=macOS"
             params.sdk = "macosx"
+            # sign to run locally
+            params.codesign_identity = "-"
             OneXcodeCommand.XcodeBuild(params)
 
     def PostPackaged_UseLegencyXcodeProject(self):
