@@ -132,10 +132,15 @@ end
 # 7. Embed Extension in Main App
 # Look for 'Embed App Extensions' phase or create it
 # symbol_dst_subfolder_spec :plugins is 13
-embed_phase = main_target.copy_files_build_phases.find { |p| p.symbol_dst_subfolder_spec == :plugins } # :plugins mapping might verify
+# Xcodeproj enum: :frameworks, :shared_frameworks, :resources, :plugins, :java_resources, :products, :xpc_services ...
+# Xcodeproj expects the raw integer value for dst_subfolder_spec.
+# 13 corresponds to the 'PlugIns' folder, which is the standard location for App Extensions in an iOS App Bundle.
+
+embed_phase = main_target.copy_files_build_phases.find { |p| p.symbol_dst_subfolder_spec == :plugins } 
 if embed_phase.nil?
     embed_phase = main_target.new_copy_files_build_phase("Embed App Extensions")
-    embed_phase.symbol_dst_subfolder_spec = :plugins 
+    # Set dst_subfolder_spec to 13 (PlugIns)
+    embed_phase.dst_subfolder_spec = "13"
 end
 
 product_ref = extension_target.product_reference
