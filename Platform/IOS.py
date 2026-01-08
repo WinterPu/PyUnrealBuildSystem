@@ -228,7 +228,11 @@ class IOSTargetPlatform(BaseTargetPlatform):
                 return 
 
 
-            UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource)
+            # UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource)
+            path_py_sys_root = Path(__file__).parent.parent
+            path_ue_config_resources = path_py_sys_root / "Config" / "UEConfig" / "Resources"
+            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources)
+
             OneXcodeCommand = XcodeCommand()
             params = ParamsXcodebuild()
 
@@ -275,7 +279,11 @@ class IOSTargetPlatform(BaseTargetPlatform):
                 return 
 
 
-            UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource,"ProjectFilesIOS")
+            # UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource,"ProjectFilesIOS")
+            path_py_sys_root = Path(__file__).parent.parent
+            path_ue_config_resources = path_py_sys_root / "Config" / "UEConfig" / "Resources"
+            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources)
+            
             OneXcodeCommand = XcodeCommand()
 
             params = ParamsXcodebuild()

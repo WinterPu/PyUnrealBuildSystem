@@ -164,6 +164,117 @@ class UnrealProjectManager:
                  cmd_set = f"Set :{permission} true"
                  OneXcodeCommand.PlistBuddy(cmd_set, file_entitlements)
 
+    def AddIOSBroadcastExtension(path_project_root, src_root_path_resource):
+        # 1. Copy Source Files
+        path_project = Path(path_project_root)
+        src_extension_path = src_root_path_resource / "AgoraBCExtension"
+        dst_extension_path = path_project / "AgoraBCExtension"
+        
+        if src_extension_path.exists():
+            PrintLog(f"[AddIOSBroadcastExtension] Copying source files from {src_extension_path} to {dst_extension_path}")
+            if dst_extension_path.exists():
+                FileUtility.DeleteDir(dst_extension_path)
+            FileUtility.CopyDir(src_extension_path, dst_extension_path)
+        else:
+            PrintErr(f"[AddIOSBroadcastExtension] Source path {src_extension_path} does not exist!")
+
+        # 2. Prepare Frameworks
+        PrintLog("[AddIOSBroadcastExtension] Preparing Frameworks")
+        
+        # Ex. [Project] / IOSFramework
+        root_path_framework_dir = path_project / "IOSFramework"
+        if not root_path_framework_dir.exists():
+            root_path_framework_dir.mkdir(parents=True)
+            
+        extension_folder_name = "AgoraReplayKitExtension.framework"
+        path_target_extension = root_path_framework_dir / extension_folder_name 
+
+        if path_target_extension.exists():
+            FileUtility.DeleteDir(path_target_extension)
+
+        # Src: [Project] /Plugins/AgoraPlugin/Source/ThirdParty/AgoraPluginLibrary/IOS/Release/AgoraReplayKitExtension.embeddedframework.zip
+        src_zip_relative = Path("Plugins/AgoraPlugin/Source/ThirdParty/AgoraPluginLibrary/IOS/Release/AgoraReplayKitExtension.embeddedframework.zip")
+        src_zip_file_path_replay_kit = path_project / src_zip_relative
+        dst_zip_file_path_replay_kit  = root_path_framework_dir / src_zip_file_path_replay_kit.name
+        
+        if src_zip_file_path_replay_kit.exists():
+            FileUtility.CopyFile(src_zip_file_path_replay_kit, dst_zip_file_path_replay_kit)
+
+            OneZipCommand = ZipCommand()
+            OneZipCommand.UnZipFile(dst_zip_file_path_replay_kit, root_path_framework_dir)
+            
+            target_unzip_path = root_path_framework_dir / dst_zip_file_path_replay_kit.stem
+            
+            # Ex. [Project] / IOSFramework / AgoraReplayKitExtension.embeddedframework / AgoraReplayKitExtension.framework
+            unzipped_folder = target_unzip_path / extension_folder_name
+            if unzipped_folder.exists():
+                    unzipped_folder.rename(target_unzip_path.parent / extension_folder_name)
+
+            FileUtility.DeleteFile(dst_zip_file_path_replay_kit)
+            FileUtility.DeleteDir(target_unzip_path)
+            PrintLog("[AddIOSBroadcastExtension] Framework preparation done.")
+        else:
+             PrintWarn(f"[AddIOSBroadcastExtension] Framework zip not found at {src_zip_file_path_replay_kit}")
+
+        # 3. Configure Xcode Project via Ruby Script
+        PrintLog("[AddIOSBroadcastExtension] Configuring Xcode Project via Ruby...")
+
+        # Find .xcodeproj
+        # Assuming UE structure: [ProjectRoot]/Intermediate/ProjectFiles/[ProjectName].xcodeproj
+        # Or checking what exists.
+        project_name = UBSHelper.Get().GetName_ProjectName()
+        path_xcodeproj = path_project / "Intermediate" / "ProjectFiles" / (project_name + "_IOS.xcodeproj")
+        
+        # In UE5 Modern Xcode, it might be different structure or name?
+        # Based on logs: "UnrealGame (IOS).xcodeproj" or "AgoraExample_IOS.xcworkspace"
+        # Since we are modifying the project file that generates the workspace logic or the one used inside it.
+        # But UE often regenerates these.
+        # If modern Xcode: [ProjectRoot]/Intermediate/ProjectFiles/[ProjectName].xcodeproj matches?
+        
+        # Fallback check
+        if not path_xcodeproj.exists():
+             # Try Mac/IOS pattern
+             path_xcodeproj = path_project / "Intermediate" / "ProjectFiles" / (project_name + ".xcodeproj")
+        
+        if not path_xcodeproj.exists():
+             # Try IOS specific naming if distinct
+             files = list((path_project / "Intermediate" / "ProjectFiles").glob("*IOS.xcodeproj"))
+             if len(files) > 0:
+                 path_xcodeproj = files[0]
+
+        if not path_xcodeproj.exists():
+             # Try ProjectName (IOS).xcodeproj pattern (seen in modern UE5 logs)
+             path_temp = path_project / "Intermediate" / "ProjectFiles" / (project_name + "(IOS).xcodeproj")
+             if path_temp.exists():
+                 path_xcodeproj = path_temp
+
+        if path_xcodeproj.exists():
+             # Params
+             script_path = Path("Tools/ios_extension_setup.rb").resolve()
+             # Targets
+             main_target_name = project_name 
+             extension_name = "AgoraBCExtension"
+             # Construct Bundle ID: [AppBundleID].AgoraBCExtension
+             # We need to fetch App Bundle ID. 
+             # Simplified: passed from upstream or read config?
+             # For now, let's construct it from Config or args if available.
+             # Hardcoding a pattern or fetching via ConfigParser could work.
+             # Re-reading Config might be needed.
+             
+             # Assuming we can get it from UBSHelper or passed args not easily available here without signature change.
+             # Let's try to get it from ConfigParser
+             # But ConfigParser needs uProject path.
+             bundle_id_prefix = "io.agora.AgoraExample" # Default/Fallback
+             # In a real scenario, retrieve this properly.
+             extension_bundle_id = f"{bundle_id_prefix}.{extension_name}"
+
+             cmd = f"ruby {script_path} '{path_xcodeproj}' '{path_project}' '{main_target_name}' '{extension_name}' '{extension_bundle_id}'"
+             
+             PrintLog(f"Running: {cmd}")
+             RUNCMD(cmd)
+        else:
+             PrintErr(f"[AddIOSBroadcastExtension] Could not find .xcodeproj at {path_xcodeproj}")
+
 
 
 
