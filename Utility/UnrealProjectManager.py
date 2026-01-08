@@ -196,42 +196,42 @@ class UnrealProjectManager:
             PrintErr(f"[AddIOSBroadcastExtension] Source path {src_extension_path} does not exist!")
 
         # 2. Prepare Frameworks
-        PrintLog("[AddIOSBroadcastExtension] Preparing Frameworks")
-        
-        # Ex. [Project] / IOSFramework
-        root_path_framework_dir = path_project / "IOSFramework"
-        if not root_path_framework_dir.exists():
-            root_path_framework_dir.mkdir(parents=True)
-            
-        extension_folder_name = "AgoraReplayKitExtension.framework"
-        path_target_extension = root_path_framework_dir / extension_folder_name 
-
-        if path_target_extension.exists():
-            FileUtility.DeleteDir(path_target_extension)
-
-        # Src: [Project] /Plugins/AgoraPlugin/Source/ThirdParty/AgoraPluginLibrary/IOS/Release/AgoraReplayKitExtension.embeddedframework.zip
-        src_zip_relative = Path("Plugins/AgoraPlugin/Source/ThirdParty/AgoraPluginLibrary/IOS/Release/AgoraReplayKitExtension.embeddedframework.zip")
-        src_zip_file_path_replay_kit = path_project / src_zip_relative
-        dst_zip_file_path_replay_kit  = root_path_framework_dir / src_zip_file_path_replay_kit.name
-        
-        if src_zip_file_path_replay_kit.exists():
-            FileUtility.CopyFile(src_zip_file_path_replay_kit, dst_zip_file_path_replay_kit)
-
-            OneZipCommand = ZipCommand()
-            OneZipCommand.UnZipFile(dst_zip_file_path_replay_kit, root_path_framework_dir)
-            
-            target_unzip_path = root_path_framework_dir / dst_zip_file_path_replay_kit.stem
-            
-            # Ex. [Project] / IOSFramework / AgoraReplayKitExtension.embeddedframework / AgoraReplayKitExtension.framework
-            unzipped_folder = target_unzip_path / extension_folder_name
-            if unzipped_folder.exists():
-                    unzipped_folder.rename(target_unzip_path.parent / extension_folder_name)
-
-            FileUtility.DeleteFile(dst_zip_file_path_replay_kit)
-            FileUtility.DeleteDir(target_unzip_path)
-            PrintLog("[AddIOSBroadcastExtension] Framework preparation done.")
-        else:
-             PrintWarn(f"[AddIOSBroadcastExtension] Framework zip not found at {src_zip_file_path_replay_kit}")
+        # PrintLog("[AddIOSBroadcastExtension] Preparing Frameworks")
+        # 
+        # # Ex. [Project] / IOSFramework
+        # root_path_framework_dir = path_project / "IOSFramework"
+        # if not root_path_framework_dir.exists():
+        #     root_path_framework_dir.mkdir(parents=True)
+        #     
+        # extension_folder_name = "AgoraReplayKitExtension.framework"
+        # path_target_extension = root_path_framework_dir / extension_folder_name 
+        #
+        # if path_target_extension.exists():
+        #     FileUtility.DeleteDir(path_target_extension)
+        #
+        # # Src: [Project] /Plugins/AgoraPlugin/Source/ThirdParty/AgoraPluginLibrary/IOS/Release/AgoraReplayKitExtension.embeddedframework.zip
+        # src_zip_relative = Path("Plugins/AgoraPlugin/Source/ThirdParty/AgoraPluginLibrary/IOS/Release/AgoraReplayKitExtension.embeddedframework.zip")
+        # src_zip_file_path_replay_kit = path_project / src_zip_relative
+        # dst_zip_file_path_replay_kit  = root_path_framework_dir / src_zip_file_path_replay_kit.name
+        # 
+        # if src_zip_file_path_replay_kit.exists():
+        #     FileUtility.CopyFile(src_zip_file_path_replay_kit, dst_zip_file_path_replay_kit)
+        #
+        #     OneZipCommand = ZipCommand()
+        #     OneZipCommand.UnZipFile(dst_zip_file_path_replay_kit, root_path_framework_dir)
+        #     
+        #     target_unzip_path = root_path_framework_dir / dst_zip_file_path_replay_kit.stem
+        #     
+        #     # Ex. [Project] / IOSFramework / AgoraReplayKitExtension.embeddedframework / AgoraReplayKitExtension.framework
+        #     unzipped_folder = target_unzip_path / extension_folder_name
+        #     if unzipped_folder.exists():
+        #             unzipped_folder.rename(target_unzip_path.parent / extension_folder_name)
+        #
+        #     FileUtility.DeleteFile(dst_zip_file_path_replay_kit)
+        #     FileUtility.DeleteDir(target_unzip_path)
+        #     PrintLog("[AddIOSBroadcastExtension] Framework preparation done.")
+        # else:
+        #      PrintWarn(f"[AddIOSBroadcastExtension] Framework zip not found at {src_zip_file_path_replay_kit}")
 
         # 3. Configure Xcode Project via Ruby Script
         PrintLog("[AddIOSBroadcastExtension] Configuring Xcode Project via Ruby...")

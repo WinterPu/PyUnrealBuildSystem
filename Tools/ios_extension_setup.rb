@@ -39,88 +39,83 @@ else
 end
 
 # 3. Add Source Files
-# Assumes files are in [ProjectRoot]/[ExtensionName]
-extension_group_path = File.join(project_root, extension_target_name)
-extension_rel_path = extension_target_name # Relative to project root
+# Calculate relative path from .xcodeproj folder to Extension folder
+# We know project_root is where extension folder lives.
+# We know project_path is the .xcodeproj file.
+require 'pathname'
+project_dir_path = File.dirname(project_path)
+extension_dir_path = File.join(project_root, extension_target_name)
 
-# Xcodeproj has group[] access via [name], but find_sub_group isn't standard in older versions or some forks?
-# Standard Xcodeproj::Project::Object::PBXGroup usage:
+# Make sure extension directory exists
+unless File.directory?(extension_dir_path)
+    puts "Error: Extension directory not found at #{extension_dir_path}"
+    exit 1
+end
+
+# Calculate relative path: e.g. ../../../AgoraBCExtension
+# This path is what we put in the PBXGroup so it resolves correctly relative to the project.
+relative_group_path = Pathname.new(extension_dir_path).relative_path_from(Pathname.new(project_dir_path)).to_s
+puts "Extension Relative Path: #{relative_group_path}"
+
+# Get or Create Group
 extension_group = project.main_group.find_subpath(extension_target_name) || project.main_group[extension_target_name]
 
 unless extension_group
-  # If the folder exists on disk, we can add it
-  if File.directory?(extension_group_path)
-    extension_group = project.main_group.new_group(extension_target_name, extension_rel_path)
+    # Create group with the relative path
+    extension_group = project.main_group.new_group(extension_target_name, relative_group_path)
+    
     # Add files recursively
-    Dir.glob(File.join(extension_group_path, "*")).each do |file_path|
+    Dir.glob(File.join(extension_dir_path, "*")).each do |file_path|
       next if file_path.include?(".DS_Store")
       file_name = File.basename(file_path)
+      
+      # For files inside the folder, we can add them to the group.
+      # If the group has a path set, new_reference(file_name) adds it relative to the group path.
       file_ref = extension_group.new_reference(file_name)
       
-      if file_name.end_with?(".h", ".m", ".swift", ".c", ".cpp")
+      if file_name.end_with?(".h", ".m", ".swift", ".c", ".cpp", ".mm")
          extension_target.add_file_references([file_ref])
       elsif file_name.end_with?(".plist")
          # Plist doesn't go to compile sources
       end
     end
-  else
-    puts "Warning: Extension directory #{extension_group_path} does not exist."
-  end
 end
 
 # 4. Configure Build Settings
+
+# Retrieve Main Target Signing Info
+main_dev_team = ""
+# main_sign_identity = "" 
+# main_prov_profile = ""
+unless main_target.build_configurations.empty?
+    main_config = main_target.build_configurations.first
+    main_dev_team = main_config.build_settings['DEVELOPMENT_TEAM']
+    # main_sign_identity = main_config.build_settings['CODE_SIGN_IDENTITY']
+end
+
 extension_target.build_configurations.each do |config|
     config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = extension_bundle_id
-    # Assuming Info.plist is at [ExtensionName]/Info.plist relative to project file or project root?
-    # Xcodeproj paths are relative to project file usually.
-    # If project file is in [Root]/Intermediate/ProjectFiles/..., and source is in [Root]/Extension...
-    config.build_settings['INFOPLIST_FILE'] = "$(PROJECT_DIR)/../../#{extension_target_name}/Info.plist" 
-    # Adjust this path logic based on where .xcodeproj is vs where source files are
     
+    # Info.plist path relative to the PROJECT FILE (not the group)
+    config.build_settings['INFOPLIST_FILE'] = "#{relative_group_path}/Info.plist"
+    
+    config.build_settings['PRODUCT_NAME'] = extension_target_name
     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
     config.build_settings['SKIP_INSTALL'] = 'YES'
-end
-
-# 5. Add Frameworks
-# Framework path: [ProjectRoot]/IOSFramework/AgoraReplayKitExtension.framework
-framework_root = File.join(project_root, "IOSFramework")
-framework_name = "AgoraReplayKitExtension.framework"
-framework_path = File.join(framework_root, framework_name)
-
-if File.exist?(framework_path)
-    # framework_group = project.main_group.find_sub_group("IOSFramework")
-    framework_group = project.main_group.find_subpath("IOSFramework") || project.main_group["IOSFramework"]
-    unless framework_group
-        framework_group = project.main_group.new_group("IOSFramework", "IOSFramework") # path relative to project root usually
-    end
-
-    framework_ref = framework_group.find_file_by_path(framework_name)
-    unless framework_ref
-        framework_ref = framework_group.new_reference(framework_name)
-    end
-
-    # Add to Extension Frameworks Build Phase
-    unless extension_target.frameworks_build_phase.files_references.include?(framework_ref)
-        extension_target.frameworks_build_phase.add_file_reference(framework_ref)
-        puts "Added framework to extension target."
-    end
+    config.build_settings['TARGETED_DEVICE_FAMILY'] = "1,2" # iPhone, iPad
     
-    # Add Framework Search Paths
-    extension_target.build_configurations.each do |config|
-        paths = config.build_settings['FRAMEWORK_SEARCH_PATHS']
-        paths = [paths] if paths.is_a?(String)
-        paths = [] if paths.nil?
-        
-        # Add path relative to project or absolute
-        new_path = "$(PROJECT_DIR)/../../IOSFramework"
-        unless paths.include?(new_path)
-             paths << new_path
-             config.build_settings['FRAMEWORK_SEARCH_PATHS'] = paths
-        end
+    # Apply Main Target Signing
+    if main_dev_team && !main_dev_team.empty?
+        config.build_settings['DEVELOPMENT_TEAM'] = main_dev_team
+        config.build_settings['CODE_SIGN_STYLE'] = 'Automatic' 
+    else
+        config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
     end
-else
-    puts "Warning: Framework not found at #{framework_path}"
 end
+
+puts "Skipping Framework addition as requested."
+# (Framework logic removed)
+
 
 
 # 6. Add Dependency to Main Target
@@ -128,7 +123,8 @@ unless main_target.dependencies.any? { |dep| dep.target == extension_target }
     main_target.add_dependency(extension_target)
     puts "Added dependency to main target"
 end
-
+# 6. Add Extension to Main Target's Embed App Extensions Phase
+# Build Phase: Copy Files (PlugIns)
 # 7. Embed Extension in Main App
 # Look for 'Embed App Extensions' phase or create it
 # symbol_dst_subfolder_spec :plugins is 13
