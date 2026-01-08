@@ -261,7 +261,13 @@ class UnrealProjectManager:
 
         if not path_xcodeproj.exists():
              # Try ProjectName (IOS).xcodeproj pattern (seen in modern UE5 logs)
-             path_temp = path_project / "Intermediate" / "ProjectFiles" / (project_name + "(IOS).xcodeproj")
+             path_temp = path_project / "Intermediate" / "ProjectFiles" / (project_name + " (IOS).xcodeproj")
+             if path_temp.exists():
+                 path_xcodeproj = path_temp
+
+        # Check ProjectFilesIOS folder (Legacy IOS project structure)
+        if not path_xcodeproj.exists():
+             path_temp = path_project / "Intermediate" / "ProjectFilesIOS" / (project_name + "_IOS.xcodeproj")
              if path_temp.exists():
                  path_xcodeproj = path_temp
 
