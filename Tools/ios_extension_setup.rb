@@ -8,6 +8,7 @@ project_root = ARGV[1]
 main_target_name = ARGV[2]
 extension_target_name = ARGV[3]
 extension_bundle_id = ARGV[4]
+team_id = ARGV[5]
 
 puts "--- Ruby Script Start ---"
 puts "Project: #{project_path}"
@@ -105,7 +106,10 @@ extension_target.build_configurations.each do |config|
     config.build_settings['TARGETED_DEVICE_FAMILY'] = "1,2" # iPhone, iPad
     
     # Apply Main Target Signing
-    if main_dev_team && !main_dev_team.empty?
+    if team_id && !team_id.empty?
+        config.build_settings['DEVELOPMENT_TEAM'] = team_id
+        config.build_settings['CODE_SIGN_STYLE'] = 'Automatic' 
+    elsif main_dev_team && !main_dev_team.empty?
         config.build_settings['DEVELOPMENT_TEAM'] = main_dev_team
         config.build_settings['CODE_SIGN_STYLE'] = 'Automatic' 
     else
@@ -113,7 +117,69 @@ extension_target.build_configurations.each do |config|
     end
 end
 
-puts "Skipping Framework addition as requested."
+# 5. Add Frameworks
+puts "Adding Framework Search Paths and Linking..."
+
+# Framework path: [ProjectRoot]/IOSFramework/AgoraReplayKitExtension.framework
+# ProjectRoot is passed as ARGV[1]
+framework_root = File.join(project_root, "IOSFramework")
+framework_name = "AgoraReplayKitExtension.framework"
+framework_fullpath = File.join(framework_root, framework_name)
+
+if File.exist?(framework_fullpath)
+    # 1. Add File Reference to Project
+    # We want to add it to a group, maybe "IOSFramework" group or "Frameworks" group?
+    # Let's create/find IOSFramework group in project root 
+    
+    # Calculate relative path to framework
+    # Project: [Root]/Intermediate/ProjectFiles/[Project].xcodeproj
+    # Framework: [Root]/IOSFramework/...
+    # Relative: ../../IOSFramework/...
+    
+    require 'pathname'
+    project_dir_path = File.dirname(project_path)
+    framework_relative_path = Pathname.new(framework_fullpath).relative_path_from(Pathname.new(project_dir_path)).to_s
+    
+    puts "Framework Relative Path: #{framework_relative_path}"
+
+    # Find or Create Group "IOSFramework"
+    framework_group = project.main_group.find_subpath("IOSFramework") || project.main_group.new_group("IOSFramework", "../../IOSFramework")
+    
+    # Check if ref exists
+    framework_ref = framework_group.files.find { |f| f.path == framework_name }
+    unless framework_ref
+        # add_reference expects path relative to group if group has path, or absolute?
+        # If group path is "../../IOSFramework", then adding "AgoraReplayKitExtension.framework" works if it's inside.
+        framework_ref = framework_group.new_reference(framework_name)
+    end
+    
+    # 2. Add to Frameworks Build Phase
+    unless extension_target.frameworks_build_phase.files_references.include?(framework_ref)
+        extension_target.frameworks_build_phase.add_file_reference(framework_ref)
+        puts "Linked #{framework_name} to extension target."
+    end
+    
+    # 3. Add Framework Search Paths
+    extension_target.build_configurations.each do |config|
+        paths = config.build_settings['FRAMEWORK_SEARCH_PATHS']
+        paths = [paths] if paths.is_a?(String)
+        paths = [] if paths.nil?
+        
+        # Add path relative to project
+        # If the group logic above used "../../IOSFramework", let's use that.
+        search_path = "$(PROJECT_DIR)/../../IOSFramework"
+        
+        unless paths.include?(search_path)
+             paths << search_path
+             config.build_settings['FRAMEWORK_SEARCH_PATHS'] = paths
+             puts "Added Framework Search Path: #{search_path}"
+        end
+    end
+
+else
+    puts "Warning: Framework not found at #{framework_fullpath}"
+end
+
 # (Framework logic removed)
 
 

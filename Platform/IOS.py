@@ -231,7 +231,14 @@ class IOSTargetPlatform(BaseTargetPlatform):
             # UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource)
             path_py_sys_root = Path(__file__).parent.parent
             path_ue_config_resources = path_py_sys_root / "Config" / "UEConfig" / "Resources"
-            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources)
+            
+            ioscert_tag_name = self.Params['ioscert']
+            OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
+            team_id = ""
+            if OneIOSCert != None:
+                 team_id = OneIOSCert.team_id
+
+            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources, team_id)
 
             OneXcodeCommand = XcodeCommand()
             params = ParamsXcodebuild()
@@ -240,8 +247,6 @@ class IOSTargetPlatform(BaseTargetPlatform):
             params.scheme = uproject_name
             params.workspace =  path_project_root / name_workspace
 
-            ioscert_tag_name = self.Params['ioscert']
-            OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
             if OneIOSCert != None:
                 params.codesign_identity = OneIOSCert.get_signing_identity
                 params.provisioning_profile_specifier = OneIOSCert.get_provisioning_profile_specifier
