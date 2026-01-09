@@ -138,18 +138,41 @@ extension_target.build_configurations.each do |config|
     end
     
     # Extra Settings
-    # Revert to manual Info.plist management to ensure keys are present
-    config.build_settings['GENERATE_INFOPLIST_FILE'] = 'NO'
-    config.build_settings['INFOPLIST_PREPROCESS'] = 'NO'
-    
+    # Use Xcode's modern build system capabilities to generate the full Info.plist
+    # We will provide a partial plist with only NSExtension keys.
+    config.build_settings['GENERATE_INFOPLIST_FILE'] = 'YES'
+    config.build_settings['INFOPLIST_KEY_CFBundleDisplayName'] = extension_target_name
     config.build_settings['MARKETING_VERSION'] = '1.0'
     config.build_settings['CURRENT_PROJECT_VERSION'] = '1'
-
     config.build_settings['ALWAYS_SEARCH_USER_PATHS'] = 'NO'
-    
-    # Ensure Wrapper Extension is set
     config.build_settings['WRAPPER_EXTENSION'] = 'appex'
 end
+
+# Rewrite Info.plist to be a partial plist (NSExtension only)
+# This avoids conflicts with GENERATE_INFOPLIST_FILE=YES
+full_plist_path = File.join(extension_dir_path, "Info.plist")
+partial_content = <<~XML
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.broadcast-services-upload</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>SampleHandler</string>
+		<key>RPBroadcastProcessMode</key>
+		<string>RPBroadcastProcessModeSampleBuffer</string>
+	</dict>
+</dict>
+</plist>
+XML
+
+File.write(full_plist_path, partial_content)
+puts "Rewrote Info.plist to partial content for merging."
+
+# 5. Add Frameworks
 
 # 5. Add Frameworks
 puts "Adding Framework Search Paths and Linking..."
