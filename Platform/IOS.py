@@ -294,8 +294,19 @@ class IOSTargetPlatform(BaseTargetPlatform):
             OneXcodeCommand = XcodeCommand()
 
             params = ParamsXcodebuild()
-            name_workspace = uproject_name + "_IOS.xcworkspace"
-            params.workspace =  path_project_root / name_workspace
+            
+            # Legacy UE4 Workspace Logic
+            # Try to find valid workspace in root first (UE4 convention)
+            # Or Intermediate/ProjectFiles
+            
+            name_workspace_root =  uproject_name + ".xcworkspace"
+            path_workspace_root = path_project_root / name_workspace_root
+            
+            if path_workspace_root.exists():
+                params.workspace = path_workspace_root
+            else:
+                PrintLog(f"Cannot find workspace in root path {path_workspace_root}")
+
             params.scheme = uproject_name
             
             ioscert_tag_name = self.Params['ioscert']
