@@ -236,7 +236,7 @@ class IOSTargetPlatform(BaseTargetPlatform):
             OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
             team_id = ""
             if OneIOSCert != None:
-                 team_id = OneIOSCert.team_id
+                 team_id = OneIOSCert.get_team_id
 
             UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources, team_id)
 
