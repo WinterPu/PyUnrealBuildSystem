@@ -138,10 +138,13 @@ extension_target.build_configurations.each do |config|
     end
     
     # Extra Settings
-    # INFOPLIST_PREPROCESS should be NO for standard Info.plist variable substitution to work correctly
-    # with $(PRODUCT_BUNDLE_IDENTIFIER). If YES, it expects C-style preprocessing.
-    config.build_settings['INFOPLIST_PREPROCESS'] = 'NO'
+    # Revert to manual Info.plist management to ensure keys are present
     config.build_settings['GENERATE_INFOPLIST_FILE'] = 'NO'
+    config.build_settings['INFOPLIST_PREPROCESS'] = 'NO'
+    
+    config.build_settings['MARKETING_VERSION'] = '1.0'
+    config.build_settings['CURRENT_PROJECT_VERSION'] = '1'
+
     config.build_settings['ALWAYS_SEARCH_USER_PATHS'] = 'NO'
     
     # Ensure Wrapper Extension is set
