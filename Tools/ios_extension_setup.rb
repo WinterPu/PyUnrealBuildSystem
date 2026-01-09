@@ -35,9 +35,20 @@ else
     # Platform: ios
     extension_target = project.new_target(:app_extension, extension_target_name, :ios)
     puts "Created new target: #{extension_target_name}"
-    
-    # Force creation of build configurations (Debug/Release/etc to match project)
-    # new_target usually creates default configs.
+end
+
+# 2.1 Sync Build Configurations
+# Ensure extension target has the same configurations as the project (e.g. Development, Shipping, Test)
+project.build_configurations.each do |proj_config|
+  unless extension_target.build_configurations.any? { |c| c.name == proj_config.name }
+    # Clone 'Release' or first available config
+    base_config = extension_target.build_configurations.find { |c| c.name == 'Release' } || extension_target.build_configurations.first
+    if base_config
+        new_config = extension_target.add_build_configuration(proj_config.name, base_config.type)
+        new_config.build_settings = base_config.build_settings.clone
+        puts "Created configuration '#{proj_config.name}' for extension target."
+    end
+  end
 end
 
 # 3. Add Source Files
@@ -113,10 +124,10 @@ extension_target.build_configurations.each do |config|
         if provisioning_profile_specifier && !provisioning_profile_specifier.empty?
              config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
              config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = provisioning_profile_specifier
-             puts "Manual Signing Configured: Team #{team_id}, Profile #{provisioning_profile_specifier}"
+             puts "[#{config.name}] Manual Signing Configured: Team #{team_id}, Profile #{provisioning_profile_specifier}"
         else
              config.build_settings['CODE_SIGN_STYLE'] = 'Automatic' 
-             puts "Automatic Signing Configured: Team #{team_id}"
+             puts "[#{config.name}] Automatic Signing Configured: Team #{team_id}"
         end
 
     elsif main_dev_team && !main_dev_team.empty?
@@ -125,6 +136,11 @@ extension_target.build_configurations.each do |config|
     else
         config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
     end
+    
+    # Extra Settings
+    config.build_settings['INFOPLIST_PREPROCESS'] = 'YES'
+    config.build_settings['GENERATE_INFOPLIST_FILE'] = 'NO'
+    config.build_settings['ALWAYS_SEARCH_USER_PATHS'] = 'NO'
 end
 
 # 5. Add Frameworks
@@ -138,8 +154,6 @@ framework_fullpath = File.join(framework_root, framework_name)
 
 if File.exist?(framework_fullpath)
     # 1. Add File Reference to Project
-    # We want to add it to a group, maybe "IOSFramework" group or "Frameworks" group?
-    # Let's create/find IOSFramework group in project root 
     
     # Calculate relative path to framework
     # Project: [Root]/Intermediate/ProjectFiles/[Project].xcodeproj
@@ -152,15 +166,14 @@ if File.exist?(framework_fullpath)
     
     puts "Framework Relative Path: #{framework_relative_path}"
 
-    # Find or Create Group "IOSFramework"
-    framework_group = project.main_group.find_subpath("IOSFramework") || project.main_group.new_group("IOSFramework", "../../IOSFramework")
+    # Find or Create Group "Frameworks" (Standard location)
+    # Do NOT create IOSFramework group in root to avoid clutter
+    framework_group = project.main_group.find_subpath("Frameworks") || project.main_group.new_group("Frameworks")
     
     # Check if ref exists
-    framework_ref = framework_group.files.find { |f| f.path == framework_name }
+    framework_ref = framework_group.files.find { |f| f.path == framework_relative_path }
     unless framework_ref
-        # add_reference expects path relative to group if group has path, or absolute?
-        # If group path is "../../IOSFramework", then adding "AgoraReplayKitExtension.framework" works if it's inside.
-        framework_ref = framework_group.new_reference(framework_name)
+        framework_ref = framework_group.new_reference(framework_relative_path)
     end
     
     # 2. Add to Frameworks Build Phase
@@ -176,7 +189,7 @@ if File.exist?(framework_fullpath)
         paths = [] if paths.nil?
         
         # Add path relative to project
-        # If the group logic above used "../../IOSFramework", let's use that.
+        # Using ../../IOSFramework because file is located there
         search_path = "$(PROJECT_DIR)/../../IOSFramework"
         
         unless paths.include?(search_path)
