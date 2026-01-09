@@ -181,7 +181,7 @@ class UnrealProjectManager:
                  cmd_set = f"Set :{permission} true"
                  OneXcodeCommand.PlistBuddy(cmd_set, file_entitlements)
 
-    def AddIOSBroadcastExtension(path_project_root, src_root_path_resource, team_id = ""):
+    def AddIOSBroadcastExtension(path_project_root, src_root_path_resource, team_id = "", provisioning_profile_specifier = ""):
         # 1. Copy Source Files
         path_project = Path(path_project_root)
         src_extension_path = src_root_path_resource / "AgoraBCExtension"
@@ -291,7 +291,7 @@ class UnrealProjectManager:
              # In a real scenario, retrieve this properly.
              extension_bundle_id = f"{bundle_id_prefix}.{extension_name}"
 
-             cmd = f"ruby {script_path} '{path_xcodeproj}' '{path_project}' '{main_target_name}' '{extension_name}' '{extension_bundle_id}' '{team_id}'"
+             cmd = f"ruby {script_path} '{path_xcodeproj}' '{path_project}' '{main_target_name}' '{extension_name}' '{extension_bundle_id}' '{team_id}' '{provisioning_profile_specifier}'"
              
              PrintLog(f"Running: {cmd}")
              RUNCMD(cmd)

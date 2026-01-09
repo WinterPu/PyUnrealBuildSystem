@@ -235,10 +235,12 @@ class IOSTargetPlatform(BaseTargetPlatform):
             ioscert_tag_name = self.Params['ioscert']
             OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
             team_id = ""
+            provisioning_profile_specifier = ""
             if OneIOSCert != None:
                  team_id = OneIOSCert.get_team_id
+                 provisioning_profile_specifier = OneIOSCert.get_provisioning_profile_specifier
 
-            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources, team_id)
+            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources, team_id, provisioning_profile_specifier)
 
             OneXcodeCommand = XcodeCommand()
             params = ParamsXcodebuild()

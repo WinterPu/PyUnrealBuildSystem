@@ -9,6 +9,7 @@ main_target_name = ARGV[2]
 extension_target_name = ARGV[3]
 extension_bundle_id = ARGV[4]
 team_id = ARGV[5]
+provisioning_profile_specifier = ARGV[6]
 
 puts "--- Ruby Script Start ---"
 puts "Project: #{project_path}"
@@ -108,7 +109,16 @@ extension_target.build_configurations.each do |config|
     # Apply Main Target Signing
     if team_id && !team_id.empty?
         config.build_settings['DEVELOPMENT_TEAM'] = team_id
-        config.build_settings['CODE_SIGN_STYLE'] = 'Automatic' 
+        
+        if provisioning_profile_specifier && !provisioning_profile_specifier.empty?
+             config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+             config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = provisioning_profile_specifier
+             puts "Manual Signing Configured: Team #{team_id}, Profile #{provisioning_profile_specifier}"
+        else
+             config.build_settings['CODE_SIGN_STYLE'] = 'Automatic' 
+             puts "Automatic Signing Configured: Team #{team_id}"
+        end
+
     elsif main_dev_team && !main_dev_team.empty?
         config.build_settings['DEVELOPMENT_TEAM'] = main_dev_team
         config.build_settings['CODE_SIGN_STYLE'] = 'Automatic' 
