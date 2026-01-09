@@ -138,9 +138,14 @@ extension_target.build_configurations.each do |config|
     end
     
     # Extra Settings
-    config.build_settings['INFOPLIST_PREPROCESS'] = 'YES'
+    # INFOPLIST_PREPROCESS should be NO for standard Info.plist variable substitution to work correctly
+    # with $(PRODUCT_BUNDLE_IDENTIFIER). If YES, it expects C-style preprocessing.
+    config.build_settings['INFOPLIST_PREPROCESS'] = 'NO'
     config.build_settings['GENERATE_INFOPLIST_FILE'] = 'NO'
     config.build_settings['ALWAYS_SEARCH_USER_PATHS'] = 'NO'
+    
+    # Ensure Wrapper Extension is set
+    config.build_settings['WRAPPER_EXTENSION'] = 'appex'
 end
 
 # 5. Add Frameworks
