@@ -289,20 +289,35 @@ class IOSTargetPlatform(BaseTargetPlatform):
             # UnrealProjectManager.ReplaceXcodeProject(path_project_root,src_root_path_resource,"ProjectFilesIOS")
             path_py_sys_root = Path(__file__).parent.parent
             path_ue_config_resources = path_py_sys_root / "Config" / "UEConfig" / "Resources"
-            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources)
+            
+            # [Fix] Pass Signing Info to Ruby Script
+            ioscert_tag_name = self.Params['ioscert']
+            OneIOSCert:IOSCertInfo = ConfigParser.Get().GetOneIOSCertificate(ioscert_tag_name)
+            team_id = ""
+            provisioning_profile_specifier = ""
+            if OneIOSCert != None:
+                 team_id = OneIOSCert.get_team_id
+                 provisioning_profile_specifier = OneIOSCert.get_provisioning_profile_specifier
+
+            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources, team_id, provisioning_profile_specifier)
             
             OneXcodeCommand = XcodeCommand()
 
             params = ParamsXcodebuild()
             
             # Legacy UE4 Workspace Logic
-            # Try to find valid workspace in root first (UE4 convention)
-            # Or Intermediate/ProjectFiles
+            # Check for _IOS.xcworkspace first (Created by GenIOSProject, specific for iOS)
+            name_workspace_ios = uproject_name + "_IOS.xcworkspace"
+            path_workspace_ios = path_project_root / name_workspace_ios
             
             name_workspace_root =  uproject_name + ".xcworkspace"
             path_workspace_root = path_project_root / name_workspace_root
             
-            if path_workspace_root.exists():
+            if path_workspace_ios.exists():
+                PrintLog(f"Found iOS specific workspace: {path_workspace_ios}")
+                params.workspace = path_workspace_ios
+            elif path_workspace_root.exists():
+                PrintLog(f"Found standard workspace: {path_workspace_root}")
                 params.workspace = path_workspace_root
             else:
                 PrintLog(f"Cannot find workspace in root path {path_workspace_root}")

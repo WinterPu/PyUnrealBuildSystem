@@ -115,6 +115,12 @@ class AgoraBuildSystem(BaseSystem):
             Args.Clean = True
             Args.GenProject = True
             # Args.GenIOSProject = True
+            
+            # [Fix] Generate IOS Project for Legacy UE versions to ensure correct Workspace configuration
+            UBSHelper.Get().Init(Args)
+            if not UBSHelper.Get().Is_UE53_Or_Later():
+                Args.GenIOSProject = True
+
             Args.BuildCookRun = True
             PyUnrealBuildSystem.Get().CreateTask(Args)
             Args.BuildCookRun = False

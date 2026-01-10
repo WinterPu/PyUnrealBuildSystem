@@ -237,16 +237,28 @@ class UnrealProjectManager:
         PrintLog("[AddIOSBroadcastExtension] Configuring Xcode Project via Ruby...")
 
         # Find .xcodeproj
-        # Assuming UE structure: [ProjectRoot]/Intermediate/ProjectFiles/[ProjectName].xcodeproj
-        # Or checking what exists.
         project_name = UBSHelper.Get().GetName_ProjectName()
-        path_xcodeproj = path_project / "Intermediate" / "ProjectFiles" / (project_name + "_IOS.xcodeproj")
+        path_xcodeproj = None # Reset
         
-        # In UE5 Modern Xcode, it might be different structure or name?
-        # Based on logs: "UnrealGame (IOS).xcodeproj" or "AgoraExample_IOS.xcworkspace"
-        # Since we are modifying the project file that generates the workspace logic or the one used inside it.
-        # But UE often regenerates these.
-        # If modern Xcode: [ProjectRoot]/Intermediate/ProjectFiles/[ProjectName].xcodeproj matches?
+        # Priority Check: ProjectFilesIOS (Legacy IOS specific)
+        # This is where GenIOSProject (-XcodeProjectFiles -platforms=IOS) typically puts the project in older UE versions.
+        # Check this BEFORE standard ProjectFiles to avoid picking up the Mac-only project.
+        path_legacy_ios_folder = path_project / "Intermediate" / "ProjectFilesIOS"
+        if path_legacy_ios_folder.exists():
+             # Try [ProjectName].xcodeproj
+             path_temp = path_legacy_ios_folder / (project_name + ".xcodeproj")
+             if path_temp.exists():
+                 path_xcodeproj = path_temp
+             
+             # Try [ProjectName]_IOS.xcodeproj
+             if not path_xcodeproj:
+                 path_temp = path_legacy_ios_folder / (project_name + "_IOS.xcodeproj")
+                 if path_temp.exists():
+                    path_xcodeproj = path_temp
+
+        if not path_xcodeproj:
+            # Fallback to standard locations
+            path_xcodeproj = path_project / "Intermediate" / "ProjectFiles" / (project_name + "_IOS.xcodeproj")
         
         # Fallback check
         if not path_xcodeproj.exists():
@@ -265,13 +277,13 @@ class UnrealProjectManager:
              if path_temp.exists():
                  path_xcodeproj = path_temp
 
-        # Check ProjectFilesIOS folder (Legacy IOS project structure)
+        # Check ProjectFilesIOS folder (Legacy IOS project structure) - Redundant if Priority Check worked, but kept for safety
         if not path_xcodeproj.exists():
              path_temp = path_project / "Intermediate" / "ProjectFilesIOS" / (project_name + "_IOS.xcodeproj")
              if path_temp.exists():
                  path_xcodeproj = path_temp
 
-        if path_xcodeproj.exists():
+        if path_xcodeproj and path_xcodeproj.exists():
              # Params
              script_path = Path("Tools/ios_extension_setup.rb").resolve()
              # Targets
