@@ -305,22 +305,26 @@ class IOSTargetPlatform(BaseTargetPlatform):
 
             params = ParamsXcodebuild()
             
-            # Legacy UE4 Workspace Logic
-            # Check for _IOS.xcworkspace first (Created by GenIOSProject, specific for iOS)
-            name_workspace_ios = uproject_name + "_IOS.xcworkspace"
-            path_workspace_ios = path_project_root / name_workspace_ios
+            # Legacy UE4 Workspace/Project Logic
             
-            name_workspace_root =  uproject_name + ".xcworkspace"
-            path_workspace_root = path_project_root / name_workspace_root
+            # 1. Attempt using Project file in Intermediate/ProjectFilesIOS (Created by GenIOSProject)
+            # This is the most reliable way to target the specific iOS project configuration
+            path_ios_xcodeproj = path_project_root / "Intermediate" / "ProjectFilesIOS" / (uproject_name + ".xcodeproj")
             
-            if path_workspace_ios.exists():
+            path_workspace_ios = path_project_root / (uproject_name + "_IOS.xcworkspace")
+            path_workspace_root = path_project_root / (uproject_name + ".xcworkspace")
+            
+            if path_ios_xcodeproj.exists():
+                PrintLog(f"Found iOS specific project: {path_ios_xcodeproj}")
+                params.project = path_ios_xcodeproj
+            elif path_workspace_ios.exists():
                 PrintLog(f"Found iOS specific workspace: {path_workspace_ios}")
                 params.workspace = path_workspace_ios
             elif path_workspace_root.exists():
                 PrintLog(f"Found standard workspace: {path_workspace_root}")
                 params.workspace = path_workspace_root
             else:
-                PrintLog(f"Cannot find workspace in root path {path_workspace_root}")
+                PrintErr(f"Cannot find valid Project or Workspace in root path {path_project_root}")
 
             params.scheme = uproject_name
             

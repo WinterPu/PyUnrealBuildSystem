@@ -5,6 +5,7 @@ class ParamsXcodebuild:
 
     def __init__(self) -> None:
         self.__path_workspace = ""
+        self.__path_project = ""
         self.__scheme = "AgoraExample"
         self.__configuration = "Development"
         self.__destination="generic/platform=iOS"
@@ -15,6 +16,10 @@ class ParamsXcodebuild:
     @property
     def get_workspace(self):
         return self.__path_workspace
+
+    @property
+    def get_project(self):
+        return self.__path_project
     
     @property
     def get_scheme(self):
@@ -45,6 +50,10 @@ class ParamsXcodebuild:
     def workspace(self,val):
         self.__path_workspace = Path(val)
 
+    @get_project.setter
+    def project(self,val):
+        self.__path_project = Path(val)
+
     @get_scheme.setter
     def scheme(self,val):
         self.__scheme = val
@@ -73,13 +82,13 @@ class ParamsXcodebuild:
 class XcodeCommand:
     def __init__(self) -> None:
         pass
-
-    def XcodeBuild(self,params:ParamsXcodebuild):
-        
-        path_workspace = params.get_workspace
+path_project = params.get_project
         scheme = params.get_scheme
         configuration = params.get_configuration
         destination = params.get_destination
+        
+        # ... existing ...
+        
         sdk = params.get_sdk
 
         codesign_identity = params.get_codesign_identity
@@ -91,6 +100,16 @@ class XcodeCommand:
         # /usr/bin/env UBT_NO_POST_DEPLOY=true /usr/bin/xcrun xcodebuild build 
         # -workspace "/Users/admin/Documents/Agora-Unreal-SDK-CPP-Example/AgoraExample_IOS.xcworkspace" 
         # -scheme 'AgoraExample' -configuration "Development" -destination generic/platform=iOS -sdk iphoneos
+        
+        target_param = ""
+        if str(path_workspace) != "" and str(path_workspace) != ".":
+             target_param = r" -workspace " + '"' + str(path_workspace)  + '"'
+        elif str(path_project) != "" and str(path_project) != ".":
+             target_param = r" -project " + '"' + str(path_project)  + '"'
+
+        command = (
+            r"/usr/bin/xcrun xcodebuild build " + 
+            target_param-destination generic/platform=iOS -sdk iphoneos
         
         command = (
             r"/usr/bin/xcrun xcodebuild build "
