@@ -158,3 +158,24 @@ class UnrealConfigIniManager:
         with open(path_ini, 'w') as file:
             file.writelines(new_lines)
 
+    @staticmethod
+    def GetConfig(path_ini, section, key):
+        if not path_ini.exists():
+            return None
+        
+        with open(path_ini, 'r') as file:
+            lines = file.readlines()
+        
+        in_section = False
+        for line in lines:
+            line = line.strip()
+            if line.startswith('[') and line.endswith(']'):
+                if line == section:
+                    in_section = True
+                else:
+                    in_section = False
+            elif in_section and line.startswith(key + '='):
+                return line.split('=', 1)[1]
+                
+        return None
+

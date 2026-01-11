@@ -299,7 +299,17 @@ class IOSTargetPlatform(BaseTargetPlatform):
                  team_id = OneIOSCert.get_team_id
                  provisioning_profile_specifier = OneIOSCert.get_provisioning_profile_specifier
 
-            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources, team_id, provisioning_profile_specifier)
+            # [Fix] Get App Bundle ID from Config
+            path_ini = path_project_root / "Config" / "DefaultEngine.ini"
+            app_bundle_id = UnrealConfigIniManager.GetConfig(path_ini, "[/Script/IOSRuntimeSettings.IOSRuntimeSettings]", "BundleIdentifier")
+            if not app_bundle_id:
+                 # Fallback/Default attempt (e.g. from memory or args if available, otherwise warning)
+                 PrintWarn(f"Could not read BundleIdentifier from {path_ini}, check Config.")
+                 app_bundle_id = "" # Will trigger fallback in UnrealProjectManager or can be derived
+            else:
+                 PrintLog(f"Read BundleIdentifier from Config: {app_bundle_id}")
+
+            UnrealProjectManager.AddIOSBroadcastExtension(path_project_root, path_ue_config_resources, team_id, provisioning_profile_specifier, app_bundle_id)
             
             OneXcodeCommand = XcodeCommand()
 

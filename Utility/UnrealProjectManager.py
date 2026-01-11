@@ -181,7 +181,7 @@ class UnrealProjectManager:
                  cmd_set = f"Set :{permission} true"
                  OneXcodeCommand.PlistBuddy(cmd_set, file_entitlements)
 
-    def AddIOSBroadcastExtension(path_project_root, src_root_path_resource, team_id = "", provisioning_profile_specifier = ""):
+    def AddIOSBroadcastExtension(path_project_root, src_root_path_resource, team_id = "", provisioning_profile_specifier = "", app_bundle_id = ""):
         # 1. Copy Source Files
         path_project = Path(path_project_root)
         src_extension_path = src_root_path_resource / "AgoraBCExtension"
@@ -299,7 +299,10 @@ class UnrealProjectManager:
              # Assuming we can get it from UBSHelper or passed args not easily available here without signature change.
              # Let's try to get it from ConfigParser
              # But ConfigParser needs uProject path.
-             bundle_id_prefix = "io.agora.AgoraExample" # Default/Fallback
+             bundle_id_prefix = app_bundle_id if app_bundle_id else "io.agora.AgoraExample" # Default/Fallback
+             if not app_bundle_id:
+                  PrintWarn(f"[AddIOSBroadcastExtension] App Bundle ID not provided, using fallback: {bundle_id_prefix}")
+
              # In a real scenario, retrieve this properly.
              extension_bundle_id = f"{bundle_id_prefix}.{extension_name}"
 
