@@ -99,6 +99,7 @@ class AgoraBuildSystem(BaseSystem):
     def CreateTask(self,Args):
         ABSHelper.Get().Init(Args)
         APMHelper.Get().Init(Args)
+        UBSHelper.Get().Init(Args)
         if Args.GenPlugin == True:
             AgoraPluginManager.Get().StartGenPlugin(Args)
 
@@ -118,7 +119,7 @@ class AgoraBuildSystem(BaseSystem):
             
             # [Fix] Generate IOS Project for Legacy UE versions to ensure correct Workspace configuration
             UBSHelper.Get().Init(Args)
-            if not UBSHelper.Get().Is_UE53_Or_Later():
+            if not UBSHelper.Get().Is_UE53_Or_Later() and UBSHelper.Get().Is_TargetPlatform_IOS():
                 Args.GenIOSProject = True
 
             Args.BuildCookRun = True
