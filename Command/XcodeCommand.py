@@ -82,13 +82,14 @@ class ParamsXcodebuild:
 class XcodeCommand:
     def __init__(self) -> None:
         pass
-path_project = params.get_project
+
+    def XcodeBuild(self,params:ParamsXcodebuild):
+        
+        path_workspace = params.get_workspace
+        path_project = params.get_project
         scheme = params.get_scheme
         configuration = params.get_configuration
         destination = params.get_destination
-        
-        # ... existing ...
-        
         sdk = params.get_sdk
 
         codesign_identity = params.get_codesign_identity
@@ -109,11 +110,7 @@ path_project = params.get_project
 
         command = (
             r"/usr/bin/xcrun xcodebuild build " + 
-            target_param-destination generic/platform=iOS -sdk iphoneos
-        
-        command = (
-            r"/usr/bin/xcrun xcodebuild build "
-            r" -workspace " + '"' + str(path_workspace)  + '"' + 
+            target_param + 
             r" -scheme " + '"' + str(scheme)  + '"' + 
             r" -configuration " + '"' + str(configuration)  + '"' + 
             r" -destination " + '"' + str(destination)  + '"' + 
