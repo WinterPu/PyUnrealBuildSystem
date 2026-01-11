@@ -250,6 +250,14 @@ class UBSHelper():
             return ""
         
         return self.__Args.targetplatform
+    
+    def HasTargetplatform_IOS(self):
+        if self.__Args == None:
+            PrintErr(f"__Args None")
+            return False
+            
+        target_platform = self.__Args.targetplatform.upper()
+        return "IOS" in target_platform or "ALL" in target_platform
 
 
 
