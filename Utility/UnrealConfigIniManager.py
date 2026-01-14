@@ -167,15 +167,50 @@ class UnrealConfigIniManager:
             lines = file.readlines()
         
         in_section = False
+        target_section = section.strip()
+        target_key = key.strip()
+
         for line in lines:
             line = line.strip()
             if line.startswith('[') and line.endswith(']'):
-                if line == section:
+                # Case insensitive check for section
+                if line.lower() == target_section.lower():
                     in_section = True
                 else:
                     in_section = False
-            elif in_section and line.startswith(key + '='):
-                return line.split('=', 1)[1]
+            elif in_section and '=' in line:
+                # Handle possible spaces around =
+                parts = line.split('=', 1)
+                current_key = parts[0].strip()
+                if current_key.lower() == target_key.lower():
+                    return parts[1].strip()
                 
         return None
+
+    @staticmethod
+    def GetBundleIdentifier(path_ini, project_name):
+        # 1. Try IOS Runtime Settings
+        bundle_id = UnrealConfigIniManager.GetConfig(path_ini, "[/Script/IOSRuntimeSettings.IOSRuntimeSettings]", "BundleIdentifier")
+        
+        # 2. Try Mac Target Settings
+        if not bundle_id:
+            bundle_id = UnrealConfigIniManager.GetConfig(path_ini, "[/Script/MacTargetPlatform.XcodeProjectSettings]", "BundleIdentifier")
+            
+        # 3. Check for Macros or Failure
+        if not bundle_id or "$(" in bundle_id:
+            # Resolve Prefix
+            prefix = UnrealConfigIniManager.GetConfig(path_ini, "[/Script/IOSRuntimeSettings.IOSRuntimeSettings]", "CodeSigningPrefix")
+            if not prefix:
+                prefix = UnrealConfigIniManager.GetConfig(path_ini, "[/Script/MacTargetPlatform.XcodeProjectSettings]", "CodeSigningPrefix")
+            
+            if not prefix:
+                prefix = "io.agora"
+            
+            # Construct ID
+            bundle_id = f"{prefix}.{project_name}"
+            PrintLog(f"UnrealConfigIniManager - Resolved Bundle ID from prefix: {bundle_id}")
+        else:
+            PrintLog(f"UnrealConfigIniManager - Read Bundle ID: {bundle_id}")
+            
+        return bundle_id
 

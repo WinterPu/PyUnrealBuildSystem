@@ -303,8 +303,22 @@ class UnrealProjectManager:
              if not app_bundle_id:
                   PrintWarn(f"[AddIOSBroadcastExtension] App Bundle ID not provided, using fallback: {bundle_id_prefix}")
 
-             # In a real scenario, retrieve this properly.
+             # [Fix] Clean Bundle ID (remove quotes if present)
+             bundle_id_prefix = bundle_id_prefix.replace('"', '').replace("'", "")
              extension_bundle_id = f"{bundle_id_prefix}.{extension_name}"
+             
+             # [Fix] Force update Info.plist with explicit Bundle Identifier
+             path_info_plist = dst_extension_path / "Info.plist"
+             if path_info_plist.exists():
+                 PrintLog(f"[AddIOSBroadcastExtension] Updating Info.plist BundleID to: {extension_bundle_id}")
+                 OneXcodeCommand = XcodeCommand()
+                 try:
+                    cmd_set_id = f"Set :CFBundleIdentifier {extension_bundle_id}"
+                    OneXcodeCommand.PlistBuddy(cmd_set_id, path_info_plist)
+                 except Exception as e:
+                    PrintWarn(f"Failed to update CFBundleIdentifier in plist: {e}")
+             else:
+                 PrintWarn(f"[AddIOSBroadcastExtension] Info.plist not found at {path_info_plist}")
 
              cmd = f"ruby {script_path} '{path_xcodeproj}' '{path_project}' '{main_target_name}' '{extension_name}' '{extension_bundle_id}' '{team_id}' '{provisioning_profile_specifier}'"
              
