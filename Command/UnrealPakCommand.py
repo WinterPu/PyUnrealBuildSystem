@@ -132,7 +132,7 @@ class UnrealPakCommand:
         command = (
             '"' + str(self.__unrealpak_path) + '"' +
             r' "' + str(pak_file_path) + '"' +  # 要解压的PAK文件路径
-            r' -extract' +  # 解压命令
+            r' -Extract' +  # 解压命令
             r' "' + str(source_path) + '"' +  # 解压目标目录
             (r' -encryptionkey="' + str(encryption_key) + '"' if encryption_key else '') +  # 如果PAK加密，需提供解密密钥
             subcommand_extras

@@ -77,8 +77,8 @@ class PyUnrealBuildSystem(BaseSystem):
             default_targetsystem = SystemHelper.Win64_TargetName()
 
         ArgParser.add_argument("-enginepath", default="")
-        ArgParser.add_argument("-enginever", default="4.27")
-        ArgParser.add_argument("-uprojectpath", default=Path("Users/admin/Documents/AgoraBPExample/AgoraBPExample.uproject"))   
+        ArgParser.add_argument("-enginever", default="5.6")
+        ArgParser.add_argument("-uprojectpath", default=Path("D:\\R-Github\\Agora-Unreal-RTC-SDK\\Agora-Unreal-SDK-CPP-Example\\AgoraExample.uproject"))   
         ArgParser.add_argument("-upluginpath", default="") ## if "": use the plugin under the plugins file
         ArgParser.add_argument("-targetplatform", default=default_targetsystem)
         ArgParser.add_argument("-androidpackagename", default="com.YourCompany.[PROJECT]")

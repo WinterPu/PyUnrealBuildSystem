@@ -235,6 +235,7 @@ class WinTargetPlatform(BaseTargetPlatform):
        
         OneWwiseCommand = WwiseCommand()
         OneWwiseCommand.path_project = WPMHelper.Get().GetPath_WPProject()
+        PrintLog(">>>>> WPM - Package_Wwise Project Path [%s]" % OneWwiseCommand.path_project)
         OneWwiseCommand.path_wp = WPMHelper.Get().GetPath_WwiseWPScript()
         
         one_param_premake = ParamsWwisePluginPremake()
